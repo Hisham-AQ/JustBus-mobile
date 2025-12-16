@@ -1,2 +1,15 @@
-# JustBusApp
-JustBus is a university transportation system with real-time bus tracking, AI route planning, seat booking, digital tickets, student wallet, parcel delivery, rewards, and admin dashboards for managing routes, drivers, and fleet efficiently.
+# JustBus Mobile App 🚍
+
+JustBus is a Flutter-based mobile application for university transportation.
+
+## Features
+- Real-time bus tracking
+- AI-based route planning
+- Seat booking system
+- Digital tickets (QR Code)
+- Student wallet
+- Rewards system
+
+## Tech Stack
+- Flutter (Dart)
+- Firebase (Authentication, Firestore)
