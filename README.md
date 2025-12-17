@@ -24,7 +24,8 @@ JustBus is a Flutter-based mobile application designed to improve university tra
 
 ## 👨‍💻 Developer
 **Hisham AQ**
-**Samer  Almashny**
+
+**Samer Almashny**
 
 ---
 
