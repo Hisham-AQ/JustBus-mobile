@@ -1,34 +1,30 @@
-<<<<<<< HEAD
-# JustBus Mobile App 🚍
+# 🚌 JustBus Mobile App
 
-JustBus is a Flutter-based mobile application for university transportation.
+JustBus is a Flutter-based mobile application designed to improve university transportation systems.
 
-## Features
+## 🚀 Features
 - Real-time bus tracking
-- AI-based route planning
-- Seat booking system
+- Smart route planning
+- Seat reservation system
 - Digital tickets (QR Code)
-- Student wallet
-- Rewards system
+- Student wallet & payments
+- Rewards & loyalty system
+- Admin dashboards (future)
 
-## Tech Stack
-- Flutter (Dart)
-- Firebase (Authentication, Firestore)
-=======
-# justbus_v1
+## 🛠️ Tech Stack
+- Flutter
+- Dart
+- Firebase (planned)
+- Google Maps / OpenStreetMap
 
-A new Flutter project.
+## 📱 Platforms
+- Android
+- iOS (planned)
+- Web (future)
 
-## Getting Started
+## 👨‍💻 Developer
+**Hisham AQ**
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
->>>>>>> d14543a (Initial commit from VS Code)
+> This project is under active development 🚧
