@@ -8,11 +8,10 @@ class PackageScreen extends StatefulWidget {
 }
 
 class _PackageScreenState extends State<PackageScreen> {
-  // Same style you use غالباً
+ 
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
 
-  // Locations
   final List<String> locations = const [
     'Amman',
     'Irbid',
@@ -34,13 +33,11 @@ class _PackageScreenState extends State<PackageScreen> {
 
   _ParcelType selectedType = const _ParcelType('Small Box', Icons.inventory_2_outlined);
 
-  // Weight (kg)
+
   double weightKg = 2.0;
 
-  // Delivery option
   int deliveryOption = 0; // 0 Standard, 1 Express
 
-  // Notes
   final TextEditingController notesCtrl = TextEditingController();
 
   @override
@@ -57,8 +54,7 @@ class _PackageScreenState extends State<PackageScreen> {
     });
   }
 
-  // --- Pricing logic (simple & clean) ---
-  // You can adjust numbers later.
+
   double _estimatePriceJOD() {
     // base
     double base = 1.25;
@@ -76,10 +72,8 @@ class _PackageScreenState extends State<PackageScreen> {
       dist = 1.0;
     }
 
-    // weight factor
     double weightFee = 0.35 * weightKg; // 0.35 JD per kg
 
-    // type factor (UPDATED: only 4)
     double typeFee = switch (selectedType.name) {
       'Documents' => 0.0,
       'Small Box' => 0.35,
@@ -88,7 +82,6 @@ class _PackageScreenState extends State<PackageScreen> {
       _ => 0.40,
     };
 
-    // express factor
     double express = deliveryOption == 1 ? 1.25 : 0.0;
 
     final total = base + dist + weightFee + typeFee + express;
@@ -227,12 +220,11 @@ class _PackageScreenState extends State<PackageScreen> {
 
           const SizedBox(height: 14),
 
-          // Weight + Delivery option  (UPDATED: same height)
           Row(
             children: [
               Expanded(
                 child: SizedBox(
-                  height: 175, // ✅ نفس ارتفاع الكرتين
+                  height: 175, 
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -265,7 +257,7 @@ class _PackageScreenState extends State<PackageScreen> {
                           value: weightKg,
                           min: 0.5,
                           max: 10,
-                          divisions: 19, // every 0.5
+                          divisions: 19, 
                           activeColor: primary,
                           onChanged: (v) => setState(() => weightKg = v),
                         ),
@@ -277,7 +269,7 @@ class _PackageScreenState extends State<PackageScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: SizedBox(
-                  height: 174, // ✅ نفس ارتفاع الكرتين
+                  height: 174, 
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -312,7 +304,7 @@ class _PackageScreenState extends State<PackageScreen> {
 
           const SizedBox(height: 14),
 
-          // Notes
+          
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -346,7 +338,7 @@ class _PackageScreenState extends State<PackageScreen> {
 
           const SizedBox(height: 14),
 
-          // Price card
+          
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -390,7 +382,7 @@ class _PackageScreenState extends State<PackageScreen> {
 
           const SizedBox(height: 16),
 
-          // Submit
+          
           SizedBox(
             width: double.infinity,
             height: 62,
