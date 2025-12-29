@@ -101,7 +101,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
             const Divider(),
 
             // ===== SEATS =====
-            ...bus.map(_row).toList(),
+            ...bus.map(_row),
           ],
         ),
       ),

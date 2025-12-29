@@ -24,33 +24,56 @@ class WalletScreen extends StatelessWidget {
         children: [
           // ===== BALANCE =====
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: primary,
-              borderRadius: BorderRadius.circular(22),
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF1F4B63),
+    borderRadius: BorderRadius.circular(20),
+  ),
+  child: Row(
+    children: [
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              'Current Balance',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Current Balance',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  '12.50 JD',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
+            SizedBox(height: 6),
+            Text(
+              '12.50 JD',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+              ),
             ),
+          ],
+        ),
+      ),
+      ElevatedButton(
+        onPressed: () {
+          // TODO: Open Top Up screen / bottom sheet
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1F4B63),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
+        ),
+        child: const Text(
+          'Top Up',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+      ),
+    ],
+  ),
+),
+
 
           const SizedBox(height: 22),
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:justbus/screens/SignUp_screen.dart';
 import 'home_screen.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'forgot_password_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -97,33 +99,36 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: rememberMe,
-                          onChanged: (v) =>
-                              setState(() => rememberMe = v ?? true),
-                          activeColor: primary,
-                        ),
-                        const Text(
-                          'Remember me',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Forgot Password (later)')),
-                            );
-                          },
-                          child: const Text(
-                            'Forgot password?',
-                            style: TextStyle(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ],
-                    ),
+Row(
+  children: [
+    Checkbox(
+      value: rememberMe,
+      onChanged: (v) =>
+          setState(() => rememberMe = v ?? true),
+      activeColor: const Color(0xFF1F4B63),
+    ),
+    const Text(
+      'Remember me',
+      style: TextStyle(fontWeight: FontWeight.w700),
+    ),
+    const Spacer(),
+    TextButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ForgotPasswordScreen(),
+          ),
+        );
+      },
+      child: const Text(
+        'Forgot password?',
+        style: TextStyle(fontWeight: FontWeight.w800),
+      ),
+    ),
+  ],
+),
+
                     const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,

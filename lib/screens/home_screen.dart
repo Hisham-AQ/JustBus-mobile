@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../widgets/drawer_menu.dart';
 import 'search_results_screen.dart';
-
+import 'just_bot_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   String city = 'Amman';
-
   bool cityOnTop = true;
 
   DateTime selectedDate = DateTime(2026, 1, 1);
@@ -82,31 +82,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       blurRadius: 18,
                       offset: Offset(0, 8),
                       color: Color(0x22000000),
-                    )
+                    ),
                   ],
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.menu_rounded),
-                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  onPressed: () =>
+                      _scaffoldKey.currentState?.openDrawer(),
                 ),
               ),
             ),
           ),
 
-          // ================= BOTTOM UI =================
+          // ================= BOTTOM CARD =================
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(28)),
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 30,
                     offset: Offset(0, -10),
                     color: Color(0x22000000),
-                  )
+                  ),
                 ],
               ),
               child: SafeArea(
@@ -125,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 14),
 
-                    // ===== LOCATIONS (OLD SHAPE, WORKING) =====
+                    // ===== LOCATIONS =====
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -148,10 +150,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                         },
                                       ),
                                       const SizedBox(height: 12),
-                                      const _FixedLocation(label: 'JUST university'),
+                                      const _FixedLocation(
+                                          label: 'JUST university'),
                                     ]
                                   : [
-                                      const _FixedLocation(label: 'JUST university'),
+                                      const _FixedLocation(
+                                          label: 'JUST university'),
                                       const SizedBox(height: 12),
                                       _DropdownPill(
                                         value: city,
@@ -167,13 +171,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 12),
 
-                          // ===== SWAP BUTTON (REAL WORKING) =====
+                          // ===== SWAP =====
                           GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                cityOnTop = !cityOnTop;
-                              });
-                            },
+                            onTap: () =>
+                                setState(() => cityOnTop = !cityOnTop),
                             child: Container(
                               width: 58,
                               height: 58,
@@ -236,18 +237,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 64,
                       child: ElevatedButton(
                         onPressed: () {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SearchResultsScreen(
-                      from: cityOnTop ? city : 'JUST',
-                      to: cityOnTop ? 'JUST' : city,
-                      date: '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                  persons: persons,
-                   ),
-               ),
-              );
-               },
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SearchResultsScreen(
+                                from: cityOnTop ? city : 'JUST',
+                                to: cityOnTop ? 'JUST' : city,
+                                date:
+                                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                                persons: persons,
+                              ),
+                            ),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1F4B63),
                           shape: RoundedRectangleBorder(
@@ -268,10 +270,37 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+
+          // ================= JUST BOT (CORRECT PLACE) =================
+          Positioned(
+            right: 16,
+            bottom: 790, // فوق الكارد
+            child: FloatingActionButton(
+              heroTag: 'justbot',
+              backgroundColor: const Color(0xFF1F4B63),
+              onPressed: () => _openJustBot(context),
+              child: const Icon(
+                Icons.smart_toy_outlined,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+// ================= JUST BOT SHEET =================
+void _openJustBot(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) => const JustBotSheet(),
+  );
 }
 
 /* ================= WIDGETS ================= */

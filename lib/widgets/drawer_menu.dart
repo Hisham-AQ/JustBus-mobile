@@ -8,6 +8,8 @@ import '../screens/profile_screen.dart';
 import '../screens/rewards_screen.dart';
 import '../screens/special_trip_screen.dart';
 import '../screens/wallet_screen.dart';
+import '../screens/lost_and_found_screen.dart';
+
 
 class DrawerMenu extends StatelessWidget {
   const DrawerMenu({super.key});
@@ -123,6 +125,14 @@ class DrawerMenu extends StatelessWidget {
                     title: 'My Rides',
                     onTap: () => _go(context, const MyRidesScreen()),
                   ),
+                  
+                 _item(
+                  context: context,
+                 icon: Icons.search_off_rounded,
+                 title: 'Lost & Found',
+                 onTap: () => _go(context, const LostAndFoundScreen()),
+                 ),
+
                   _item(
                     context: context,
                     icon: Icons.notifications_none_rounded,
