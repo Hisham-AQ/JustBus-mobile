@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -54,8 +56,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
               // ================= EMAIL =================
               _inputField(
                 controller: emailController,
-                label: 'University Email',
+                label: 'Email',
                 icon: Icons.email_outlined,
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return 'Email is required';
+                  }
+                  final email = v.trim();
+                  final emailRegex = RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  );
+                  if (!emailRegex.hasMatch(email)) {
+                    return 'Enter a valid email address';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 14),
@@ -86,6 +101,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 label: 'Confirm Password',
                 icon: Icons.lock_outline,
                 obscure: true,
+                validator: (v) {
+                  if (v == null || v.isEmpty) {
+                    return 'Please confirm your password';
+                  }
+                  if (v != passwordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
               ),
 
               const SizedBox(height: 24),
@@ -103,8 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       label: 'Male',
                       icon: Icons.male_rounded,
                       selected: selectedGender == 'Male',
-                      onTap: () =>
-                          setState(() => selectedGender = 'Male'),
+                      onTap: () => setState(() => selectedGender = 'Male'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -113,8 +136,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       label: 'Female',
                       icon: Icons.female_rounded,
                       selected: selectedGender == 'Female',
-                      onTap: () =>
-                          setState(() => selectedGender = 'Female'),
+                      onTap: () => setState(() => selectedGender = 'Female'),
                     ),
                   ),
                 ],
@@ -147,9 +169,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ? 'Select date'
                             : '${birthDate!.day}/${birthDate!.month}/${birthDate!.year}',
                         style: TextStyle(
-                          color: birthDate == null
-                              ? Colors.black45
-                              : Colors.black,
+                          color:
+                              birthDate == null ? Colors.black45 : Colors.black,
                         ),
                       ),
                     ],
@@ -162,8 +183,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               // ================= TERMS =================
               CheckboxListTile(
                 value: agreeTerms,
-                onChanged: (v) =>
-                    setState(() => agreeTerms = v ?? false),
+                onChanged: (v) => setState(() => agreeTerms = v ?? false),
                 title: const Text(
                   'I agree to the Terms & Conditions',
                   style: TextStyle(fontWeight: FontWeight.w600),
@@ -222,13 +242,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
     required IconData icon,
     bool obscure = false,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
-      validator: (v) =>
-          v == null || v.isEmpty ? 'Required field' : null,
+      validator: validator ??
+          (String? v) {
+            if (v == null || v.isEmpty) {
+              return 'Required field';
+            }
+            return null;
+          },
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
@@ -288,7 +314,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (selectedGender == null || birthDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -298,5 +324,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     // TODO: Firebase / API Sign Up
+    try {
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      final uid = credential.user!.uid;
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'email': emailController.text.trim(),
+        'phone': phoneController.text.trim(),
+        'gender': selectedGender,
+        'birthDate': Timestamp.fromDate(birthDate!),
+        'walletBalance': 0.0,
+        'points': 0,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created successfully')),
+      );
+
+      Navigator.pop(context); // go back to login
+    } on FirebaseAuthException catch (e) {
+      String message = 'Signup failed';
+
+      if (e.code == 'email-already-in-use') {
+        message = 'This email is already registered';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email address';
+      } else if (e.code == 'weak-password') {
+        message = 'Password is too weak';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 }

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:justbus/screens/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> _loadProfile() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    return FirebaseFirestore.instance.collection('users').doc(uid).get();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,118 +28,129 @@ class ProfileScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          // ================= HEADER =================
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Column(
-              children: const [
-                CircleAvatar(
-                  radius: 38,
-                  backgroundColor: Color(0xFFD9D9D9),
-                  child: Text(
-                    'UU',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'User',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  '+962700000000',
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
+      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        future: _loadProfile(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // ================= LIST =================
-          Expanded(
-            child: ListView(
-              children: [
-                _Section(
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text('Profile not found'));
+          }
+
+          final data = snapshot.data!.data()!;
+          final email = data['email'] ?? '';
+          final phone = data['phone'] ?? '';
+          final gender = data['gender'] ?? '';
+          final birthDate = (data['birthDate'] as Timestamp).toDate();
+
+          return Column(
+            children: [
+              // ================= HEADER =================
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Column(
                   children: [
-                    _Item(
-                      icon: Icons.person_outline,
-                      title: 'Name',
-                      value: 'user',
+                    const CircleAvatar(
+                      radius: 38,
+                      backgroundColor: Color(0xFFD9D9D9),
+                      child: Text(
+                        'U',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ),
-                    _Item(
-                      icon: Icons.phone_outlined,
-                      title: 'Phone Number',
-                      value: '+962700000000',
+                    const SizedBox(height: 12),
+                    Text(
+                      email,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                    _Item(
-                      icon: Icons.email_outlined,
-                      title: 'Email',
-                      value: 'user@user.com',
+                    const SizedBox(height: 4),
+                    Text(
+                      phone,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
+              ),
 
-                _Section(
+              // ================= LIST =================
+              Expanded(
+                child: ListView(
                   children: [
-                    _Item(
-                      icon: Icons.cake_outlined,
-                      title: 'Date of Birth',
-                      value: 'M dd, YEAR',
+                    _Section(
+                      children: [
+                        _Item(
+                          icon: Icons.phone_outlined,
+                          title: 'Phone Number',
+                          value: phone,
+                        ),
+                        _Item(
+                          icon: Icons.email_outlined,
+                          title: 'Email',
+                          value: email,
+                        ),
+                      ],
                     ),
-                    _Item(
-                      icon: Icons.male_rounded,
-                      title: 'Gender',
-                      value: 'Male / Female',
+                    _Section(
+                      children: [
+                        _Item(
+                          icon: Icons.cake_outlined,
+                          title: 'Date of Birth',
+                          value:
+                              '${birthDate.day}/${birthDate.month}/${birthDate.year}',
+                        ),
+                        _Item(
+                          icon: Icons.male_rounded,
+                          title: 'Gender',
+                          value: gender,
+                        ),
+                      ],
+                    ),
+                    _Section(
+                      children: const [
+                        _Item(
+                          icon: Icons.settings_outlined,
+                          title: 'Manage',
+                        ),
+                        _Item(
+                          icon: Icons.notifications_outlined,
+                          title: 'Promotional Preferences',
+                        ),
+                      ],
+                    ),
+                    _Section(
+                      children: [
+                        _Item(
+                          icon: Icons.logout_rounded,
+                          title: 'Log Out',
+                          isDanger: true,
+                          onTap: _showLogoutDialog,
+                        ),
+                        _Item(
+                          icon: Icons.delete_forever_rounded,
+                          title: 'Delete Profile',
+                          isDanger: true,
+                          onTap: _showDeleteAccountDialog,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-
-                _Section(
-                  children: const [
-                    _Item(
-                      icon: Icons.settings_outlined,
-                      title: 'Manage',
-                    ),
-                    _Item(
-                      icon: Icons.notifications_outlined,
-                      title: 'Promotional Preferences',
-                    ),
-                  ],
-                ),
-
-                // ================= LOGOUT & DELETE =================
-                _Section(
-                  children: [
-                    _Item(
-                      icon: Icons.logout_rounded,
-                      title: 'Log Out',
-                      isDanger: true,
-                      onTap: _showLogoutDialog,
-                    ),
-                    _Item(
-                      icon: Icons.delete_forever_rounded,
-                      title: 'Delete Profile',
-                      isDanger: true,
-                      onTap: _showDeleteAccountDialog,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -150,15 +169,14 @@ class ProfileScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO:
-              // FirebaseAuth.instance.signOut();
-              // Navigator.pushAndRemoveUntil(
-              //   context,
-              //   MaterialPageRoute(builder: (_) => LoginScreen()),
-              //   (route) => false,
-              // );
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
             },
             child: const Text(
               'Log out',
@@ -184,13 +202,7 @@ class ProfileScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO:
-              // 1. Delete user data from database
-              // 2. FirebaseAuth.instance.currentUser?.delete();
-              // 3. Navigate to Welcome/Login screen
-            },
+            onPressed: () => Navigator.pop(context),
             child: const Text(
               'Delete',
               style: TextStyle(color: Colors.red),
@@ -258,13 +270,11 @@ class _Item extends StatelessWidget {
               value!,
               style: TextStyle(
                 fontSize: 13,
-                color:
-                    isPlaceholder ? Colors.black38 : Colors.black87,
+                color: isPlaceholder ? Colors.black38 : Colors.black87,
               ),
             ),
           const SizedBox(width: 6),
-          const Icon(Icons.chevron_right_rounded,
-              color: Colors.black38),
+          const Icon(Icons.chevron_right_rounded, color: Colors.black38),
         ],
       ),
       onTap: onTap == null ? null : () => onTap!(context),
