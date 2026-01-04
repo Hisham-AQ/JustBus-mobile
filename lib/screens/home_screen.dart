@@ -260,6 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Search',
                           style: TextStyle(
                             fontSize: 26,
+                            color: Colors.white,
                             fontWeight: FontWeight.w900,
                           ),
                         ),

@@ -11,9 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  firebase_auth: ^4.17.0
   firebase_core: ^2.27.0
+  firebase_auth: ^4.17.0
   cloud_firestore: ^4.15.0
+  firebase_storage: ^11.5.3
+  image_picker: ^1.0.4
+
   cupertino_icons: ^1.0.8
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
@@ -35,8 +38,5 @@ flutter_icons:
   ios: true
 
   image_path: "assets/icon/justbus_foreground.png"
-
-
   adaptive_icon_background: "assets/icon/justbus_background.png"
   adaptive_icon_foreground: "assets/icon/justbus_foreground.png"
-

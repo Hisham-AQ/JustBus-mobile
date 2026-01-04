@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../screens/about_screen.dart';
 import '../screens/help_center_screen.dart';
 import '../screens/my_rides_screen.dart';
@@ -10,17 +13,92 @@ import '../screens/special_trip_screen.dart';
 import '../screens/wallet_screen.dart';
 import '../screens/lost_and_found_screen.dart';
 
-
 class DrawerMenu extends StatelessWidget {
   const DrawerMenu({super.key});
 
   void _go(BuildContext context, Widget page) {
-    Navigator.pop(context); // close drawer
+    Navigator.pop(context);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => page),
     );
   }
+
+  // ================= USER HEADER =================
+
+  Widget _userHeader(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    if (uid == null) {
+      return const SizedBox();
+    }
+
+    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      future:
+          FirebaseFirestore.instance.collection('users').doc(uid).get(),
+      builder: (context, snapshot) {
+        final data = snapshot.data?.data();
+
+        final name = data?['name'] ?? 'User';
+        final phone = data?['phone'] ?? '';
+        final firstLetter =
+            name.isNotEmpty ? name[0].toUpperCase() : 'U';
+
+        return InkWell(
+          onTap: () => _go(context, const ProfileScreen()),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDEDED),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    firstLetter,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        phone,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ================= ITEM =================
 
   Widget _item({
     required BuildContext context,
@@ -41,54 +119,15 @@ class DrawerMenu extends StatelessWidget {
     );
   }
 
+  // ================= BUILD =================
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: SafeArea(
         child: Column(
           children: [
-            // Header (User)
-            InkWell(
-              onTap: () => _go(context, const ProfileScreen()),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEDEDED),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'U',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'User',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            '+9627XXXXXXXXX',
-                            style: TextStyle(fontSize: 12, color: Colors.black54),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right_rounded),
-                  ],
-                ),
-              ),
-            ),
+            _userHeader(context),
 
             const Divider(height: 1),
 
@@ -96,10 +135,9 @@ class DrawerMenu extends StatelessWidget {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  // ===== Top section =====
                   _item(
                     context: context,
-                    icon: Icons.inventory_2_outlined, // box
+                    icon: Icons.inventory_2_outlined,
                     title: 'Package',
                     onTap: () => _go(context, const PackageScreen()),
                   ),
@@ -112,7 +150,6 @@ class DrawerMenu extends StatelessWidget {
 
                   const Divider(height: 1),
 
-                  // ===== Middle section =====
                   _item(
                     context: context,
                     icon: Icons.card_giftcard_outlined,
@@ -125,14 +162,12 @@ class DrawerMenu extends StatelessWidget {
                     title: 'My Rides',
                     onTap: () => _go(context, const MyRidesScreen()),
                   ),
-                  
-                 _item(
-                  context: context,
-                 icon: Icons.search_off_rounded,
-                 title: 'Lost & Found',
-                 onTap: () => _go(context, const LostAndFoundScreen()),
-                 ),
-
+                  _item(
+                    context: context,
+                    icon: Icons.search_off_rounded,
+                    title: 'Lost & Found',
+                    onTap: () => _go(context, const LostAndFoundScreen()),
+                  ),
                   _item(
                     context: context,
                     icon: Icons.notifications_none_rounded,
@@ -148,7 +183,6 @@ class DrawerMenu extends StatelessWidget {
 
                   const Divider(height: 1),
 
-                  // ===== Bottom section =====
                   _item(
                     context: context,
                     icon: Icons.info_outline_rounded,
@@ -164,10 +198,6 @@ class DrawerMenu extends StatelessWidget {
                 ],
               ),
             ),
-
-            const Divider(height: 1),
-
-
           ],
         ),
       ),

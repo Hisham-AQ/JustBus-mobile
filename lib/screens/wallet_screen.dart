@@ -66,6 +66,42 @@ class WalletScreen extends StatelessWidget {
   }
 
   // ================= UI =================
+Widget _buildSavedCard({
+  required String brand,
+  required String last4,
+}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: lightGrey,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.credit_card),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                brand,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '**** **** **** $last4',
+                style: const TextStyle(color: Colors.black54),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.chevron_right),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +196,44 @@ class WalletScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+const SizedBox(height: 24),
+
+const Text(
+  'Saved Cards',
+  style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w900,
+  ),
+),
+
+const SizedBox(height: 12),
+
+_buildSavedCard(
+  brand: 'Visa',
+  last4: '4242',
+),
+
+_buildSavedCard(
+  brand: 'MasterCard',
+  last4: '1122',
+),
+OutlinedButton.icon(
+  onPressed: () {
+    // TODO: Navigate to Add Card Screen
+  },
+  icon: const Icon(Icons.add),
+  label: const Text(
+    'Add New Card',
+    style: TextStyle(fontWeight: FontWeight.w800),
+  ),
+  style: OutlinedButton.styleFrom(
+    minimumSize: const Size(double.infinity, 50),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    ),
+  ),
+),
+
 
                   const SizedBox(height: 26),
 
@@ -218,7 +292,7 @@ class WalletScreen extends StatelessWidget {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
                 ],
               );
             },

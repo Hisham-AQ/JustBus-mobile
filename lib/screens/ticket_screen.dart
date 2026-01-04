@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
 class TicketScreen extends StatelessWidget {
-  final List<int> seats;
+ final List<int> seats;
+final String userName;
 
-  const TicketScreen({super.key, required this.seats});
+const TicketScreen({
+  super.key,
+  required this.seats,
+  required this.userName,
+});
+
 
   static const Color bg = Color(0xFF4E6F87);
   static const Color primary = Color(0xFF1F4B63);
@@ -78,23 +84,25 @@ class TicketScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 26,
                       backgroundColor: primary,
-                      child: const Text(
-                        'H',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                      child: Text(
+  userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 24,
+    fontWeight: FontWeight.w900,
+  ),
+),
+
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Hisham Aq',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
+Text(
+  userName,
+  style: const TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w900,
+  ),
+),
+
                   ],
                 ),
               ),
@@ -148,16 +156,20 @@ class TicketScreen extends StatelessWidget {
               const SizedBox(height: 22),
 
               // ===== QR =====
-              Container(
-                width: 190,
-                height: 190,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                alignment: Alignment.center,
-                child: const Icon(Icons.qr_code_rounded, size: 150),
-              ),
+Container(
+  width: 190,
+  height: 190,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(18),
+  ),
+  child: Image.asset(
+    'assets/images/QR_TEST.png',
+    fit: BoxFit.contain,
+  ),
+),
+
 
               const SizedBox(height: 26),
             ],
@@ -167,14 +179,26 @@ class TicketScreen extends StatelessWidget {
         // Side cuts (left)
         Positioned(
           left: -12,
-          top: 140,
+          top: 82,
           child: _cut(),
         ),
 
         // Side cuts (right)
         Positioned(
           right: -12,
-          top: 140,
+          top: 82,
+          child: _cut(),
+        ),
+
+                // Side cuts (right)
+        Positioned(
+          right: -12,
+          bottom: 298,
+          child: _cut(),
+        ),
+                Positioned(
+          left: -12,
+          bottom: 298,
           child: _cut(),
         ),
       ],

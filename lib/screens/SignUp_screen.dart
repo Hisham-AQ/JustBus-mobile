@@ -12,6 +12,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
@@ -52,6 +53,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+// ================= NAME =================
+_inputField(
+  controller: nameController,
+  label: 'Full Name',
+  icon: Icons.person_outline,
+),
+const SizedBox(height: 14),
 
               // ================= EMAIL =================
               _inputField(
@@ -334,12 +342,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final uid = credential.user!.uid;
 
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        'name': nameController.text.trim(),
         'email': emailController.text.trim(),
         'phone': phoneController.text.trim(),
         'gender': selectedGender,
         'birthDate': Timestamp.fromDate(birthDate!),
+        'avatarUrl': null,
         'walletBalance': 0.0,
         'points': 0,
+        'isProfileComplete': true,
         'createdAt': FieldValue.serverTimestamp(),
       });
 

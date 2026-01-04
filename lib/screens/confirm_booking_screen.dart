@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ticket_screen.dart';
 
 enum PaymentMethod { cash, visa, wallet }
@@ -17,6 +19,16 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   static const Color lightGrey = Color(0xFFEDEDED);
 
   PaymentMethod payment = PaymentMethod.wallet;
+
+  Future<String> _getUserName() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    return doc.data()?['name'] ?? 'User';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +49,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            // ===== ROUTE CARD =====
             _card(
               title: 'Trip Details',
               child: Column(
@@ -53,7 +64,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
             const SizedBox(height: 14),
 
-            // ===== PASSENGERS =====
             _card(
               title: 'Passengers',
               child: Column(
@@ -66,7 +76,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
             const SizedBox(height: 14),
 
-            // ===== PAYMENT =====
             _card(
               title: 'Payment Method',
               child: Column(
@@ -95,7 +104,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
             const Spacer(),
 
-            // ===== PRICE & CONFIRM =====
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -126,11 +134,16 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
+                      onPressed: () async {
+                        final name = await _getUserName();
+
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => TicketScreen(seats: widget.seats),
+                            builder: (_) => TicketScreen(
+                              seats: widget.seats,
+                              userName: name,
+                            ),
                           ),
                         );
                       },
@@ -158,7 +171,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     );
   }
 
-  // ================= WIDGETS =================
+  // ===== Widgets =====
 
   Widget _card({required String title, required Widget child}) {
     return Container(

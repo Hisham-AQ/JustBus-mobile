@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Spacer(),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 65),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 30),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -212,45 +212,13 @@ Row(
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              Row(
-                children: const [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('OR',
-                        style: TextStyle(fontWeight: FontWeight.w800)),
-                  ),
-                  Expanded(child: Divider()),
-                ],
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Google Sign-In (later)')),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18)),
-                  ),
-                  icon: const Icon(Icons.g_mobiledata_rounded, size: 30),
-                  label: const Text(
-                    'Continue with Google',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-                  ),
-                ),
-              ),
+
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Don’t have an account? ',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
+                      style: TextStyle( fontSize: 15,fontWeight: FontWeight.w800)),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -262,7 +230,7 @@ Row(
                     },
                     child: const Text(
                       'Sign up',
-                      style: TextStyle(fontWeight: FontWeight.w900),
+                      style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),
                     ),
                   ),
                 ],

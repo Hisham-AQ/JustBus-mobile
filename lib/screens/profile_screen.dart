@@ -1,23 +1,83 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:justbus/screens/login_screen.dart';
+import 'package:justbus/screens/edit_single_field_screen.dart';
+import 'package:justbus/screens/edit_date_screen.dart';
+import 'package:justbus/screens/change_password_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+
+
+
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+
   Future<DocumentSnapshot<Map<String, dynamic>>> _loadProfile() {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    return FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final uid = _auth.currentUser!.uid;
+    return _firestore.collection('users').doc(uid).get();
   }
+
+/*
+Future<void> _changeProfileImage() async {
+  try {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
+    if (picked == null) return;
+
+    final uid = _auth.currentUser!.uid;
+
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('avatars')
+        .child('$uid.jpg');
+
+  
+    final uploadTask = await ref.putFile(File(picked.path));
+
+    if (uploadTask.state != TaskState.success) {
+      throw Exception('Upload failed');
+    }
+
+    final url = await ref.getDownloadURL();
+
+    await _firestore.collection('users').doc(uid).update({
+      'avatarUrl': url,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    setState(() {});
+  } catch (e) {
+    debugPrint('Profile image error: $e');
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to upload image')),
+    );
+  }
+}
+*/
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
         elevation: 0,
+        backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),
@@ -40,10 +100,15 @@ class ProfileScreen extends StatelessWidget {
           }
 
           final data = snapshot.data!.data()!;
-          final email = data['email'] ?? '';
-          final phone = data['phone'] ?? '';
-          final gender = data['gender'] ?? '';
-          final birthDate = (data['birthDate'] as Timestamp).toDate();
+          final String name = data['name'] ?? '';
+          final String email = data['email'] ?? '';
+          final String phone = data['phone'] ?? '';
+          final String gender = data['gender'] ?? '';
+          final String? avatarUrl = data['avatarUrl'];
+
+          final Timestamp? birthTs = data['birthDate'];
+          final DateTime? birthDate =
+              birthTs?.toDate();
 
           return Column(
             children: [
@@ -52,24 +117,33 @@ class ProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    const CircleAvatar(
-                      radius: 38,
-                      backgroundColor: Color(0xFFD9D9D9),
-                      child: Text(
-                        'U',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87,
-                        ),
+                    GestureDetector(
+                      //onTap: _changeProfileImage,
+                      child: CircleAvatar(
+                        radius: 42,
+                        backgroundColor: const Color(0xFFD9D9D9),
+                        backgroundImage:
+                            avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                        child: avatarUrl == null
+                            ? Text(
+                                name.isNotEmpty
+                                    ? name[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                ),
+                              )
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      email,
+                      name.isNotEmpty ? name : email,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -88,28 +162,87 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: ListView(
                   children: [
+                   _Section(
+  children: [
+    
+    _Item(
+      icon: Icons.person_outline,
+      title: 'Name',
+      value: name,
+      onTap: (context) async {
+        final updated = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EditSingleFieldScreen(
+              title: 'Edit Name',
+              subtitle: 'Enter your full name',
+              fieldKey: 'name',
+              initialValue: name,
+            ),
+          ),
+        );
+
+        if (updated == true) {
+          setState(() {});
+        }
+      },
+    ),
+
+    _Item(
+  icon: Icons.phone_outlined,
+  title: 'Phone Number',
+  value: phone.isEmpty ? 'Not set' : phone,
+  isPlaceholder: phone.isEmpty,
+  onTap: (context) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditSingleFieldScreen(
+          title: 'Edit Phone Number',
+          subtitle: 'Enter your phone number',
+          fieldKey: 'phone',
+          initialValue: phone,
+          keyboardType: TextInputType.phone,
+        ),
+      ),
+    );
+
+    if (updated == true) setState(() {});
+  },
+),
+
+
+    _Item(
+      icon: Icons.email_outlined,
+      title: 'Email',
+      value: email,
+    ),
+  ],
+),
+
                     _Section(
                       children: [
                         _Item(
-                          icon: Icons.phone_outlined,
-                          title: 'Phone Number',
-                          value: phone,
-                        ),
-                        _Item(
-                          icon: Icons.email_outlined,
-                          title: 'Email',
-                          value: email,
-                        ),
-                      ],
-                    ),
-                    _Section(
-                      children: [
-                        _Item(
-                          icon: Icons.cake_outlined,
-                          title: 'Date of Birth',
-                          value:
-                              '${birthDate.day}/${birthDate.month}/${birthDate.year}',
-                        ),
+  icon: Icons.cake_outlined,
+  title: 'Date of Birth',
+  value: birthDate == null
+      ? 'Not set'
+      : '${birthDate.day}/${birthDate.month}/${birthDate.year}',
+  isPlaceholder: birthDate == null,
+  onTap: (context) async {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditDateScreen(
+          initialDate: birthDate,
+        ),
+      ),
+    );
+
+    if (updated == true) setState(() {});
+  },
+),
+
                         _Item(
                           icon: Icons.male_rounded,
                           title: 'Gender',
@@ -118,30 +251,25 @@ class ProfileScreen extends StatelessWidget {
                       ],
                     ),
                     _Section(
-                      children: const [
-                        _Item(
-                          icon: Icons.settings_outlined,
-                          title: 'Manage',
-                        ),
-                        _Item(
-                          icon: Icons.notifications_outlined,
-                          title: 'Promotional Preferences',
-                        ),
-                      ],
-                    ),
-                    _Section(
                       children: [
+                        _Item(
+  icon: Icons.lock_outline,
+  title: 'Change Password',
+  onTap: (context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ChangePasswordScreen(),
+      ),
+    );
+  },
+),
+
                         _Item(
                           icon: Icons.logout_rounded,
                           title: 'Log Out',
                           isDanger: true,
                           onTap: _showLogoutDialog,
-                        ),
-                        _Item(
-                          icon: Icons.delete_forever_rounded,
-                          title: 'Delete Profile',
-                          isDanger: true,
-                          onTap: _showDeleteAccountDialog,
                         ),
                       ],
                     ),
@@ -154,8 +282,6 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-
-  // ================= DIALOGS =================
 
   static void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -180,31 +306,6 @@ class ProfileScreen extends StatelessWidget {
             },
             child: const Text(
               'Log out',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static void _showDeleteAccountDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete Profile'),
-        content: const Text(
-          'This action is permanent.\nYour account and all data will be deleted.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Delete',
               style: TextStyle(color: Colors.red),
             ),
           ),
@@ -250,33 +351,46 @@ class _Item extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDanger ? Colors.red : Colors.black54;
+    final titleColor = isDanger ? Colors.red : Colors.black87;
+    final valueColor =
+        isPlaceholder ? Colors.black38 : Colors.black87;
 
     return ListTile(
-      leading: Icon(icon, color: color),
+      leading: Icon(
+        icon,
+        color: isDanger ? Colors.red : Colors.black54,
+      ),
       title: Text(
         title,
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: isDanger ? Colors.red : Colors.black87,
+          color: titleColor,
         ),
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (value != null)
-            Text(
-              value!,
-              style: TextStyle(
-                fontSize: 13,
-                color: isPlaceholder ? Colors.black38 : Colors.black87,
-              ),
-            ),
-          const SizedBox(width: 6),
-          const Icon(Icons.chevron_right_rounded, color: Colors.black38),
-        ],
+trailing: Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    if (value != null)
+      Text(
+        value!,
+        style: TextStyle(
+          fontSize: 13,
+          color: valueColor,
+        ),
       ),
+
+   
+    if (onTap != null) ...[
+      const SizedBox(width: 6),
+      const Icon(
+        Icons.chevron_right_rounded,
+        color: Colors.black38,
+      ),
+    ],
+  ],
+),
+
       onTap: onTap == null ? null : () => onTap!(context),
     );
   }

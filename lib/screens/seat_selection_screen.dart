@@ -136,7 +136,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 ),
                 child: const Text(
                   'Confirm Seat',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white,),
                 ),
               ),
             ),
