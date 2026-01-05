@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ticket_screen.dart';
 
-enum PaymentMethod { cash, visa, wallet }
+enum PaymentMethod { ApplePay, visa, wallet }
 
 class ConfirmBookingScreen extends StatefulWidget {
   final List<int> seats;
@@ -22,10 +22,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
   Future<String> _getUserName() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
     return doc.data()?['name'] ?? 'User';
   }
@@ -57,13 +55,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   _row(Icons.flag_rounded, 'To', 'JUST – Main Gate'),
                   const Divider(),
                   _row(Icons.calendar_month_rounded, 'Date', '1/1/2026'),
-                  _row(Icons.access_time_rounded, 'Time', '08:00 AM → 09:15 AM'),
+                  _row(
+                      Icons.access_time_rounded, 'Time', '08:00 AM → 09:15 AM'),
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             _card(
               title: 'Passengers',
               child: Column(
@@ -73,9 +70,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             _card(
               title: 'Payment Method',
               child: Column(
@@ -94,16 +89,14 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   ),
                   _paymentTile(
                     icon: Icons.payments_rounded,
-                    title: 'Cash',
-                    subtitle: 'Pay to driver',
-                    value: PaymentMethod.cash,
+                    title: 'Apple Pay / Google Pay',
+                    subtitle: 'Double Click',
+                    value: PaymentMethod.ApplePay,
                   ),
                 ],
               ),
             ),
-
             const Spacer(),
-
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -171,8 +164,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     );
   }
 
-  // ===== Widgets =====
-
   Widget _card({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -200,10 +191,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
           const SizedBox(width: 10),
           SizedBox(
             width: 70,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(label,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+            child: Text(value,
+                style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),
@@ -215,8 +208,13 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          SizedBox(width: 90, child: Text(l, style: const TextStyle(fontWeight: FontWeight.w700))),
-          Expanded(child: Text(v, style: const TextStyle(fontWeight: FontWeight.w800))),
+          SizedBox(
+              width: 90,
+              child:
+                  Text(l, style: const TextStyle(fontWeight: FontWeight.w700))),
+          Expanded(
+              child:
+                  Text(v, style: const TextStyle(fontWeight: FontWeight.w800))),
         ],
       ),
     );
@@ -251,7 +249,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+                  Text(title,
+                      style: const TextStyle(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,

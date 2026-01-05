@@ -66,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
 
-          // ================= MENU BUTTON =================
           Positioned(
             top: 16,
             left: 16,
@@ -87,22 +86,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.menu_rounded),
-                  onPressed: () =>
-                      _scaffoldKey.currentState?.openDrawer(),
+                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
               ),
             ),
           ),
 
-          // ================= BOTTOM CARD =================
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 30,
@@ -170,11 +166,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-
-                          // ===== SWAP =====
                           GestureDetector(
-                            onTap: () =>
-                                setState(() => cityOnTop = !cityOnTop),
+                            onTap: () => setState(() => cityOnTop = !cityOnTop),
                             child: Container(
                               width: 58,
                               height: 58,
@@ -194,7 +187,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 14),
 
-                    // ===== DATE & PERSONS =====
                     Row(
                       children: [
                         Expanded(
@@ -219,9 +211,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: _SmallInfoCard(
                             icon: Icons.people_alt_rounded,
-                            text: persons == 1
-                                ? '1 Person'
-                                : '$persons Persons',
+                            text:
+                                persons == 1 ? '1 Person' : '$persons Persons',
                             onTap: () =>
                                 setState(() => persons = (persons % 5) + 1),
                           ),
@@ -231,7 +222,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 16),
 
-                    // ===== SEARCH =====
                     SizedBox(
                       width: double.infinity,
                       height: 64,
@@ -275,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // ================= JUST BOT (CORRECT PLACE) =================
           Positioned(
             right: 16,
-            bottom: 790, // فوق الكارد
+            bottom: 790,
             child: FloatingActionButton(
               heroTag: 'justbot',
               backgroundColor: const Color(0xFF1F4B63),
@@ -292,7 +282,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ================= JUST BOT SHEET =================
 void _openJustBot(BuildContext context) {
   showModalBottomSheet(
     context: context,
@@ -303,8 +292,6 @@ void _openJustBot(BuildContext context) {
     builder: (_) => const JustBotSheet(),
   );
 }
-
-/* ================= WIDGETS ================= */
 
 class _DropdownPill extends StatelessWidget {
   final String value;

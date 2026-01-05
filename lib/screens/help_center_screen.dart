@@ -22,7 +22,6 @@ class HelpCenterScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
         children: [
-          // ===== HEADER =====
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -49,7 +48,6 @@ class HelpCenterScreen extends StatelessWidget {
 
           const SizedBox(height: 26),
 
-          // ===== FAQ =====
           const Text(
             'Frequently Asked Questions',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
@@ -79,7 +77,6 @@ class HelpCenterScreen extends StatelessWidget {
 
           const SizedBox(height: 26),
 
-          // ===== CONTACT =====
           const Text(
             'Contact Us',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
@@ -120,8 +117,6 @@ class HelpCenterScreen extends StatelessWidget {
       ),
     );
   }
-
-  // ================= Widgets =================
 
   static Widget _faqTile({
     required String question,

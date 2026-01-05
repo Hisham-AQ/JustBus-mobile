@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'confirm_booking_screen.dart';
 
-
 enum Gender { male, female, none }
 
 class Seat {
@@ -31,10 +30,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   final Set<int> selectedSeats = {};
 
-  // ====== BUS LAYOUT (VERTICAL) ======
-  // null = aisle
   final List<List<Seat?>> bus = [
-    // row 1 (front)
     [_s(1), _s(2), null, _s(3), _s(4)],
     [_s(5), _s(6), null, _s(7), _s(8)],
     [_s(9), _s(10), null, _s(11), _s(12)],
@@ -63,7 +59,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2FAFD),
       appBar: AppBar(
-        title: const Text('Select Seat', style: TextStyle(fontWeight: FontWeight.w900)),
+        title: const Text('Select Seat',
+            style: TextStyle(fontWeight: FontWeight.w900)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -73,43 +70,37 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           const SizedBox(height: 8),
           _legend(),
           const SizedBox(height: 12),
-
-          // ===== BUS =====
           Expanded(
-  child: SingleChildScrollView(
-    padding: const EdgeInsets.only(bottom: 90), // ✅ المسافة المهمة
-    child: Center(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEAF4F7),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: primary),
-        ),
-        child: Column(
-          children: [
-            // ===== DRIVER =====
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Column(
-                children: const [
-                  Icon(Icons.person, size: 28),
-                  Text('Driver', style: TextStyle(fontWeight: FontWeight.w700)),
-                ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 90),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAF4F7),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: primary),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Column(
+                          children: const [
+                            Icon(Icons.person, size: 28),
+                            Text('Driver',
+                                style: TextStyle(fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                      ),
+                      const Divider(),
+                      ...bus.map(_row),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const Divider(),
-
-            // ===== SEATS =====
-            ...bus.map(_row),
-          ],
-        ),
-      ),
-    ),
-  ),
-),
-
-          // ===== CONFIRM =====
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
             child: SizedBox(
@@ -117,26 +108,30 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               height: 58,
               child: ElevatedButton(
                 onPressed: selectedSeats.length == widget.persons
-    ? () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ConfirmBookingScreen(
-              seats: selectedSeats.toList(),
-            ),
-          ),
-        );
-      }
-    : null,
-
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ConfirmBookingScreen(
+                              seats: selectedSeats.toList(),
+                            ),
+                          ),
+                        );
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primary,
                   disabledBackgroundColor: Colors.grey,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18)),
                 ),
                 child: const Text(
                   'Confirm Seat',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white,),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -146,7 +141,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     );
   }
 
-  // ================= ROW =================
   Widget _row(List<Seat?> row) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -170,7 +164,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     );
   }
 
-  // ================= SEAT =================
   Widget _seat(Seat seat) {
     final selected = selectedSeats.contains(seat.number);
 
@@ -229,16 +222,21 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     );
   }
 
-  // ================= LEGEND =================
   Widget _legend() {
     Widget item(Color c, IconData i, String t) {
       return Row(
         children: [
-          Container(width: 14, height: 14, decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(4))),
+          Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                  color: c, borderRadius: BorderRadius.circular(4))),
           const SizedBox(width: 4),
           Icon(i, size: 14),
           const SizedBox(width: 4),
-          Text(t, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+          Text(t,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
         ],
       );
     }

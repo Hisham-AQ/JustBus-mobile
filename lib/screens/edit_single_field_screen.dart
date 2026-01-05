@@ -19,8 +19,7 @@ class EditSingleFieldScreen extends StatefulWidget {
   });
 
   @override
-  State<EditSingleFieldScreen> createState() =>
-      _EditSingleFieldScreenState();
+  State<EditSingleFieldScreen> createState() => _EditSingleFieldScreenState();
 }
 
 class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
@@ -38,10 +37,7 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
 
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .update({
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
       widget.fieldKey: controller.text.trim(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
@@ -53,7 +49,6 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
   @override
   Widget build(BuildContext context) {
     final primary = const Color(0xFF1F4B63);
-
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -81,7 +76,6 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               height: 56,
@@ -97,10 +91,7 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
                 ),
               ),
             ),
-
             const Spacer(),
-
-            // 🔹 BUTTON
             SizedBox(
               width: double.infinity,
               height: 56,

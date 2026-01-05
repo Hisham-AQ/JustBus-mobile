@@ -8,22 +8,20 @@ class PackageScreen extends StatefulWidget {
 }
 
 class _PackageScreenState extends State<PackageScreen> {
- 
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
 
   final List<String> locations = const [
-    'Amman',
-    'Irbid',
-    'Zarqa',
-    'Jerash',
-    'JUST',
+    'Amman office',
+    'Irbid office',
+    'Zarqa office',
+    'Jerash office',
+    'JUST office',
   ];
 
-  String pickup = 'JUST';
-  String dropoff = 'Amman';
+  String pickup = 'JUST office';
+  String dropoff = 'Amman office';
 
-  // Parcel Types (UPDATED: only 4)
   final List<_ParcelType> parcelTypes = const [
     _ParcelType('Documents', Icons.description_outlined),
     _ParcelType('Small Box', Icons.inventory_2_outlined),
@@ -31,12 +29,12 @@ class _PackageScreenState extends State<PackageScreen> {
     _ParcelType('Large Box', Icons.archive_outlined),
   ];
 
-  _ParcelType selectedType = const _ParcelType('Small Box', Icons.inventory_2_outlined);
-
+  _ParcelType selectedType =
+      const _ParcelType('Small Box', Icons.inventory_2_outlined);
 
   double weightKg = 2.0;
 
-  int deliveryOption = 0; // 0 Standard, 1 Express
+  int deliveryOption = 0;
 
   final TextEditingController notesCtrl = TextEditingController();
 
@@ -54,25 +52,23 @@ class _PackageScreenState extends State<PackageScreen> {
     });
   }
 
-
   double _estimatePriceJOD() {
-    // base
     double base = 1.25;
 
-    // distance-ish factor using location pairs (simple fake tiers)
-    // (For prototype only)
     double dist;
     if (pickup == dropoff) {
       dist = 0.0;
-    } else if ((pickup == 'JUST' && dropoff == 'Irbid') || (pickup == 'Irbid' && dropoff == 'JUST')) {
+    } else if ((pickup == 'JUST' && dropoff == 'Irbid') ||
+        (pickup == 'Irbid' && dropoff == 'JUST')) {
       dist = 0.75;
-    } else if ((pickup == 'JUST' && dropoff == 'Amman') || (pickup == 'Amman' && dropoff == 'JUST')) {
+    } else if ((pickup == 'JUST' && dropoff == 'Amman') ||
+        (pickup == 'Amman' && dropoff == 'JUST')) {
       dist = 1.25;
     } else {
       dist = 1.0;
     }
 
-    double weightFee = 0.35 * weightKg; // 0.35 JD per kg
+    double weightFee = 0.35 * weightKg;
 
     double typeFee = switch (selectedType.name) {
       'Documents' => 0.0,
@@ -95,7 +91,8 @@ class _PackageScreenState extends State<PackageScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Parcel Delivery', style: TextStyle(fontWeight: FontWeight.w900)),
+        title: const Text('Parcel Delivery',
+            style: TextStyle(fontWeight: FontWeight.w900)),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
@@ -105,16 +102,16 @@ class _PackageScreenState extends State<PackageScreen> {
         children: [
           const Text(
             'Send a parcel',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, height: 1.05),
+            style: TextStyle(
+                fontSize: 28, fontWeight: FontWeight.w900, height: 1.05),
           ),
           const SizedBox(height: 6),
           const Text(
             'Choose pickup/drop-off points and package details.',
-            style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
+            style:
+                TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
-
-          // Pickup/Drop-off card
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -137,7 +134,8 @@ class _PackageScreenState extends State<PackageScreen> {
                         label: 'Drop-off',
                         value: dropoff,
                         items: locations,
-                        onChanged: (v) => setState(() => dropoff = v ?? dropoff),
+                        onChanged: (v) =>
+                            setState(() => dropoff = v ?? dropoff),
                       ),
                     ],
                   ),
@@ -152,16 +150,14 @@ class _PackageScreenState extends State<PackageScreen> {
                       color: primary,
                       borderRadius: BorderRadius.circular(29),
                     ),
-                    child: const Icon(Icons.swap_vert_rounded, color: Colors.white, size: 30),
+                    child: const Icon(Icons.swap_vert_rounded,
+                        color: Colors.white, size: 30),
                   ),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 14),
-
-          // Parcel type
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -171,7 +167,8 @@ class _PackageScreenState extends State<PackageScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Parcel type', style: TextStyle(fontWeight: FontWeight.w900)),
+                const Text('Parcel type',
+                    style: TextStyle(fontWeight: FontWeight.w900)),
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 56,
@@ -189,22 +186,27 @@ class _PackageScreenState extends State<PackageScreen> {
                         child: Ink(
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
-                            color: selected ? Colors.white : const Color(0xFFF7F7F7),
+                            color: selected
+                                ? Colors.white
+                                : const Color(0xFFF7F7F7),
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(
-                              color: selected ? primary : const Color(0xFFD6D6D6),
+                              color:
+                                  selected ? primary : const Color(0xFFD6D6D6),
                               width: selected ? 1.6 : 1,
                             ),
                           ),
                           child: Row(
                             children: [
-                              Icon(t.icon, color: selected ? primary : Colors.black54),
+                              Icon(t.icon,
+                                  color: selected ? primary : Colors.black54),
                               const SizedBox(width: 8),
                               Text(
                                 t.name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w900,
-                                  color: selected ? Colors.black : Colors.black87,
+                                  color:
+                                      selected ? Colors.black : Colors.black87,
                                 ),
                               ),
                             ],
@@ -217,14 +219,12 @@ class _PackageScreenState extends State<PackageScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 14),
-
           Row(
             children: [
               Expanded(
                 child: SizedBox(
-                  height: 175, 
+                  height: 175,
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -234,22 +234,27 @@ class _PackageScreenState extends State<PackageScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Estimated weight', style: TextStyle(fontWeight: FontWeight.w900)),
+                        const Text('Estimated weight',
+                            style: TextStyle(fontWeight: FontWeight.w900)),
                         const SizedBox(height: 8),
                         Row(
                           children: [
                             Text(
                               '${weightKg.toStringAsFixed(1)} kg',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w900),
                             ),
                             const Spacer(),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(999),
                               ),
-                              child: const Text('0.5–10 kg', style: TextStyle(fontWeight: FontWeight.w800)),
+                              child: const Text('0.5–10 kg',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w800)),
                             ),
                           ],
                         ),
@@ -257,7 +262,7 @@ class _PackageScreenState extends State<PackageScreen> {
                           value: weightKg,
                           min: 0.5,
                           max: 10,
-                          divisions: 19, 
+                          divisions: 19,
                           activeColor: primary,
                           onChanged: (v) => setState(() => weightKg = v),
                         ),
@@ -269,7 +274,7 @@ class _PackageScreenState extends State<PackageScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: SizedBox(
-                  height: 174, 
+                  height: 174,
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -279,19 +284,20 @@ class _PackageScreenState extends State<PackageScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Delivery', style: TextStyle(fontWeight: FontWeight.w900)),
+                        const Text('Delivery',
+                            style: TextStyle(fontWeight: FontWeight.w900)),
                         const SizedBox(height: 1),
                         _ChoiceChip(
                           selected: deliveryOption == 0,
                           title: 'Standard',
-                          subtitle: 'Same day',
+                          subtitle: 'Next day',
                           onTap: () => setState(() => deliveryOption = 0),
                         ),
                         const SizedBox(height: 1),
                         _ChoiceChip(
                           selected: deliveryOption == 1,
                           title: 'Express',
-                          subtitle: 'Faster',
+                          subtitle: 'Same Day',
                           onTap: () => setState(() => deliveryOption = 1),
                         ),
                       ],
@@ -301,10 +307,7 @@ class _PackageScreenState extends State<PackageScreen> {
               ),
             ],
           ),
-
           const SizedBox(height: 14),
-
-          
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -314,20 +317,23 @@ class _PackageScreenState extends State<PackageScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Notes (optional)', style: TextStyle(fontWeight: FontWeight.w900)),
+                const Text('Notes (optional)',
+                    style: TextStyle(fontWeight: FontWeight.w900)),
                 const SizedBox(height: 10),
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   child: TextField(
                     controller: notesCtrl,
                     maxLines: 3,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'Ex: fragile, call before arriving, leave at gate...',
+                      hintText:
+                          'Ex: fragile, call before arriving, leave at gate...',
                     ),
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
@@ -335,10 +341,7 @@ class _PackageScreenState extends State<PackageScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 14),
-
-          
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -346,7 +349,10 @@ class _PackageScreenState extends State<PackageScreen> {
               borderRadius: BorderRadius.circular(22),
               border: Border.all(color: const Color(0xFFE2E2E2)),
               boxShadow: const [
-                BoxShadow(blurRadius: 18, offset: Offset(0, 10), color: Color(0x11000000)),
+                BoxShadow(
+                    blurRadius: 18,
+                    offset: Offset(0, 10),
+                    color: Color(0x11000000)),
               ],
             ),
             child: Row(
@@ -365,24 +371,28 @@ class _PackageScreenState extends State<PackageScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Estimated price', style: TextStyle(fontWeight: FontWeight.w900)),
+                      Text('Estimated price',
+                          style: TextStyle(fontWeight: FontWeight.w900)),
                       SizedBox(height: 4),
                       Text('Final price may change after confirmation.',
-                          style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600, fontSize: 12)),
+                          style: TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12)),
                     ],
                   ),
                 ),
                 Text(
                   '$price JD',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: primary),
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: primary),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 16),
-
-          
           SizedBox(
             width: double.infinity,
             height: 62,
@@ -390,7 +400,8 @@ class _PackageScreenState extends State<PackageScreen> {
               onPressed: () {
                 if (pickup == dropoff) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Pickup and Drop-off must be different')),
+                    const SnackBar(
+                        content: Text('Pickup and Drop-off must be different')),
                   );
                   return;
                 }
@@ -403,13 +414,14 @@ class _PackageScreenState extends State<PackageScreen> {
                   ),
                 );
 
-                // TODO: send request to backend/firebase later
+                // send request to backend/firebase
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: primary,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18)),
               ),
               child: const Text(
                 'Submit Request',
@@ -422,10 +434,6 @@ class _PackageScreenState extends State<PackageScreen> {
     );
   }
 }
-
-/* =======================
-   Widgets
-======================= */
 
 class _DropdownPill extends StatelessWidget {
   final String label;
@@ -453,7 +461,8 @@ class _DropdownPill extends StatelessWidget {
         children: [
           SizedBox(
             width: 78,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900)),
+            child: Text(label,
+                style: const TextStyle(fontWeight: FontWeight.w900)),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -527,11 +536,15 @@ class _ChoiceChip extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+                  Text(title,
+                      style: const TextStyle(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w600),
                   ),
                 ],
               ),

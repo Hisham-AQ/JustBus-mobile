@@ -36,8 +36,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-
-            // ================= TITLE =================
             const Text(
               'Reset your password',
               style: TextStyle(
@@ -53,10 +51,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 fontSize: 14,
               ),
             ),
-
             const SizedBox(height: 32),
-
-            // ================= FORM =================
             Form(
               key: _formKey,
               child: TextFormField(
@@ -80,10 +75,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 28),
-
-            // ================= BUTTON =================
             SizedBox(
               width: double.infinity,
               height: 54,
@@ -113,10 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // ================= FOOTER =================
             Center(
               child: TextButton(
                 onPressed: () => Navigator.pop(context),

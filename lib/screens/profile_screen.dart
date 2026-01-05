@@ -9,9 +9,6 @@ import 'package:justbus/screens/edit_single_field_screen.dart';
 import 'package:justbus/screens/edit_date_screen.dart';
 import 'package:justbus/screens/change_password_screen.dart';
 
-
-
-
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -70,7 +67,6 @@ Future<void> _changeProfileImage() async {
 }
 */
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,12 +103,10 @@ Future<void> _changeProfileImage() async {
           final String? avatarUrl = data['avatarUrl'];
 
           final Timestamp? birthTs = data['birthDate'];
-          final DateTime? birthDate =
-              birthTs?.toDate();
+          final DateTime? birthDate = birthTs?.toDate();
 
           return Column(
             children: [
-              // ================= HEADER =================
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
@@ -126,9 +120,7 @@ Future<void> _changeProfileImage() async {
                             avatarUrl != null ? NetworkImage(avatarUrl) : null,
                         child: avatarUrl == null
                             ? Text(
-                                name.isNotEmpty
-                                    ? name[0].toUpperCase()
-                                    : 'U',
+                                name.isNotEmpty ? name[0].toUpperCase() : 'U',
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
@@ -157,92 +149,84 @@ Future<void> _changeProfileImage() async {
                   ],
                 ),
               ),
-
-              // ================= LIST =================
               Expanded(
                 child: ListView(
                   children: [
-                   _Section(
-  children: [
-    
-    _Item(
-      icon: Icons.person_outline,
-      title: 'Name',
-      value: name,
-      onTap: (context) async {
-        final updated = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => EditSingleFieldScreen(
-              title: 'Edit Name',
-              subtitle: 'Enter your full name',
-              fieldKey: 'name',
-              initialValue: name,
-            ),
-          ),
-        );
-
-        if (updated == true) {
-          setState(() {});
-        }
-      },
-    ),
-
-    _Item(
-  icon: Icons.phone_outlined,
-  title: 'Phone Number',
-  value: phone.isEmpty ? 'Not set' : phone,
-  isPlaceholder: phone.isEmpty,
-  onTap: (context) async {
-    final updated = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => EditSingleFieldScreen(
-          title: 'Edit Phone Number',
-          subtitle: 'Enter your phone number',
-          fieldKey: 'phone',
-          initialValue: phone,
-          keyboardType: TextInputType.phone,
-        ),
-      ),
-    );
-
-    if (updated == true) setState(() {});
-  },
-),
-
-
-    _Item(
-      icon: Icons.email_outlined,
-      title: 'Email',
-      value: email,
-    ),
-  ],
-),
-
                     _Section(
                       children: [
                         _Item(
-  icon: Icons.cake_outlined,
-  title: 'Date of Birth',
-  value: birthDate == null
-      ? 'Not set'
-      : '${birthDate.day}/${birthDate.month}/${birthDate.year}',
-  isPlaceholder: birthDate == null,
-  onTap: (context) async {
-    final updated = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => EditDateScreen(
-          initialDate: birthDate,
-        ),
-      ),
-    );
+                          icon: Icons.person_outline,
+                          title: 'Name',
+                          value: name,
+                          onTap: (context) async {
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditSingleFieldScreen(
+                                  title: 'Edit Name',
+                                  subtitle: 'This is the name you would like other people to use referring to you. \n\nEnter your full name:',
+                                  fieldKey: 'name',
+                                  initialValue: name,
+                                ),
+                              ),
+                            );
 
-    if (updated == true) setState(() {});
-  },
-),
+                            if (updated == true) {
+                              setState(() {});
+                            }
+                          },
+                        ),
+                        _Item(
+                          icon: Icons.phone_outlined,
+                          title: 'Phone Number',
+                          value: phone.isEmpty ? 'Not set' : phone,
+                          isPlaceholder: phone.isEmpty,
+                          onTap: (context) async {
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditSingleFieldScreen(
+                                  title: 'Edit Phone Number',
+                                  subtitle: 'Enter your phone number',
+                                  fieldKey: 'phone',
+                                  initialValue: phone,
+                                  keyboardType: TextInputType.phone,
+                                ),
+                              ),
+                            );
 
+                            if (updated == true) setState(() {});
+                          },
+                        ),
+                        _Item(
+                          icon: Icons.email_outlined,
+                          title: 'Email',
+                          value: email,
+                        ),
+                      ],
+                    ),
+                    _Section(
+                      children: [
+                        _Item(
+                          icon: Icons.cake_outlined,
+                          title: 'Date of Birth',
+                          value: birthDate == null
+                              ? 'Not set'
+                              : '${birthDate.day}/${birthDate.month}/${birthDate.year}',
+                          isPlaceholder: birthDate == null,
+                          onTap: (context) async {
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditDateScreen(
+                                  initialDate: birthDate,
+                                ),
+                              ),
+                            );
+
+                            if (updated == true) setState(() {});
+                          },
+                        ),
                         _Item(
                           icon: Icons.male_rounded,
                           title: 'Gender',
@@ -253,18 +237,17 @@ Future<void> _changeProfileImage() async {
                     _Section(
                       children: [
                         _Item(
-  icon: Icons.lock_outline,
-  title: 'Change Password',
-  onTap: (context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const ChangePasswordScreen(),
-      ),
-    );
-  },
-),
-
+                          icon: Icons.lock_outline,
+                          title: 'Change Password',
+                          onTap: (context) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ChangePasswordScreen(),
+                              ),
+                            );
+                          },
+                        ),
                         _Item(
                           icon: Icons.logout_rounded,
                           title: 'Log Out',
@@ -315,8 +298,6 @@ Future<void> _changeProfileImage() async {
   }
 }
 
-/* ================= COMPONENTS ================= */
-
 class _Section extends StatelessWidget {
   final List<Widget> children;
 
@@ -352,8 +333,7 @@ class _Item extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final titleColor = isDanger ? Colors.red : Colors.black87;
-    final valueColor =
-        isPlaceholder ? Colors.black38 : Colors.black87;
+    final valueColor = isPlaceholder ? Colors.black38 : Colors.black87;
 
     return ListTile(
       leading: Icon(
@@ -368,29 +348,26 @@ class _Item extends StatelessWidget {
           color: titleColor,
         ),
       ),
-trailing: Row(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    if (value != null)
-      Text(
-        value!,
-        style: TextStyle(
-          fontSize: 13,
-          color: valueColor,
-        ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (value != null)
+            Text(
+              value!,
+              style: TextStyle(
+                fontSize: 13,
+                color: valueColor,
+              ),
+            ),
+          if (onTap != null) ...[
+            const SizedBox(width: 6),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.black38,
+            ),
+          ],
+        ],
       ),
-
-   
-    if (onTap != null) ...[
-      const SizedBox(width: 6),
-      const Icon(
-        Icons.chevron_right_rounded,
-        color: Colors.black38,
-      ),
-    ],
-  ],
-),
-
       onTap: onTap == null ? null : () => onTap!(context),
     );
   }

@@ -53,15 +53,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-// ================= NAME =================
-_inputField(
-  controller: nameController,
-  label: 'Full Name',
-  icon: Icons.person_outline,
-),
-const SizedBox(height: 14),
-
-              // ================= EMAIL =================
+              _inputField(
+                controller: nameController,
+                label: 'Full Name',
+                icon: Icons.person_outline,
+              ),
+              const SizedBox(height: 14),
               _inputField(
                 controller: emailController,
                 label: 'Email',
@@ -80,30 +77,21 @@ const SizedBox(height: 14),
                   return null;
                 },
               ),
-
               const SizedBox(height: 14),
-
-              // ================= PHONE =================
               _inputField(
                 controller: phoneController,
                 label: 'Phone Number',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
-
               const SizedBox(height: 14),
-
-              // ================= PASSWORD =================
               _inputField(
                 controller: passwordController,
                 label: 'Password',
                 icon: Icons.lock_outline,
                 obscure: true,
               ),
-
               const SizedBox(height: 14),
-
-              // ================= CONFIRM =================
               _inputField(
                 controller: confirmPasswordController,
                 label: 'Confirm Password',
@@ -119,10 +107,7 @@ const SizedBox(height: 14),
                   return null;
                 },
               ),
-
               const SizedBox(height: 24),
-
-              // ================= GENDER =================
               const Text(
                 'Gender',
                 style: TextStyle(fontWeight: FontWeight.w700),
@@ -149,10 +134,7 @@ const SizedBox(height: 14),
                   ),
                 ],
               ),
-
               const SizedBox(height: 24),
-
-              // ================= DATE OF BIRTH =================
               const Text(
                 'Date of Birth',
                 style: TextStyle(fontWeight: FontWeight.w700),
@@ -185,10 +167,7 @@ const SizedBox(height: 14),
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // ================= TERMS =================
               CheckboxListTile(
                 value: agreeTerms,
                 onChanged: (v) => setState(() => agreeTerms = v ?? false),
@@ -198,10 +177,7 @@ const SizedBox(height: 14),
                 ),
                 controlAffinity: ListTileControlAffinity.leading,
               ),
-
               const SizedBox(height: 16),
-
-              // ================= BUTTON =================
               SizedBox(
                 width: double.infinity,
                 height: 54,
@@ -222,10 +198,7 @@ const SizedBox(height: 14),
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // ================= FOOTER =================
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
@@ -241,8 +214,6 @@ const SizedBox(height: 14),
       ),
     );
   }
-
-  // ================= HELPERS =================
 
   Widget _inputField({
     required TextEditingController controller,
@@ -330,8 +301,6 @@ const SizedBox(height: 14),
       );
       return;
     }
-
-    // TODO: Firebase / API Sign Up
     try {
       final credential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -358,7 +327,7 @@ const SizedBox(height: 14),
         const SnackBar(content: Text('Account created successfully')),
       );
 
-      Navigator.pop(context); // go back to login
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       String message = 'Signup failed';
 

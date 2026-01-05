@@ -33,7 +33,6 @@ class MyRidesScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            // ===== UPCOMING =====
             ListView(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
               children: const [
@@ -55,8 +54,6 @@ class MyRidesScreen extends StatelessWidget {
                 ),
               ],
             ),
-
-            // ===== HISTORY =====
             ListView(
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
               children: const [
@@ -84,8 +81,6 @@ class MyRidesScreen extends StatelessWidget {
     );
   }
 }
-
-/* ================= WIDGET ================= */
 
 class _RideCard extends StatelessWidget {
   final String from;
@@ -116,7 +111,6 @@ class _RideCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ===== FROM → TO =====
           Row(
             children: [
               const Icon(Icons.location_on_outlined),
@@ -130,10 +124,7 @@ class _RideCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-
-          // ===== DETAILS =====
           Row(
             children: [
               _info(Icons.calendar_month_rounded, date),
@@ -144,10 +135,7 @@ class _RideCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-
-          // ===== STATUS =====
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(

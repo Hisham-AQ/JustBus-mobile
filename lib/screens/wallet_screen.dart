@@ -8,8 +8,6 @@ class WalletScreen extends StatelessWidget {
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
 
-  // ================= STREAMS =================
-
   Stream<DocumentSnapshot<Map<String, dynamic>>> _userStream() {
     final user = FirebaseAuth.instance.currentUser!;
     return FirebaseFirestore.instance
@@ -27,8 +25,6 @@ class WalletScreen extends StatelessWidget {
         .limit(20)
         .snapshots();
   }
-
-  // ================= WALLET LOGIC =================
 
   Future<void> addWalletTransaction({
     required double amount,
@@ -55,7 +51,7 @@ class WalletScreen extends StatelessWidget {
         FirebaseFirestore.instance.collection('wallet_transactions').doc(),
         {
           'uid': user.uid,
-          'type': type, // topup | trip | reward
+          'type': type,
           'amount': amount,
           'balanceAfter': newBalance,
           'title': title,
@@ -65,43 +61,62 @@ class WalletScreen extends StatelessWidget {
     });
   }
 
-  // ================= UI =================
-Widget _buildSavedCard({
-  required String brand,
-  required String last4,
-}) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: lightGrey,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.credit_card),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                brand,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '**** **** **** $last4',
-                style: const TextStyle(color: Colors.black54),
-              ),
-            ],
+  Widget _buildSavedCard({
+    required String brand,
+    required String last4,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: lightGrey,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: Image.asset(
+              brand.toLowerCase() == 'visa'
+                  ? 'assets/images/visa-icon.png'
+                  : 'assets/images/mastercard-icon.png',
+              fit: BoxFit.contain,
+            ),
           ),
-        ),
-        const Icon(Icons.chevron_right),
-      ],
-    ),
-  );
-}
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  brand,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '**** **** **** $last4',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +153,6 @@ Widget _buildSavedCard({
               return ListView(
                 padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
                 children: [
-                  // ===== BALANCE CARD =====
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -170,73 +184,60 @@ Widget _buildSavedCard({
                             ],
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            await addWalletTransaction(
-                              amount: 10,
-                              title: 'Test Top Up',
-                              type: 'topup',
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Wallet topped up')),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          child: const Text(
-                            'Top Up',
-                            style: TextStyle(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-const SizedBox(height: 24),
-
-const Text(
-  'Saved Cards',
-  style: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w900,
-  ),
-),
-
-const SizedBox(height: 12),
-
-_buildSavedCard(
-  brand: 'Visa',
-  last4: '4242',
-),
-
-_buildSavedCard(
-  brand: 'MasterCard',
-  last4: '1122',
-),
-OutlinedButton.icon(
-  onPressed: () {
-    // TODO: Navigate to Add Card Screen
-  },
-  icon: const Icon(Icons.add),
-  label: const Text(
-    'Add New Card',
-    style: TextStyle(fontWeight: FontWeight.w800),
-  ),
-  style: OutlinedButton.styleFrom(
-    minimumSize: const Size(double.infinity, 50),
+ElevatedButton(
+  onPressed: () => _showTopUpSheet(context),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.white,
+    foregroundColor: primary,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(14),
     ),
   ),
+  child: const Text(
+    'Top Up',
+    style: TextStyle(fontWeight: FontWeight.w800),
+  ),
 ),
 
+                      ],
+                    ),
+                  ),
 
+                  
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Saved Cards',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildSavedCard(
+                    brand: 'Visa',
+                    last4: '4242',
+                  ),
+                  _buildSavedCard(
+                    brand: 'MasterCard',
+                    last4: '1122',
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // Navigate to Add Card Screen
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text(
+                      'Add New Card',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 26),
-
                   const Text(
                     'Transaction History',
                     style: TextStyle(
@@ -244,9 +245,7 @@ OutlinedButton.icon(
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-
                   const SizedBox(height: 12),
-
                   if (transactions.isEmpty)
                     const Text(
                       'No transactions yet',
@@ -301,4 +300,117 @@ OutlinedButton.icon(
       ),
     );
   }
+  void _showTopUpSheet(BuildContext context) {
+  final amountCtrl = TextEditingController();
+  const primary = Color(0xFF1F4B63);
+
+  void selectAmount(double v) {
+    amountCtrl.text = v.toStringAsFixed(0);
+  }
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(
+          18,
+          18,
+          18,
+          MediaQuery.of(context).viewInsets.bottom + 18,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Top Up Wallet',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 16),
+
+            // ===== QUICK AMOUNTS =====
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [1, 5, 10, 20].map((v) {
+                return ChoiceChip(
+                  label: Text('$v JD'),
+                  selected: amountCtrl.text == v.toString(),
+                  onSelected: (_) => selectAmount(v.toDouble()),
+                  selectedColor: primary.withOpacity(0.15),
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w800),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 18),
+
+            // ===== CUSTOM AMOUNT =====
+            TextField(
+              controller: amountCtrl,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Custom amount',
+                suffixText: 'JD',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ===== CONFIRM =====
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final amount = double.tryParse(amountCtrl.text);
+                  if (amount == null || amount <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Enter a valid amount')),
+                    );
+                    return;
+                  }
+
+                  Navigator.pop(context);
+
+                  await addWalletTransaction(
+                    amount: amount,
+                    title: 'Wallet Top Up',
+                    type: 'topup',
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Wallet topped up')),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: const Text(
+                  'Confirm Top Up',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 }

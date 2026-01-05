@@ -63,7 +63,6 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                 required: false,
               ),
 
-              // Lost Date
               const Text(
                 'Lost Date',
                 style: TextStyle(fontWeight: FontWeight.w700),
@@ -104,7 +103,6 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
 
               const SizedBox(height: 24),
 
-              // Submit
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -152,7 +150,7 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
         return;
       }
 
-      // TODO: API submit
+      // API submit
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Report submitted successfully')),
       );

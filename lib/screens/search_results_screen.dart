@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'seat_selection_screen.dart';
 
-
-/// ================= STOPS PER CITY =================
 final Map<String, List<String>> cityStops = {
   'Amman': [
     'Abdali Station',
@@ -92,8 +90,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     );
   }
 
-  // ================= TRIP CARD =================
-
   Widget _tripCard({
     required String fromTime,
     required String toTime,
@@ -120,7 +116,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // FROM → TO
               Text(
                 '${widget.from} → ${widget.to}',
                 style: const TextStyle(
@@ -128,10 +123,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-
               const SizedBox(height: 10),
-
-              // TIME & PRICE
               Row(
                 children: [
                   _info(Icons.access_time_rounded, '$fromTime → $toTime'),
@@ -145,10 +137,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 6),
-
-              // DURATION & SEATS
               Row(
                 children: [
                   _info(Icons.timelapse_rounded, duration),
@@ -156,10 +145,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   _info(Icons.event_seat_rounded, '$seats seats'),
                 ],
               ),
-
               const SizedBox(height: 12),
-
-              // PICKUP & DROPOFF
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -184,27 +170,23 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: 14),
-
-              // BOOK BUTTON
               SizedBox(
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton(
-              onPressed: full
-               ? null
-                 : () {
-                 Navigator.push(
-               context,
-               MaterialPageRoute(
-               builder: (_) => SeatSelectionScreen(
-               persons: widget.persons,
-            ),
-          ),
-        );
-      },
-
+                  onPressed: full
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SeatSelectionScreen(
+                                persons: widget.persons,
+                              ),
+                            ),
+                          );
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     disabledBackgroundColor: Colors.grey,
@@ -227,8 +209,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       },
     );
   }
-
-  // ================= SMALL WIDGETS =================
 
   Widget _info(IconData icon, String text) {
     return Row(

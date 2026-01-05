@@ -39,7 +39,6 @@ class RewardsScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
             children: [
-              // ===== POINTS CARD =====
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
@@ -80,30 +79,22 @@ class RewardsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 26),
-
-              // ===== HOW TO EARN =====
               const Text(
                 'How to Earn Points',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 12),
-
               _earnTile(Icons.directions_bus_rounded, 'Take a trip', '+10 pts'),
               _earnTile(Icons.star_rounded, 'Take a special trip', '+20 pts'),
               _earnTile(
                   Icons.inventory_2_outlined, 'Send a package', '+15 pts'),
-
               const SizedBox(height: 26),
-
-              // ===== AVAILABLE REWARDS =====
               const Text(
                 'Available Rewards',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 12),
-
               _rewardTile(
                 title: 'Free Trip',
                 subtitle: 'One free ride to JUST',
@@ -131,7 +122,6 @@ class RewardsScreen extends StatelessWidget {
       ),
     );
   }
-  // ================= Widgets =================
 
   static Widget _earnTile(IconData icon, String title, String points) {
     return Container(

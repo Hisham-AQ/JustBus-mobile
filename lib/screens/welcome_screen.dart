@@ -26,8 +26,6 @@ class WelcomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 28),
-
-                // ===== Logo =====
                 Padding(
                   padding: const EdgeInsets.only(top: 80),
                   child: Center(
@@ -38,10 +36,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const Spacer(),
-
-                // ===== Text =====
                 const Text(
                   'We’re',
                   style: TextStyle(
@@ -69,10 +64,7 @@ class WelcomeScreen extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 28),
-
-                // ===== Get Started Button =====
                 SizedBox(
                   width: double.infinity,
                   height: 64,
@@ -102,7 +94,6 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 24),
               ],
             ),

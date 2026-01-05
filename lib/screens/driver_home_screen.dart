@@ -37,7 +37,6 @@ class DriverHomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ===== DRIVER INFO =====
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -49,7 +48,8 @@ class DriverHomeScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 28,
                     backgroundColor: primary,
-                    child: const Icon(Icons.person, color: Colors.white, size: 28),
+                    child:
+                        const Icon(Icons.person, color: Colors.white, size: 28),
                   ),
                   const SizedBox(width: 12),
                   const Column(
@@ -75,24 +75,21 @@ class DriverHomeScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ===== CURRENT TRIP =====
             _card(
-  title: 'Current Trip',
-  child: Column(
-    children: [
-      _row(Icons.place_rounded, 'From', 'Abdali Station'),
-      _row(Icons.flag_rounded, 'To', 'JUST Main Gate'),
-      const Divider(),
-      _row(Icons.calendar_month, 'Date', '1/1/2026'),
-      _row(Icons.access_time, 'Time', '08:00 → 09:15'),
-    ],
-  ),
-),
-
+              title: 'Current Trip',
+              child: Column(
+                children: [
+                  _row(Icons.place_rounded, 'From', 'Abdali Station'),
+                  _row(Icons.flag_rounded, 'To', 'JUST Main Gate'),
+                  const Divider(),
+                  _row(Icons.calendar_month, 'Date', '1/1/2026'),
+                  _row(Icons.access_time, 'Time', '08:00 → 09:15'),
+                ],
+              ),
+            ),
 
             const SizedBox(height: 16),
 
-            // ===== ACTION BUTTONS =====
             Row(
               children: [
                 Expanded(
@@ -129,7 +126,6 @@ class DriverHomeScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // ===== DRIVER FEATURES =====
             Expanded(
               child: ListView(
                 children: [
@@ -162,8 +158,6 @@ class DriverHomeScreen extends StatelessWidget {
     );
   }
 
-  // ================== UI HELPERS ==================
-
   static Widget _card({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -191,10 +185,12 @@ class DriverHomeScreen extends StatelessWidget {
           const SizedBox(width: 8),
           SizedBox(
             width: 70,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(label,
+                style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+            child: Text(value,
+                style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/screens/SignUp_screen.dart';
-import 'home_screen.dart'; 
+import 'home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'forgot_password_screen.dart';
 import 'driver_home_screen.dart';
 
-  enum UserRole { student, driver } UserRole selectedRole = UserRole.student;
+enum UserRole { student, driver }
+
+UserRole selectedRole = UserRole.student;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,7 +28,6 @@ class _LoginScreenState extends State<LoginScreen> {
     passCtrl.dispose();
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -86,63 +87,59 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
                     const SizedBox(height: 6),
-
-// ===== ROLE SELECTION =====
-Row(
-  children: [
-    Expanded(
-      child: _roleButton(
-        label: 'Student',
-        icon: Icons.person_rounded,
-        selected: selectedRole == UserRole.student,
-        onTap: () => setState(() => selectedRole = UserRole.student),
-      ),
-    ),
-    const SizedBox(width: 12),
-    Expanded(
-      child: _roleButton(
-        label: 'Driver',
-        icon: Icons.airport_shuttle_rounded,
-        selected: selectedRole == UserRole.driver,
-        onTap: () => setState(() => selectedRole = UserRole.driver),
-      ),
-    ),
-  ],
-),
-
-
-const SizedBox(height: 14),
-
-Row(
-  children: [
-    Checkbox(
-      value: rememberMe,
-      onChanged: (v) =>
-          setState(() => rememberMe = v ?? true),
-      activeColor: const Color(0xFF1F4B63),
-    ),
-    const Text(
-      'Remember me',
-      style: TextStyle(fontWeight: FontWeight.w700),
-    ),
-    const Spacer(),
-    TextButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const ForgotPasswordScreen(),
-          ),
-        );
-      },
-      child: const Text(
-        'Forgot password?',
-        style: TextStyle(fontWeight: FontWeight.w800),
-      ),
-    ),
-  ],
-),
-
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _roleButton(
+                            label: 'Student',
+                            icon: Icons.person_rounded,
+                            selected: selectedRole == UserRole.student,
+                            onTap: () =>
+                                setState(() => selectedRole = UserRole.student),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _roleButton(
+                            label: 'Driver',
+                            icon: Icons.airport_shuttle_rounded,
+                            selected: selectedRole == UserRole.driver,
+                            onTap: () =>
+                                setState(() => selectedRole = UserRole.driver),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: rememberMe,
+                          onChanged: (v) =>
+                              setState(() => rememberMe = v ?? true),
+                          activeColor: const Color(0xFF1F4B63),
+                        ),
+                        const Text(
+                          'Remember me',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Forgot password?',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
@@ -165,23 +162,21 @@ Row(
                               password: passCtrl.text.trim(),
                             );
 
-                            // ✅ Login success → go to Home
-if (selectedRole == UserRole.driver) {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const DriverHomeScreen(), 
-    ),
-  );
-} else {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const HomeScreen(),
-    ),
-  );
-}
-
+                            if (selectedRole == UserRole.driver) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const DriverHomeScreen(),
+                                ),
+                              );
+                            } else {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const HomeScreen(),
+                                ),
+                              );
+                            }
                           } on FirebaseAuthException catch (e) {
                             String message;
 
@@ -237,13 +232,13 @@ if (selectedRole == UserRole.driver) {
                   ],
                 ),
               ),
-
               const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Don’t have an account? ',
-                      style: TextStyle( fontSize: 16,fontWeight: FontWeight.w800)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -255,7 +250,8 @@ if (selectedRole == UserRole.driver) {
                     },
                     child: const Text(
                       'Sign up',
-                      style: TextStyle(fontSize: 16,fontWeight: FontWeight.w900),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                     ),
                   ),
                 ],
@@ -316,11 +312,9 @@ class _InputPill extends StatelessWidget {
       ),
     );
   }
- 
-
-
 }
-  Widget _roleButton({
+
+Widget _roleButton({
   required String label,
   required IconData icon,
   required bool selected,

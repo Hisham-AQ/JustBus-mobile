@@ -22,7 +22,6 @@ class AboutScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
         children: [
-          // ===== LOGO & NAME =====
           Center(
             child: Column(
               children: [
@@ -34,14 +33,12 @@ class AboutScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                   ),
                   alignment: Alignment.center,
-                 child: Image.asset(
-                'assets/images/JustBus_Main_Logo.png',
-                 width: 60,
-                fit: BoxFit.contain,
+                  child: Image.asset(
+                    'assets/images/JustBus_Main_Logo.png',
+                    width: 60,
+                    fit: BoxFit.contain,
                   ),
-
-                  ),
-                
+                ),
                 const SizedBox(height: 12),
                 const Text(
                   'JustBus',
@@ -64,7 +61,6 @@ class AboutScreen extends StatelessWidget {
 
           const SizedBox(height: 26),
 
-          // ===== DESCRIPTION =====
           _sectionTitle('About the App'),
           const SizedBox(height: 8),
           const Text(
@@ -80,28 +76,27 @@ class AboutScreen extends StatelessWidget {
 
           const SizedBox(height: 22),
 
-          // ===== FEATURES =====
           _sectionTitle('Main Features'),
           const SizedBox(height: 10),
           _featureTile(Icons.directions_bus_rounded, 'Book Trips to/from JUST'),
           _featureTile(Icons.inventory_2_outlined, 'Package Delivery Service'),
-          _featureTile(Icons.account_balance_wallet_outlined, 'Wallet & Online Payments'),
+          _featureTile(Icons.account_balance_wallet_outlined,
+              'Wallet & Online Payments'),
           _featureTile(Icons.redeem_rounded, 'Rewards & Offers'),
           _featureTile(Icons.notifications_none_rounded, 'Trip Notifications'),
 
           const SizedBox(height: 22),
 
-          // ===== TEAM =====
           _sectionTitle('Development Team'),
           const SizedBox(height: 10),
           _infoTile('Project Type', 'Graduation Project'),
           _infoTile('Department', 'Software Engineering'),
-          _infoTile('University', 'Jordan University of Science and Technology'),
+          _infoTile(
+              'University', 'Jordan University of Science and Technology'),
           _infoTile('Developed By', 'GP-17 Team'),
 
           const SizedBox(height: 22),
 
-          // ===== VERSION =====
           Center(
             child: Column(
               children: const [
@@ -129,8 +124,6 @@ class AboutScreen extends StatelessWidget {
       ),
     );
   }
-
-  // ================= Widgets =================
 
   static Widget _sectionTitle(String title) {
     return Text(
