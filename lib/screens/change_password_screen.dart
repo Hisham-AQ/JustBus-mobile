@@ -45,7 +45,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     try {
       setState(() => loading = true);
 
-      // 🔐 Re-authenticate with old password
       final credential = EmailAuthProvider.credential(
         email: email,
         password: oldPass.text.trim(),
@@ -53,7 +52,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
       await user.reauthenticateWithCredential(credential);
 
-      // 🔄 Update password
       await user.updatePassword(newPass.text.trim());
 
       if (!mounted) return;
@@ -67,8 +65,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   void _show(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -94,7 +91,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // 🔑 CURRENT PASSWORD
             TextField(
               controller: oldPass,
               obscureText: !showOld,
@@ -113,7 +109,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
             const SizedBox(height: 16),
 
-            // 🆕 NEW PASSWORD
             TextField(
               controller: newPass,
               obscureText: !showNew,
@@ -132,7 +127,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ✅ CONFIRM PASSWORD
             TextField(
               controller: confirmPass,
               obscureText: !showConfirm,
@@ -152,7 +146,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
             const Spacer(),
 
-            // 💾 SAVE BUTTON
             SizedBox(
               width: double.infinity,
               height: 50,

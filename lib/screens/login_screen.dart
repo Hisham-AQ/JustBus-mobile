@@ -3,7 +3,9 @@ import 'package:justbus/screens/SignUp_screen.dart';
 import 'home_screen.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'forgot_password_screen.dart';
+import 'driver_home_screen.dart';
 
+  enum UserRole { student, driver } UserRole selectedRole = UserRole.student;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF1F4B63);
@@ -37,24 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
           child: Column(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: lightGrey,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_rounded),
-                    ),
-                  ),
-                  const Spacer(),
-                ],
-              ),
-              const SizedBox(height: 65),
+              const SizedBox(height: 90),
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -99,6 +85,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    const SizedBox(height: 6),
+
+// ===== ROLE SELECTION =====
+Row(
+  children: [
+    Expanded(
+      child: _roleButton(
+        label: 'Student',
+        icon: Icons.person_rounded,
+        selected: selectedRole == UserRole.student,
+        onTap: () => setState(() => selectedRole = UserRole.student),
+      ),
+    ),
+    const SizedBox(width: 12),
+    Expanded(
+      child: _roleButton(
+        label: 'Driver',
+        icon: Icons.airport_shuttle_rounded,
+        selected: selectedRole == UserRole.driver,
+        onTap: () => setState(() => selectedRole = UserRole.driver),
+      ),
+    ),
+  ],
+),
+
+
+const SizedBox(height: 14),
+
 Row(
   children: [
     Checkbox(
@@ -152,11 +166,22 @@ Row(
                             );
 
                             // ✅ Login success → go to Home
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const HomeScreen()),
-                            );
+if (selectedRole == UserRole.driver) {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const DriverHomeScreen(), 
+    ),
+  );
+} else {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const HomeScreen(),
+    ),
+  );
+}
+
                           } on FirebaseAuthException catch (e) {
                             String message;
 
@@ -218,7 +243,7 @@ Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Don’t have an account? ',
-                      style: TextStyle( fontSize: 15,fontWeight: FontWeight.w800)),
+                      style: TextStyle( fontSize: 16,fontWeight: FontWeight.w800)),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -230,7 +255,7 @@ Row(
                     },
                     child: const Text(
                       'Sign up',
-                      style: TextStyle(fontSize: 15,fontWeight: FontWeight.w900),
+                      style: TextStyle(fontSize: 16,fontWeight: FontWeight.w900),
                     ),
                   ),
                 ],
@@ -291,4 +316,48 @@ class _InputPill extends StatelessWidget {
       ),
     );
   }
+ 
+
+
+}
+  Widget _roleButton({
+  required String label,
+  required IconData icon,
+  required bool selected,
+  required VoidCallback onTap,
+}) {
+  const primary = Color(0xFF1F4B63);
+
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(14),
+    child: Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: selected ? primary : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: selected ? primary : Colors.black12,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: selected ? Colors.white : Colors.black54,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: selected ? Colors.white : Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
