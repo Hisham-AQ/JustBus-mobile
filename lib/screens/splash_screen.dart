@@ -3,6 +3,8 @@ import 'package:justbus/services/auth_service.dart';
 import 'home_screen.dart';
 import 'driver_home_screen.dart';
 import 'login_screen.dart';
+import 'package:justbus/screens/welcome_screen.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,31 +20,16 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkLogin();
   }
 
-  Future<void> _checkLogin() async {
-    final token = await AuthService.getToken();
-    final role = await AuthService.getRole();
+ Future<void> _checkLogin() async {
+  await Future.delayed(const Duration(milliseconds: 800));
 
-    await Future.delayed(const Duration(milliseconds: 800)); // UX delay
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+  );
+}
 
-    if (token != null && role != null) {
-      if (role == 'driver') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DriverHomeScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
