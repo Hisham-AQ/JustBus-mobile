@@ -121,22 +121,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.phone_outlined,
                         title: 'Phone Number',
                         value: phone,
-                        //edit phone number//
-                        /*onTap: (context) async {
+                        onTap: (context) async {
                           final updated = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => EditSingleFieldScreen(
                                 title: 'Edit Phone Number',
                                 subtitle: 'Enter your phone number',
-                                fieldKey: 'phone',
+                                fieldKey: 'phone', // ✅ MUST be exactly 'phone'
                                 initialValue: phone,
                                 keyboardType: TextInputType.phone,
                               ),
                             ),
                           );
                           if (updated == true) setState(() {});
-                        },*/
+                        },
                       ),
                       _Item(
                         icon: Icons.email_outlined,
