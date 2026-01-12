@@ -33,27 +33,24 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
 
   void _save() async {
     final value = controller.text.trim();
-
     if (value.isEmpty) return;
 
     setState(() => loading = true);
 
     try {
-      // 🔐 Only allow name updates
-      if (widget.fieldKey == 'name') {
+      if (widget.fieldKey == 'phone') {
+        await ProfileService.updateProfile(phone: value);
+      } else if (widget.fieldKey == 'name') {
         await ProfileService.updateProfile(name: value);
       }
 
-      setState(() => loading = false);
-
-      // tell ProfileScreen to refresh
       Navigator.pop(context, true);
     } catch (e) {
-      setState(() => loading = false);
-
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update profile")),
+        SnackBar(content: Text(e.toString())),
       );
+    } finally {
+      setState(() => loading = false);
     }
   }
 

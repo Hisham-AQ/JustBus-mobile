@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
 
 class AuthService {
-  static const String baseUrl = 'https://justbus-backend.onrender.com'; // Android emulator
-  // static const String baseUrl = 'http://localhost:3000'; // Web
+
+static const String baseUrl = 'https://justbus-backend.onrender.com';
 
   // ================= LOGIN =================
   static Future<String> login({
