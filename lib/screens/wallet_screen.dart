@@ -184,26 +184,23 @@ class WalletScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-ElevatedButton(
-  onPressed: () => _showTopUpSheet(context),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.white,
-    foregroundColor: primary,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(14),
-    ),
-  ),
-  child: const Text(
-    'Top Up',
-    style: TextStyle(fontWeight: FontWeight.w800),
-  ),
-),
-
+                        ElevatedButton(
+                          onPressed: () => _showTopUpSheet(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: const Text(
+                            'Top Up',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-
-                  
                   const SizedBox(height: 24),
                   const Text(
                     'Saved Cards',
@@ -300,117 +297,109 @@ ElevatedButton(
       ),
     );
   }
+
   void _showTopUpSheet(BuildContext context) {
-  final amountCtrl = TextEditingController();
-  const primary = Color(0xFF1F4B63);
+    final amountCtrl = TextEditingController();
+    const primary = Color(0xFF1F4B63);
 
-  void selectAmount(double v) {
-    amountCtrl.text = v.toStringAsFixed(0);
-  }
+    void selectAmount(double v) {
+      amountCtrl.text = v.toStringAsFixed(0);
+    }
 
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (_) {
-      return Padding(
-        padding: EdgeInsets.fromLTRB(
-          18,
-          18,
-          18,
-          MediaQuery.of(context).viewInsets.bottom + 18,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Top Up Wallet',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 16),
-
-            // ===== QUICK AMOUNTS =====
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [1, 5, 10, 20].map((v) {
-                return ChoiceChip(
-                  label: Text('$v JD'),
-                  selected: amountCtrl.text == v.toString(),
-                  onSelected: (_) => selectAmount(v.toDouble()),
-                  selectedColor: primary.withOpacity(0.15),
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w800),
-                );
-              }).toList(),
-            ),
-
-            const SizedBox(height: 18),
-
-            // ===== CUSTOM AMOUNT =====
-            TextField(
-              controller: amountCtrl,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Custom amount',
-                suffixText: 'JD',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            18,
+            18,
+            18,
+            MediaQuery.of(context).viewInsets.bottom + 18,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Top Up Wallet',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [1, 5, 10, 20].map((v) {
+                  return ChoiceChip(
+                    label: Text('$v JD'),
+                    selected: amountCtrl.text == v.toString(),
+                    onSelected: (_) => selectAmount(v.toDouble()),
+                    selectedColor: primary.withOpacity(0.15),
+                    labelStyle: const TextStyle(fontWeight: FontWeight.w800),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 18),
+              TextField(
+                controller: amountCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Custom amount',
+                  suffixText: 'JD',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final amount = double.tryParse(amountCtrl.text);
+                    if (amount == null || amount <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Enter a valid amount')),
+                      );
+                      return;
+                    }
 
-            const SizedBox(height: 20),
+                    Navigator.pop(context);
 
-            // ===== CONFIRM =====
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final amount = double.tryParse(amountCtrl.text);
-                  if (amount == null || amount <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Enter a valid amount')),
+                    await addWalletTransaction(
+                      amount: amount,
+                      title: 'Wallet Top Up',
+                      type: 'topup',
                     );
-                    return;
-                  }
 
-                  Navigator.pop(context);
-
-                  await addWalletTransaction(
-                    amount: amount,
-                    title: 'Wallet Top Up',
-                    type: 'topup',
-                  );
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Wallet topped up')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Wallet topped up')),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Confirm Top Up',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
+                  child: const Text(
+                    'Confirm Top Up',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
-
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
