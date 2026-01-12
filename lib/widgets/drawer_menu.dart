@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../screens/about_screen.dart';
 import '../screens/help_center_screen.dart';
 import '../screens/my_rides_screen.dart';
@@ -14,7 +11,14 @@ import '../screens/wallet_screen.dart';
 import '../screens/lost_and_found_screen.dart';
 
 class DrawerMenu extends StatelessWidget {
-  const DrawerMenu({super.key});
+  final String name;
+  final String phone;
+  final VoidCallback? onProfileUpdated;
+  const DrawerMenu(
+      {super.key,
+      required this.name,
+      required this.phone,
+      this.onProfileUpdated});
 
   void _go(BuildContext context, Widget page) {
     Navigator.pop(context);
@@ -24,77 +28,77 @@ class DrawerMenu extends StatelessWidget {
     );
   }
 
-  // ================= USER HEADER =================
+  Future<void> _openProfile(BuildContext context) async {
+    Navigator.pop(context);
+
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+    );
+
+    if (updated == true) {
+      onProfileUpdated?.call();
+    }
+  }
+
+  // ================= USER HEADER (UI ONLY) =================
 
   Widget _userHeader(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final displayName = name.isNotEmpty ? name : 'User';
+    final displayPhone = phone.isNotEmpty ? phone : '';
+    final firstLetter = displayName[0].toUpperCase();
 
-    if (uid == null) {
-      return const SizedBox();
-    }
-
-    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      future:
-          FirebaseFirestore.instance.collection('users').doc(uid).get(),
-      builder: (context, snapshot) {
-        final data = snapshot.data?.data();
-
-        final name = data?['name'] ?? 'User';
-        final phone = data?['phone'] ?? '';
-        final firstLetter =
-            name.isNotEmpty ? name[0].toUpperCase() : 'U';
-
-        return InkWell(
-          onTap: () => _go(context, const ProfileScreen()),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-            child: Row(
-              children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEDEDED),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    firstLetter,
+    return InkWell(
+      onTap: () => _openProfile(context),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDEDED),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                firstLetter,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
                     style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.w900,
-                      fontSize: 18,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                        ),
+                  if (displayPhone.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      displayPhone,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        phone,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right_rounded),
-              ],
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+            const Icon(Icons.chevron_right_rounded),
+          ],
+        ),
+      ),
     );
   }
 
@@ -128,9 +132,7 @@ class DrawerMenu extends StatelessWidget {
         child: Column(
           children: [
             _userHeader(context),
-
             const Divider(height: 1),
-
             Expanded(
               child: ListView(
                 padding: EdgeInsets.zero,
@@ -147,9 +149,7 @@ class DrawerMenu extends StatelessWidget {
                     title: 'Special Trip',
                     onTap: () => _go(context, const SpecialTripScreen()),
                   ),
-
                   const Divider(height: 1),
-
                   _item(
                     context: context,
                     icon: Icons.card_giftcard_outlined,
@@ -180,9 +180,7 @@ class DrawerMenu extends StatelessWidget {
                     title: 'Wallet',
                     onTap: () => _go(context, const WalletScreen()),
                   ),
-
                   const Divider(height: 1),
-
                   _item(
                     context: context,
                     icon: Icons.info_outline_rounded,

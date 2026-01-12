@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:justbus/services/auth_service.dart';
 import 'login_screen.dart';
 
 class DriverHomeScreen extends StatelessWidget {
@@ -23,7 +23,9 @@ class DriverHomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              // ✅ JWT-based logout (correct)
+              await AuthService.logout();
+
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -48,8 +50,11 @@ class DriverHomeScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 28,
                     backgroundColor: primary,
-                    child:
-                        const Icon(Icons.person, color: Colors.white, size: 28),
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   const Column(
@@ -72,9 +77,7 @@ class DriverHomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
             _card(
               title: 'Current Trip',
               child: Column(
@@ -87,9 +90,7 @@ class DriverHomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
             Row(
               children: [
                 Expanded(
@@ -123,9 +124,7 @@ class DriverHomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
-
             Expanded(
               child: ListView(
                 children: [
@@ -185,8 +184,10 @@ class DriverHomeScreen extends StatelessWidget {
           const SizedBox(width: 8),
           SizedBox(
             width: 70,
-            child: Text(label,
-                style: const TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
           Expanded(
             child: Text(value,

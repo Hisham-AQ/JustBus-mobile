@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:justbus/services/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -21,10 +20,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String? selectedGender;
   DateTime? birthDate;
   bool agreeTerms = false;
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
-    final primary = const Color(0xFF1F4B63);
+    const primary = Color(0xFF1F4B63);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
@@ -47,10 +47,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: [
               const Text(
                 'Create your JustBus account',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
               ),
               const SizedBox(height: 24),
               _inputField(
@@ -64,15 +61,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 label: 'Email',
                 icon: Icons.email_outlined,
                 validator: (v) {
-                  if (v == null || v.isEmpty) {
-                    return 'Email is required';
-                  }
-                  final email = v.trim();
-                  final emailRegex = RegExp(
-                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                  );
-                  if (!emailRegex.hasMatch(email)) {
-                    return 'Enter a valid email address';
+                  if (v == null || v.isEmpty) return 'Email is required';
+                  final regex = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$');
+                  if (!regex.hasMatch(v.trim())) {
+                    return 'Enter a valid email';
                   }
                   return null;
                 },
@@ -98,9 +90,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 icon: Icons.lock_outline,
                 obscure: true,
                 validator: (v) {
-                  if (v == null || v.isEmpty) {
-                    return 'Please confirm your password';
-                  }
                   if (v != passwordController.text) {
                     return 'Passwords do not match';
                   }
@@ -108,10 +97,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Gender',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
+              const Text('Gender',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -135,10 +122,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ],
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Date of Birth',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
+              const Text('Date of Birth',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 10),
               InkWell(
                 onTap: _pickBirthDate,
@@ -158,10 +143,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         birthDate == null
                             ? 'Select date'
                             : '${birthDate!.day}/${birthDate!.month}/${birthDate!.year}',
-                        style: TextStyle(
-                          color:
-                              birthDate == null ? Colors.black45 : Colors.black,
-                        ),
                       ),
                     ],
                   ),
@@ -182,30 +163,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: agreeTerms ? _submit : null,
+                  onPressed: agreeTerms && !loading ? _submit : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'Create Account',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Already have an account? Login',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
+                  child: loading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Create Account',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w800),
+                        ),
                 ),
               ),
             ],
@@ -213,6 +184,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
     );
+  }
+
+  // ======================
+  // BACKEND REGISTER ONLY
+  // ======================
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (selectedGender == null || birthDate == null) {
+      _show('Please complete all fields');
+      return;
+    }
+
+    try {
+      setState(() => loading = true);
+
+      await AuthService.register(
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+        role: 'student',
+        phone: phoneController.text.trim(),
+        gender: selectedGender!,
+        birthDate: birthDate!,
+      );
+
+      _show('Account created successfully');
+      Navigator.pop(context);
+    } catch (e) {
+      _show('Registration failed');
+    } finally {
+      setState(() => loading = false);
+    }
+  }
+
+  void _pickBirthDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2005),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) setState(() => birthDate = picked);
+  }
+
+  void _show(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   Widget _inputField({
@@ -227,13 +245,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
-      validator: validator ??
-          (String? v) {
-            if (v == null || v.isEmpty) {
-              return 'Required field';
-            }
-            return null;
-          },
+      validator:
+          validator ?? (v) => v == null || v.isEmpty ? 'Required field' : null,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
@@ -263,10 +276,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: selected ? Colors.white : Colors.black,
-            ),
+            Icon(icon, color: selected ? Colors.white : Colors.black),
             const SizedBox(width: 8),
             Text(
               label,
@@ -279,69 +289,5 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
     );
-  }
-
-  void _pickBirthDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2005),
-      firstDate: DateTime(1950),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() => birthDate = picked);
-    }
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (selectedGender == null || birthDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please complete all fields')),
-      );
-      return;
-    }
-    try {
-      final credential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
-
-      final uid = credential.user!.uid;
-
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'name': nameController.text.trim(),
-        'email': emailController.text.trim(),
-        'phone': phoneController.text.trim(),
-        'gender': selectedGender,
-        'birthDate': Timestamp.fromDate(birthDate!),
-        'avatarUrl': null,
-        'walletBalance': 0.0,
-        'points': 0,
-        'isProfileComplete': true,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully')),
-      );
-
-      Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      String message = 'Signup failed';
-
-      if (e.code == 'email-already-in-use') {
-        message = 'This email is already registered';
-      } else if (e.code == 'invalid-email') {
-        message = 'Invalid email address';
-      } else if (e.code == 'weak-password') {
-        message = 'Password is too weak';
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    }
   }
 }

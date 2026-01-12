@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/screens/SignUp_screen.dart';
+import 'package:justbus/services/auth_service.dart';
 import 'home_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'forgot_password_screen.dart';
 import 'driver_home_screen.dart';
 
@@ -14,254 +14,6 @@ class LoginScreen extends StatefulWidget {
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final emailCtrl = TextEditingController();
-  final passCtrl = TextEditingController();
-  bool hidePass = true;
-  bool rememberMe = true;
-
-  @override
-  void dispose() {
-    emailCtrl.dispose();
-    passCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const primary = Color(0xFF1F4B63);
-    const lightGrey = Color(0xFFEDEDED);
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-          child: Column(
-            children: [
-              const SizedBox(height: 90),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Welcome Back 👋\nLogin to JustBus',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: lightGrey,
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Column(
-                  children: [
-                    _InputPill(
-                      label: 'Email',
-                      hint: 'name@student.just.edu.jo',
-                      controller: emailCtrl,
-                      keyboardType: TextInputType.emailAddress,
-                      prefix: Icons.email_rounded,
-                    ),
-                    const SizedBox(height: 12),
-                    _InputPill(
-                      label: 'Password',
-                      hint: '••••••••',
-                      controller: passCtrl,
-                      obscure: hidePass,
-                      prefix: Icons.lock_rounded,
-                      suffix: IconButton(
-                        onPressed: () => setState(() => hidePass = !hidePass),
-                        icon: Icon(
-                          hidePass
-                              ? Icons.visibility_rounded
-                              : Icons.visibility_off_rounded,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _roleButton(
-                            label: 'Student',
-                            icon: Icons.person_rounded,
-                            selected: selectedRole == UserRole.student,
-                            onTap: () =>
-                                setState(() => selectedRole = UserRole.student),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _roleButton(
-                            label: 'Driver',
-                            icon: Icons.airport_shuttle_rounded,
-                            selected: selectedRole == UserRole.driver,
-                            onTap: () =>
-                                setState(() => selectedRole = UserRole.driver),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: rememberMe,
-                          onChanged: (v) =>
-                              setState(() => rememberMe = v ?? true),
-                          activeColor: const Color(0xFF1F4B63),
-                        ),
-                        const Text(
-                          'Remember me',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ForgotPasswordScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'Forgot password?',
-                            style: TextStyle(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 60,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (emailCtrl.text.isEmpty || passCtrl.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Please enter email and password')),
-                            );
-                            return;
-                          }
-
-                          try {
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                              email: emailCtrl.text.trim(),
-                              password: passCtrl.text.trim(),
-                            );
-
-                            if (selectedRole == UserRole.driver) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const DriverHomeScreen(),
-                                ),
-                              );
-                            } else {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const HomeScreen(),
-                                ),
-                              );
-                            }
-                          } on FirebaseAuthException catch (e) {
-                            String message;
-
-                            switch (e.code) {
-                              case 'user-not-found':
-                                message = 'No account found for this email';
-                                break;
-
-                              case 'wrong-password':
-                                message = 'Incorrect password';
-                                break;
-
-                              case 'invalid-credential':
-                                message = 'Email or password is incorrect';
-                                break;
-
-                              case 'invalid-email':
-                                message = 'Invalid email format';
-                                break;
-
-                              case 'user-disabled':
-                                message = 'This account has been disabled';
-                                break;
-
-                              case 'too-many-requests':
-                                message = 'Too many attempts. Try again later';
-                                break;
-
-                              default:
-                                message = e.message ?? 'Login failed';
-                            }
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(message)),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Don’t have an account? ',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SignUpScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Sign up',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _InputPill extends StatelessWidget {
@@ -354,4 +106,227 @@ Widget _roleButton({
       ),
     ),
   );
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+  bool hidePass = true;
+  bool rememberMe = true;
+
+  @override
+  void dispose() {
+    emailCtrl.dispose();
+    passCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const primary = Color(0xFF1F4B63);
+    const lightGrey = Color(0xFFEDEDED);
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+          child: Column(
+            children: [
+              const SizedBox(height: 90),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Welcome Back 👋\nLogin to JustBus',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: lightGrey,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: Column(
+                  children: [
+                    _InputPill(
+                      label: 'Email',
+                      hint: 'name@student.just.edu.jo',
+                      controller: emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      prefix: Icons.email_rounded,
+                    ),
+                    const SizedBox(height: 12),
+                    _InputPill(
+                      label: 'Password',
+                      hint: '••••••••',
+                      controller: passCtrl,
+                      obscure: hidePass,
+                      prefix: Icons.lock_rounded,
+                      suffix: IconButton(
+                        onPressed: () => setState(() => hidePass = !hidePass),
+                        icon: Icon(
+                          hidePass
+                              ? Icons.visibility_rounded
+                              : Icons.visibility_off_rounded,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _roleButton(
+                            label: 'Student',
+                            icon: Icons.person_rounded,
+                            selected: selectedRole == UserRole.student,
+                            onTap: () =>
+                                setState(() => selectedRole = UserRole.student),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _roleButton(
+                            label: 'Driver',
+                            icon: Icons.airport_shuttle_rounded,
+                            selected: selectedRole == UserRole.driver,
+                            onTap: () =>
+                                setState(() => selectedRole = UserRole.driver),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: rememberMe,
+                          onChanged: (v) =>
+                              setState(() => rememberMe = v ?? true),
+                          activeColor: primary,
+                        ),
+                        const Text(
+                          'Remember me',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Forgot password?',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 60,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (emailCtrl.text.isEmpty || passCtrl.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Please enter email and password'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          try {
+                            final role = await AuthService.login(
+                              email: emailCtrl.text.trim(),
+                              password: passCtrl.text.trim(),
+                            );
+
+                            if (role == 'driver') {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const DriverHomeScreen(),
+                                ),
+                              );
+                            } else {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const HomeScreen(),
+                                ),
+                              );
+                            }
+                          } catch (_) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Invalid email or password'),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Don’t have an account? ',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SignUpScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Sign up',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
