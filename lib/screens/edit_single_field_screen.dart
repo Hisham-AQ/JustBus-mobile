@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:justbus/services/profile_service.dart';
 
 class EditSingleFieldScreen extends StatefulWidget {
   final String title;
@@ -32,23 +31,35 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
     controller = TextEditingController(text: widget.initialValue);
   }
 
-  Future<void> _save() async {
+  void _save() async {
+    final value = controller.text.trim();
+
+    if (value.isEmpty) return;
+
     setState(() => loading = true);
 
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      // 🔐 Only allow name updates
+      if (widget.fieldKey == 'name') {
+        await ProfileService.updateProfile(name: value);
+      }
 
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      widget.fieldKey: controller.text.trim(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+      setState(() => loading = false);
 
-    setState(() => loading = false);
-    Navigator.pop(context, true);
+      // tell ProfileScreen to refresh
+      Navigator.pop(context, true);
+    } catch (e) {
+      setState(() => loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to update profile")),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final primary = const Color(0xFF1F4B63);
+    const primary = Color(0xFF1F4B63);
 
     return Scaffold(
       backgroundColor: Colors.white,

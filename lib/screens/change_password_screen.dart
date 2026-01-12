@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -18,54 +17,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool showConfirm = false;
   bool loading = false;
 
-  Future<void> _changePassword() async {
-    final user = FirebaseAuth.instance.currentUser!;
-    final email = user.email;
-
-    if (email == null) {
-      _show('No email linked to this account');
-      return;
-    }
-
-    if (oldPass.text.isEmpty) {
-      _show('Please enter your current password');
-      return;
-    }
-
-    if (newPass.text.length < 6) {
-      _show('New password must be at least 6 characters');
-      return;
-    }
-
-    if (newPass.text != confirmPass.text) {
-      _show('Passwords do not match');
-      return;
-    }
-
-    try {
-      setState(() => loading = true);
-
-      final credential = EmailAuthProvider.credential(
-        email: email,
-        password: oldPass.text.trim(),
-      );
-
-      await user.reauthenticateWithCredential(credential);
-
-      await user.updatePassword(newPass.text.trim());
-
-      if (!mounted) return;
-      Navigator.pop(context);
-      _show('Password updated successfully');
-    } on FirebaseAuthException catch (e) {
-      _show(e.message ?? 'Failed to change password');
-    } finally {
-      if (mounted) setState(() => loading = false);
-    }
-  }
-
-  void _show(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  void _changePassword() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Password change will be available soon.',
+        ),
+      ),
+    );
   }
 
   @override
@@ -108,7 +67,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
             TextField(
               controller: newPass,
               obscureText: !showNew,
@@ -126,7 +84,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
             TextField(
               controller: confirmPass,
               obscureText: !showConfirm,
@@ -143,31 +100,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 ),
               ),
             ),
-
             const Spacer(),
-
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: loading ? null : _changePassword,
+                onPressed: _changePassword,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: loading
-                    ? const CircularProgressIndicator(
-                        color: Colors.white,
-                      )
-                    : const Text(
-                        'Save',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                child: const Text(
+                  'Save',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],

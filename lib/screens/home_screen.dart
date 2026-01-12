@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../widgets/drawer_menu.dart';
 import 'search_results_screen.dart';
 import 'just_bot_sheet.dart';
+import '../services/profile_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  late Future<Map<String, dynamic>> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = ProfileService.getProfile();
+  }
 
   final List<String> cityLocations = const [
     'Amman',
@@ -35,7 +44,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const DrawerMenu(),
+      drawer: FutureBuilder<Map<String, dynamic>>(
+        future: _profileFuture,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Drawer(
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final profile = snapshot.data!;
+          final name = profile['name'] ?? '';
+          final phone = profile['phone'] ?? '';
+
+          return DrawerMenu(
+            name: name,
+            phone: phone,
+            onProfileUpdated: () {
+              setState(() {
+                _profileFuture = ProfileService.getProfile();
+              });
+            },
+          );
+        },
+      ),
       body: Stack(
         children: [
           // ================= MAP =================

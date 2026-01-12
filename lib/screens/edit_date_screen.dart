@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:justbus/services/profile_service.dart';
 
 class EditDateScreen extends StatefulWidget {
   final DateTime? initialDate;
@@ -38,17 +37,23 @@ class _EditDateScreenState extends State<EditDateScreen> {
     if (selectedDate == null) return;
 
     setState(() => loading = true);
-    final uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .update({
-      'birthDate': Timestamp.fromDate(selectedDate!),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      await ProfileService.updateProfile(
+        birthDate: selectedDate!,
+      );
 
-    Navigator.pop(context, true);
+      setState(() => loading = false);
+
+      // tell ProfileScreen to reload
+      Navigator.pop(context, true);
+    } catch (e) {
+      setState(() => loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to update birth date")),
+      );
+    }
   }
 
   @override
@@ -56,7 +61,12 @@ class _EditDateScreenState extends State<EditDateScreen> {
     const primary = Color(0xFF1F4B63);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Date of Birth')),
+      appBar: AppBar(
+        title: const Text('Edit Date of Birth'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -89,9 +99,15 @@ class _EditDateScreenState extends State<EditDateScreen> {
               height: 50,
               child: ElevatedButton(
                 onPressed: loading ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primary,
+                ),
                 child: loading
-                    ? const CircularProgressIndicator()
-                    : const Text('Save'),
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Save',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
           ],

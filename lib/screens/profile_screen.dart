@@ -1,9 +1,6 @@
-//import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:firebase_storage/firebase_storage.dart';
-//import 'package:image_picker/image_picker.dart';
+import 'package:justbus/services/secure_storage.dart';
+import 'package:justbus/services/profile_service.dart';
 import 'package:justbus/screens/login_screen.dart';
 import 'package:justbus/screens/edit_single_field_screen.dart';
 import 'package:justbus/screens/edit_date_screen.dart';
@@ -17,55 +14,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
-
-  Future<DocumentSnapshot<Map<String, dynamic>>> _loadProfile() {
-    final uid = _auth.currentUser!.uid;
-    return _firestore.collection('users').doc(uid).get();
-  }
-
-/*
-Future<void> _changeProfileImage() async {
-  try {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70,
-    );
-    if (picked == null) return;
-
-    final uid = _auth.currentUser!.uid;
-
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('avatars')
-        .child('$uid.jpg');
-
-  
-    final uploadTask = await ref.putFile(File(picked.path));
-
-    if (uploadTask.state != TaskState.success) {
-      throw Exception('Upload failed');
-    }
-
-    final url = await ref.getDownloadURL();
-
-    await _firestore.collection('users').doc(uid).update({
-      'avatarUrl': url,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-
-    setState(() {});
-  } catch (e) {
-    debugPrint('Profile image error: $e');
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Failed to upload image')),
-    );
-  }
-}
-*/
+  String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -84,26 +33,25 @@ Future<void> _changeProfileImage() async {
         ),
         centerTitle: true,
       ),
-      body: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        future: _loadProfile(),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: ProfileService.getProfile(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text('Profile not found'));
+          if (!snapshot.hasData) {
+            return const Center(child: Text('Failed to load profile'));
           }
 
-          final data = snapshot.data!.data()!;
-          final String name = data['name'] ?? '';
-          final String email = data['email'] ?? '';
-          final String phone = data['phone'] ?? '';
-          final String gender = data['gender'] ?? '';
-          final String? avatarUrl = data['avatarUrl'];
-
-          final Timestamp? birthTs = data['birthDate'];
-          final DateTime? birthDate = birthTs?.toDate();
+          final data = snapshot.data!;
+          final name = data['name'] ?? '';
+          final email = data['email'] ?? '';
+          final phone = data['phone'] ?? '';
+          final gender = data['gender'] ?? '';
+          final birthDate = data['birth_date'] != null
+              ? DateTime.parse(data['birth_date'])
+              : null;
 
           return Column(
             children: [
@@ -111,24 +59,21 @@ Future<void> _changeProfileImage() async {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    GestureDetector(
-                      //onTap: _changeProfileImage,
-                      child: CircleAvatar(
-                        radius: 42,
-                        backgroundColor: const Color(0xFFD9D9D9),
-                        backgroundImage:
-                            avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                        child: avatarUrl == null
-                            ? Text(
-                                name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
-                                ),
-                              )
-                            : null,
-                      ),
+                    CircleAvatar(
+                      radius: 42,
+                      backgroundColor: const Color(0xFFD9D9D9),
+                      backgroundImage:
+                          avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+                      child: avatarUrl == null
+                          ? Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            )
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     Text(
@@ -152,110 +97,97 @@ Future<void> _changeProfileImage() async {
               Expanded(
                 child: ListView(
                   children: [
-                    _Section(
-                      children: [
-                        _Item(
-                          icon: Icons.person_outline,
-                          title: 'Name',
-                          value: name,
-                          onTap: (context) async {
-                            final updated = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => EditSingleFieldScreen(
-                                  title: 'Edit Name',
-                                  subtitle: 'This is the name you would like other people to use referring to you. \n\nEnter your full name:',
-                                  fieldKey: 'name',
-                                  initialValue: name,
-                                ),
+                    _Section(children: [
+                      _Item(
+                        icon: Icons.person_outline,
+                        title: 'Name',
+                        value: name,
+                        onTap: (context) async {
+                          final updated = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EditSingleFieldScreen(
+                                title: 'Edit Name',
+                                subtitle: 'Enter your full name',
+                                fieldKey: 'name',
+                                initialValue: name,
                               ),
-                            );
-
-                            if (updated == true) {
-                              setState(() {});
-                            }
-                          },
-                        ),
-                        _Item(
-                          icon: Icons.phone_outlined,
-                          title: 'Phone Number',
-                          value: phone.isEmpty ? 'Not set' : phone,
-                          isPlaceholder: phone.isEmpty,
-                          onTap: (context) async {
-                            final updated = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => EditSingleFieldScreen(
-                                  title: 'Edit Phone Number',
-                                  subtitle: 'Enter your phone number',
-                                  fieldKey: 'phone',
-                                  initialValue: phone,
-                                  keyboardType: TextInputType.phone,
-                                ),
+                            ),
+                          );
+                          if (updated == true) setState(() {});
+                        },
+                      ),
+                      _Item(
+                        icon: Icons.phone_outlined,
+                        title: 'Phone Number',
+                        value: phone,
+                        //edit phone number//
+                        /*onTap: (context) async {
+                          final updated = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EditSingleFieldScreen(
+                                title: 'Edit Phone Number',
+                                subtitle: 'Enter your phone number',
+                                fieldKey: 'phone',
+                                initialValue: phone,
+                                keyboardType: TextInputType.phone,
                               ),
-                            );
-
-                            if (updated == true) setState(() {});
-                          },
-                        ),
-                        _Item(
-                          icon: Icons.email_outlined,
-                          title: 'Email',
-                          value: email,
-                        ),
-                      ],
-                    ),
-                    _Section(
-                      children: [
-                        _Item(
-                          icon: Icons.cake_outlined,
-                          title: 'Date of Birth',
-                          value: birthDate == null
-                              ? 'Not set'
-                              : '${birthDate.day}/${birthDate.month}/${birthDate.year}',
-                          isPlaceholder: birthDate == null,
-                          onTap: (context) async {
-                            final updated = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => EditDateScreen(
-                                  initialDate: birthDate,
-                                ),
-                              ),
-                            );
-
-                            if (updated == true) setState(() {});
-                          },
-                        ),
-                        _Item(
-                          icon: Icons.male_rounded,
-                          title: 'Gender',
-                          value: gender,
-                        ),
-                      ],
-                    ),
-                    _Section(
-                      children: [
-                        _Item(
-                          icon: Icons.lock_outline,
-                          title: 'Change Password',
-                          onTap: (context) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ChangePasswordScreen(),
-                              ),
-                            );
-                          },
-                        ),
-                        _Item(
-                          icon: Icons.logout_rounded,
-                          title: 'Log Out',
-                          isDanger: true,
-                          onTap: _showLogoutDialog,
-                        ),
-                      ],
-                    ),
+                            ),
+                          );
+                          if (updated == true) setState(() {});
+                        },*/
+                      ),
+                      _Item(
+                        icon: Icons.email_outlined,
+                        title: 'Email',
+                        value: email,
+                      ),
+                    ]),
+                    _Section(children: [
+                      _Item(
+                        icon: Icons.cake_outlined,
+                        title: 'Date of Birth',
+                        value: birthDate == null
+                            ? 'Not set'
+                            : '${birthDate.day}/${birthDate.month}/${birthDate.year}',
+                        onTap: (context) async {
+                          final updated = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  EditDateScreen(initialDate: birthDate),
+                            ),
+                          );
+                          if (updated == true) setState(() {});
+                        },
+                      ),
+                      _Item(
+                        icon: Icons.male_rounded,
+                        title: 'Gender',
+                        value: gender,
+                      ),
+                    ]),
+                    _Section(children: [
+                      _Item(
+                        icon: Icons.lock_outline,
+                        title: 'Change Password',
+                        onTap: (context) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ChangePasswordScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _Item(
+                        icon: Icons.logout_rounded,
+                        title: 'Log Out',
+                        isDanger: true,
+                        onTap: _showLogoutDialog,
+                      ),
+                    ]),
                   ],
                 ),
               ),
@@ -280,11 +212,11 @@ Future<void> _changeProfileImage() async {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await FirebaseAuth.instance.signOut();
+              await SecureStorage.clear();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
+                (_) => false,
               );
             },
             child: const Text(
@@ -297,6 +229,10 @@ Future<void> _changeProfileImage() async {
     );
   }
 }
+
+/* =========================
+   INTERNAL UI WIDGETS
+========================= */
 
 class _Section extends StatelessWidget {
   final List<Widget> children;
@@ -317,7 +253,6 @@ class _Item extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? value;
-  final bool isPlaceholder;
   final bool isDanger;
   final void Function(BuildContext)? onTap;
 
@@ -325,7 +260,6 @@ class _Item extends StatelessWidget {
     required this.icon,
     required this.title,
     this.value,
-    this.isPlaceholder = false,
     this.isDanger = false,
     this.onTap,
   });
@@ -333,7 +267,6 @@ class _Item extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final titleColor = isDanger ? Colors.red : Colors.black87;
-    final valueColor = isPlaceholder ? Colors.black38 : Colors.black87;
 
     return ListTile(
       leading: Icon(
@@ -351,20 +284,10 @@ class _Item extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (value != null)
-            Text(
-              value!,
-              style: TextStyle(
-                fontSize: 13,
-                color: valueColor,
-              ),
-            ),
+          if (value != null) Text(value!, style: const TextStyle(fontSize: 13)),
           if (onTap != null) ...[
             const SizedBox(width: 6),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: Colors.black38,
-            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.black38),
           ],
         ],
       ),

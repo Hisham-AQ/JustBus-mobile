@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ticket_screen.dart';
 
 enum PaymentMethod { ApplePay, visa, wallet }
@@ -20,12 +18,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
   PaymentMethod payment = PaymentMethod.wallet;
 
+  // =========================
+  // TEMP USER (UI ONLY)
+  // =========================
   Future<String> _getUserName() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final doc =
-        await FirebaseFirestore.instance.collection('users').doc(uid).get();
-
-    return doc.data()?['name'] ?? 'User';
+    await Future.delayed(const Duration(milliseconds: 200)); // fake load
+    return 'Student Name';
   }
 
   @override
@@ -56,7 +54,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   const Divider(),
                   _row(Icons.calendar_month_rounded, 'Date', '1/1/2026'),
                   _row(
-                      Icons.access_time_rounded, 'Time', '08:00 AM → 09:15 AM'),
+                    Icons.access_time_rounded,
+                    'Time',
+                    '08:00 AM → 09:15 AM',
+                  ),
                 ],
               ),
             ),
@@ -164,6 +165,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     );
   }
 
+  // ========================= UI HELPERS =========================
+
   Widget _card({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -209,12 +212,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
       child: Row(
         children: [
           SizedBox(
-              width: 90,
-              child:
-                  Text(l, style: const TextStyle(fontWeight: FontWeight.w700))),
+            width: 90,
+            child: Text(l, style: const TextStyle(fontWeight: FontWeight.w700)),
+          ),
           Expanded(
-              child:
-                  Text(v, style: const TextStyle(fontWeight: FontWeight.w800))),
+            child: Text(v, style: const TextStyle(fontWeight: FontWeight.w800)),
+          ),
         ],
       ),
     );
