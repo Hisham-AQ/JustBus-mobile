@@ -57,7 +57,8 @@ class AuthService {
     );
 
     if (response.statusCode != 201) {
-      throw Exception('Failed to register');
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Registration failed');
     }
   }
 

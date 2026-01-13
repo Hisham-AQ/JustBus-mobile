@@ -227,7 +227,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _show('Account created successfully');
       Navigator.pop(context);
     } catch (e) {
-      _show(e.toString());
+      _show(e.toString().replaceFirst('Exception: ', ''));
     } finally {
       setState(() => loading = false);
     }
