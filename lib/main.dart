@@ -28,24 +28,24 @@ class JustBusApp extends StatelessWidget {
  
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.disabled)) {
+            backgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
                 return Colors.grey.shade300; 
               }
               return const Color(0xFF1F3F54); 
             }),
-            foregroundColor: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.disabled)) {
+            foregroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
                 return Colors.grey;
               }
               return Colors.white;
             }),
-            shape: MaterialStateProperty.all(
+            shape: WidgetStateProperty.all(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(40),
               ),
             ),
-            textStyle: MaterialStateProperty.all(
+            textStyle: WidgetStateProperty.all(
               const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
