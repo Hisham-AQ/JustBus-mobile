@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'screens/splash_screen.dart';
+import 'screens/welcome_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   runApp(const JustBusApp());
 }
 
@@ -15,24 +14,20 @@ class JustBusApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
-
+      home: const WelcomeScreen(),
       theme: ThemeData(
         useMaterial3: true,
-
         scaffoldBackgroundColor: Colors.white,
-
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF1F3F54),
         ),
- 
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.disabled)) {
-                return Colors.grey.shade300; 
+                return Colors.grey.shade300;
               }
-              return const Color(0xFF1F3F54); 
+              return const Color(0xFF1F3F54);
             }),
             foregroundColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.disabled)) {
@@ -53,7 +48,6 @@ class JustBusApp extends StatelessWidget {
             ),
           ),
         ),
-
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,

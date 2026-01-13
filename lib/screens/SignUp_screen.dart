@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/services/auth_service.dart';
+import 'package:flutter/services.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -75,6 +76,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 label: 'Phone Number',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) {
+                    return 'Phone number is required';
+                  }
+
+                  final phone = v.trim();
+
+                  // basic phone validation (digits only, 9–15 length)
+                  if (!RegExp(r'^\d{9,15}$').hasMatch(phone)) {
+                    return 'Enter a valid phone number';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 14),
               _inputField(
@@ -213,7 +227,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _show('Account created successfully');
       Navigator.pop(context);
     } catch (e) {
-      _show('Registration failed');
+      _show(e.toString());
     } finally {
       setState(() => loading = false);
     }
@@ -245,6 +259,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
+      inputFormatters: keyboardType == TextInputType.phone
+          ? [FilteringTextInputFormatter.digitsOnly]
+          : null,
       validator:
           validator ?? (v) => v == null || v.isEmpty ? 'Required field' : null,
       decoration: InputDecoration(

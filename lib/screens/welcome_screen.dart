@@ -1,10 +1,43 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-import 'package:justbus/screens/home_screen.dart';
+import 'home_screen.dart';
+import 'package:justbus/services/profile_service.dart';
 import 'package:justbus/services/secure_storage.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
+
+  Future<void> _handleGetStarted(BuildContext context) async {
+    final token = await SecureStorage.getToken();
+
+    if (token == null) {
+      // No token → go to login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      return;
+    }
+
+    try {
+      // Validate token by calling backend
+      await ProfileService.getProfile();
+
+      // Token valid → go to home
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } catch (_) {
+      // Token invalid / expired
+      await SecureStorage.clear();
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,22 +104,7 @@ class WelcomeScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 64,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      final token = await SecureStorage.getToken();
-
-                      if (token != null) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const HomeScreen()),
-                        );
-                      } else {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const LoginScreen()),
-                        );
-                      }
-                    },
+                    onPressed: () => _handleGetStarted(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFEAEAEA),
                       foregroundColor: const Color(0xFF1F3F54),
