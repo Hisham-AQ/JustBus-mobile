@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:justbus/services/auth_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -17,14 +18,53 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool showConfirm = false;
   bool loading = false;
 
-  void _changePassword() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Password change will be available soon.',
-        ),
-      ),
-    );
+  Future<void> _changePassword() async {
+    final current = oldPass.text.trim();
+    final newPassword = newPass.text.trim();
+    final confirm = confirmPass.text.trim();
+
+    // 1️⃣ Basic validation
+    if (current.isEmpty || newPassword.isEmpty || confirm.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('All fields are required')),
+      );
+      return;
+    }
+
+    if (newPassword != confirm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
+      );
+      return;
+    }
+
+    setState(() => loading = true);
+
+    try {
+      await AuthService.changePassword(
+        currentPassword: current,
+        newPassword: newPassword,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password updated successfully')),
+      );
+
+      Navigator.pop(context); // go back to profile
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    } finally {
+      setState(() => loading = false);
+    }
   }
 
   @override
@@ -105,20 +145,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: _changePassword,
+                onPressed: loading ? null : _changePassword,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Save',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ],

@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
 
 class AuthService {
-
-static const String baseUrl = 'https://justbus-backend.onrender.com';
+  static const String baseUrl = 'https://justbus-backend.onrender.com';
 
   // ================= LOGIN =================
   static Future<String> login({
@@ -71,4 +70,32 @@ static const String baseUrl = 'https://justbus-backend.onrender.com';
   static Future<String?> getToken() => SecureStorage.getToken();
   static Future<String?> getRole() => SecureStorage.getRole();
   static Future<String?> getEmail() => SecureStorage.getEmail();
+
+  //================== password change ============
+  static Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final token = await SecureStorage.getToken();
+
+    if (token == null) {
+      throw Exception("No token found");
+    }
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/auth/change-password'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(response.body);
+    }
+  }
 }
