@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:justbus/services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -45,7 +46,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Enter your email address and we will send you a link to reset your password.',
+              'Enter your email address and we will send you a reset code.',
               style: TextStyle(
                 color: Colors.black54,
                 fontSize: 14,
@@ -97,7 +98,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       )
                     : const Text(
-                        'Send Reset Link',
+                        'Send Reset code',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -121,28 +122,41 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  void _submit() async {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => isLoading = true);
 
-    // TODO:
-    // FirebaseAuth.instance.sendPasswordResetEmail(
-    //   email: emailController.text.trim(),
-    // );
+    try {
+      await AuthService.forgotPassword(
+        emailController.text.trim(),
+      );
 
-    await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
 
-    setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'a reset code has been sent.',
+          ),
+        ),
+      );
 
-    if (!mounted) return;
+      Navigator.pop(context); // back to login
+    } catch (e) {
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Password reset link sent to your email'),
-      ),
-    );
-
-    Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString().replaceFirst('Exception: ', ''),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+    }
   }
 }
