@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:justbus/screens/reset_password_screen.dart';
 import 'package:justbus/services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -142,7 +143,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
       );
 
-      Navigator.pop(context); // back to login
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ResetPasswordScreen(
+            email: emailController.text.trim(),
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
 

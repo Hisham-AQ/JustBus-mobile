@@ -3,9 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../widgets/drawer_menu.dart';
+import '../services/profile_service.dart';
+import '../services/city_service.dart';
 import 'search_results_screen.dart';
 import 'just_bot_sheet.dart';
-import '../services/profile_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,29 +20,69 @@ class _HomeScreenState extends State<HomeScreen> {
 
   late Future<Map<String, dynamic>> _profileFuture;
 
-  @override
-  void initState() {
-    super.initState();
-    _profileFuture = ProfileService.getProfile();
-  }
+  final LatLng justLocation = const LatLng(32.4953, 35.9900);
 
-  final List<String> cityLocations = const [
-    'Amman',
-    'Irbid',
-    'Zarqa',
-    'Jerash',
-  ];
+  List<String> cityLocations = [];
+  bool isLoadingCities = true;
 
-  String city = 'Amman';
+  String city = '';
   bool cityOnTop = true;
 
   DateTime selectedDate = DateTime(2026, 1, 1);
   int persons = 1;
 
   @override
-  Widget build(BuildContext context) {
-    final just = LatLng(32.4953, 35.9900);
+  void initState() {
+    super.initState();
+    _profileFuture = ProfileService.getProfile();
+    _loadCities();
+  }
 
+  void _loadCities() async {
+    try {
+      final cities = await CityService.getCities();
+      setState(() {
+        cityLocations = cities;
+        city = cities.isNotEmpty ? cities.first : '';
+        isLoadingCities = false;
+      });
+    } catch (e) {
+      setState(() => isLoadingCities = false);
+    }
+  }
+
+  // ================= DROPDOWN BUILDER =================
+  Widget _cityDropdown() {
+    if (isLoadingCities) {
+      return const Center(
+        child: SizedBox(
+          height: 24,
+          width: 24,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (cityLocations.isEmpty) {
+      return const Text(
+        'No cities available',
+        style: TextStyle(fontWeight: FontWeight.w600),
+      );
+    }
+
+    return DropdownPill(
+      value: city,
+      items: cityLocations,
+      onChanged: (v) {
+        if (v != null) {
+          setState(() => city = v);
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       drawer: FutureBuilder<Map<String, dynamic>>(
@@ -54,12 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
           }
 
           final profile = snapshot.data!;
-          final name = profile['name'] ?? '';
-          final phone = profile['phone'] ?? '';
-
           return DrawerMenu(
-            name: name,
-            phone: phone,
+            name: profile['name'] ?? '',
+            phone: profile['phone'] ?? '',
             onProfileUpdated: () {
               setState(() {
                 _profileFuture = ProfileService.getProfile();
@@ -71,33 +109,36 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           // ================= MAP =================
-          FlutterMap(
-            options: MapOptions(
-              initialCenter: just,
-              initialZoom: 14,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.justbus_v1',
+          Positioned.fill(
+            child: FlutterMap(
+              options: MapOptions(
+                initialCenter: justLocation,
+                initialZoom: 14,
               ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: just,
-                    width: 46,
-                    height: 46,
-                    child: const Icon(
-                      Icons.directions_bus_rounded,
-                      size: 40,
-                      color: Colors.blue,
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.example.justbus_v1',
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: justLocation,
+                      width: 50,
+                      height: 50,
+                      child: const Icon(
+                        Icons.location_pin,
+                        size: 50,
+                        color: Colors.red,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
 
+          // ================= MENU BUTTON =================
           Positioned(
             top: 16,
             left: 16,
@@ -108,13 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 18,
-                      offset: Offset(0, 8),
-                      color: Color(0x22000000),
-                    ),
-                  ],
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.menu_rounded),
@@ -124,6 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
+          // ================= BOTTOM CARD =================
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -131,13 +166,6 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 30,
-                    offset: Offset(0, -10),
-                    color: Color(0x22000000),
-                  ),
-                ],
               ),
               child: SafeArea(
                 top: false,
@@ -150,7 +178,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w900,
-                        height: 1.05,
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -168,32 +195,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Column(
                               children: cityOnTop
                                   ? [
-                                      _DropdownPill(
-                                        value: city,
-                                        items: cityLocations,
-                                        onChanged: (v) {
-                                          if (v != null) {
-                                            setState(() => city = v);
-                                          }
-                                        },
-                                      ),
+                                      _cityDropdown(),
                                       const SizedBox(height: 12),
-                                      const _FixedLocation(
+                                      const FixedLocation(
                                           label: 'JUST university'),
                                     ]
                                   : [
-                                      const _FixedLocation(
+                                      const FixedLocation(
                                           label: 'JUST university'),
                                       const SizedBox(height: 12),
-                                      _DropdownPill(
-                                        value: city,
-                                        items: cityLocations,
-                                        onChanged: (v) {
-                                          if (v != null) {
-                                            setState(() => city = v);
-                                          }
-                                        },
-                                      ),
+                                      _cityDropdown(),
                                     ],
                             ),
                           ),
@@ -222,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: _SmallInfoCard(
+                          child: SmallInfoCard(
                             icon: Icons.calendar_month_rounded,
                             text:
                                 '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
@@ -241,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _SmallInfoCard(
+                          child: SmallInfoCard(
                             icon: Icons.people_alt_rounded,
                             text:
                                 persons == 1 ? '1 Person' : '$persons Persons',
@@ -258,20 +269,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: double.infinity,
                       height: 64,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SearchResultsScreen(
-                                from: cityOnTop ? city : 'JUST',
-                                to: cityOnTop ? 'JUST' : city,
-                                date:
-                                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                                persons: persons,
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: city.isEmpty
+                            ? null
+                            : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => SearchResultsScreen(
+                                      from:
+                                          cityOnTop ? city : 'JUST university',
+                                      to: cityOnTop ? 'JUST university' : city,
+                                      date: '${selectedDate.year}-'
+                                          '${selectedDate.month.toString().padLeft(2, '0')}-'
+                                          '${selectedDate.day.toString().padLeft(2, '0')}',
+                                      persons: persons,
+                                    ),
+                                  ),
+                                );
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1F4B63),
                           shape: RoundedRectangleBorder(
@@ -294,7 +309,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // ================= JUST BOT (CORRECT PLACE) =================
+          // ================= JUST BOT =================
           Positioned(
             right: 16,
             bottom: 790,
@@ -314,23 +329,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-void _openJustBot(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (_) => const JustBotSheet(),
-  );
-}
+// ================= UI COMPONENTS =================
 
-class _DropdownPill extends StatelessWidget {
+class DropdownPill extends StatelessWidget {
   final String value;
   final List<String> items;
   final ValueChanged<String?> onChanged;
 
-  const _DropdownPill({
+  const DropdownPill({
+    super.key,
     required this.value,
     required this.items,
     required this.onChanged,
@@ -350,7 +357,12 @@ class _DropdownPill extends StatelessWidget {
           value: value,
           isExpanded: true,
           items: items
-              .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              .map(
+                (e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(e),
+                ),
+              )
               .toList(),
           onChanged: onChanged,
         ),
@@ -359,9 +371,9 @@ class _DropdownPill extends StatelessWidget {
   }
 }
 
-class _FixedLocation extends StatelessWidget {
+class FixedLocation extends StatelessWidget {
   final String label;
-  const _FixedLocation({required this.label});
+  const FixedLocation({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -384,12 +396,13 @@ class _FixedLocation extends StatelessWidget {
   }
 }
 
-class _SmallInfoCard extends StatelessWidget {
+class SmallInfoCard extends StatelessWidget {
   final IconData icon;
   final String text;
   final VoidCallback onTap;
 
-  const _SmallInfoCard({
+  const SmallInfoCard({
+    super.key,
     required this.icon,
     required this.text,
     required this.onTap,
@@ -419,4 +432,15 @@ class _SmallInfoCard extends StatelessWidget {
       ),
     );
   }
+}
+
+void _openJustBot(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) => const JustBotSheet(),
+  );
 }

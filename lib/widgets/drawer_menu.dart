@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import '../screens/about_screen.dart';
 import '../screens/help_center_screen.dart';
 import '../screens/my_rides_screen.dart';
-import '../screens/notifications_screen.dart';
 import '../screens/package_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/rewards_screen.dart';
 import '../screens/special_trip_screen.dart';
 import '../screens/wallet_screen.dart';
 import '../screens/lost_and_found_screen.dart';
+import '../screens/notifications_screen.dart';
+
 
 class DrawerMenu extends StatelessWidget {
   final String name;

@@ -1,0 +1,20 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class CityService {
+  static Future<List<String>> getCities() async {
+    final response = await http.get(
+      Uri.parse('https://justbus-backend.onrender.com/api/cities'),
+    );
+
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
+
+      return data
+          .map<String>((e) => e['from_city'].toString())
+          .toList();
+    } else {
+      throw Exception('Failed to load cities');
+    }
+  }
+}

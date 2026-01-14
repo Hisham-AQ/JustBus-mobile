@@ -1,29 +1,5 @@
 import 'package:flutter/material.dart';
-import 'seat_selection_screen.dart';
-
-final Map<String, List<String>> cityStops = {
-  'Amman': [
-    'Abdali Station',
-    'University Street',
-    '7th Circle',
-  ],
-  'Irbid': [
-    'Irbid Downtown',
-    'Irbid Bus Station',
-  ],
-  'Zarqa': [
-    'Zarqa New Station',
-    'Zarqa Old Station',
-  ],
-  'Jerash': [
-    'Jerash Center',
-  ],
-  'JUST': [
-    'JUST Main Gate',
-    'JUST Gate 1',
-    'JUST Gate 3',
-  ],
-};
+import '../services/trip_service.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String from;
@@ -44,226 +20,222 @@ class SearchResultsScreen extends StatefulWidget {
 }
 
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
-  static const Color primary = Color(0xFF1F4B63);
-  static const Color lightGrey = Color(0xFFEDEDED);
+  late Future<List<Map<String, dynamic>>> _tripsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tripsFuture = TripService.searchTrips(
+      from: widget.from,
+      to: widget.to,
+      date: widget.date,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'Available Trips',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Available Trips'),
+        leading: const BackButton(),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _tripsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No trips available'));
+          }
+
+          final trips = snapshot.data!;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: trips.length,
+            itemBuilder: (context, index) {
+              return TripCard(
+                trip: trips[index],
+                persons: widget.persons,
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ================= CARD =================
+
+class TripCard extends StatelessWidget {
+  final Map<String, dynamic> trip;
+  final int persons;
+
+  const TripCard({
+    super.key,
+    required this.trip,
+    required this.persons,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final int availableSeats = trip['available_seats'] ?? 0;
+    final bool canBook = availableSeats >= persons;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F3F3),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _tripCard(
-            fromTime: 'Now',
-            toTime: '09:15 AM',
-            duration: '1h 15m',
-            price: '2.50 JD',
-            seats: 12,
+          // ===== HEADER =====
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${trip['from_city']} → ${trip['to_city']}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                '${trip['price']} JD',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
-          _tripCard(
-            fromTime: '08:00 AM',
-            toTime: '09:20 AM',
-            duration: '1h 20m',
-            price: '3.00 JD',
-            seats: 6,
+
+          const SizedBox(height: 10),
+
+          // ===== TIME FROM → TO =====
+          Row(
+            children: [
+              const Icon(Icons.access_time, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                '${trip['departure_time']} → ${trip['arrival_time']}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
-          _tripCard(
-            fromTime: '10:30 AM',
-            toTime: '11:45 AM',
-            duration: '1h 15m',
-            price: '2.00 JD',
-            seats: 0,
-            full: true,
+
+          const SizedBox(height: 6),
+
+          // ===== DURATION + SEATS =====
+          Row(
+            children: [
+              const Icon(Icons.timelapse, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                '${trip['duration_minutes']} min',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(width: 20),
+              const Icon(Icons.event_seat, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                '$availableSeats seats',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: availableSeats == 0 ? Colors.red : Colors.black,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // ===== PICKUP =====
+          _DropdownField(
+            label: 'Pickup',
+            value: trip['pickup_location'] ?? '',
+          ),
+
+          const SizedBox(height: 10),
+
+          // ===== DROPOFF =====
+          _DropdownField(
+            label: 'Drop-off',
+            value: trip['dropoff_location'] ?? '',
+          ),
+
+          const SizedBox(height: 16),
+
+          // ===== BOOK BUTTON =====
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: canBook ? () {} : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1F4B63),
+                disabledBackgroundColor: Colors.grey.shade400,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: const Text(
+                'Book',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _tripCard({
-    required String fromTime,
-    required String toTime,
-    required String duration,
-    required String price,
-    required int seats,
-    bool full = false,
-  }) {
-    final pickupOptions = cityStops[widget.from] ?? [];
-    final dropoffOptions = cityStops[widget.to] ?? [];
+// ================= DROPDOWN FIELD =================
 
-    String pickup = pickupOptions.isNotEmpty ? pickupOptions.first : '';
-    String dropoff = dropoffOptions.isNotEmpty ? dropoffOptions.first : '';
+class _DropdownField extends StatelessWidget {
+  final String label;
+  final String value;
 
-    return StatefulBuilder(
-      builder: (context, setLocalState) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: lightGrey,
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${widget.from} → ${widget.to}',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  _info(Icons.access_time_rounded, '$fromTime → $toTime'),
-                  const Spacer(),
-                  Text(
-                    price,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  _info(Icons.timelapse_rounded, duration),
-                  const SizedBox(width: 16),
-                  _info(Icons.event_seat_rounded, '$seats seats'),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    _locationDropdown(
-                      label: 'Pickup',
-                      value: pickup,
-                      items: pickupOptions,
-                      onChanged: (v) => setLocalState(() => pickup = v),
-                    ),
-                    const SizedBox(height: 8),
-                    _locationDropdown(
-                      label: 'Drop-off',
-                      value: dropoff,
-                      items: dropoffOptions,
-                      onChanged: (v) => setLocalState(() => dropoff = v),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                height: 46,
-                child: ElevatedButton(
-                  onPressed: full
-                      ? null
-                      : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SeatSelectionScreen(
-                                persons: widget.persons,
-                              ),
-                            ),
-                          );
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
-                    disabledBackgroundColor: Colors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    full ? 'Full' : 'Book',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  const _DropdownField({
+    required this.label,
+    required this.value,
+  });
 
-  Widget _info(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 4),
-        Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-      ],
-    );
-  }
-
-  Widget _locationDropdown({
-    required String label,
-    required String value,
-    required List<String> items,
-    required ValueChanged<String> onChanged,
-  }) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFEDEDED),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: 70,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
+          Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w700),
           ),
+          const SizedBox(width: 12),
           Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: value,
-                isExpanded: true,
-                items: items
-                    .map(
-                      (e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(e),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (v) {
-                  if (v != null) onChanged(v);
-                },
-              ),
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
+          const Icon(Icons.keyboard_arrow_down_rounded),
         ],
       ),
     );
