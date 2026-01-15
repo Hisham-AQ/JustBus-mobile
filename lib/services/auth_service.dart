@@ -115,7 +115,6 @@ class AuthService {
   }
 
   static Future<void> resetPassword({
-    required String email,
     required String code,
     required String newPassword,
   }) async {
@@ -123,7 +122,6 @@ class AuthService {
       Uri.parse('$baseUrl/auth/reset-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'email': email,
         'code': code,
         'newPassword': newPassword,
       }),

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/services/auth_service.dart';
 
-
 class ResetPasswordScreen extends StatefulWidget {
-  final String email;
-
-  const ResetPasswordScreen({super.key, required this.email});
+  const ResetPasswordScreen({super.key});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -14,7 +11,7 @@ class ResetPasswordScreen extends StatefulWidget {
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController otpController = TextEditingController();
+  final TextEditingController codeController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
@@ -55,38 +52,39 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                'We’ve sent a verification code to ${widget.email}',
-                style: const TextStyle(
+              const Text(
+                'We’ve sent a verification code to your email',
+                style: TextStyle(
                   color: Colors.black54,
                   fontSize: 14,
                 ),
               ),
               const SizedBox(height: 32),
 
-              /// OTP
+              /// Verification Code
               TextFormField(
-                controller: otpController,
+                controller: codeController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'OTP is required';
+                    return 'Code is required';
                   }
-                  if (value.length < 4) {
-                    return 'Enter a valid OTP';
+                  if (value.length != 6) {
+                    return 'Enter 6-digit code';
                   }
                   return null;
                 },
                 decoration: InputDecoration(
-                  labelText: 'OTP Code',
+                  labelText: 'Verification Code',
                   counterText: '',
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: const Icon(Icons.confirmation_number),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
               /// New Password
@@ -107,9 +105,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      obscurePassword ? Icons.visibility_off : Icons.visibility,
                     ),
                     onPressed: () {
                       setState(() => obscurePassword = !obscurePassword);
@@ -120,6 +116,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
               /// Confirm Password
@@ -140,6 +137,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 28),
 
               /// Submit Button
@@ -186,8 +184,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     try {
       await AuthService.resetPassword(
-        email: widget.email,
-        code: otpController.text.trim(),
+        code: codeController.text.trim(),
         newPassword: passwordController.text.trim(),
       );
 
@@ -214,5 +211,4 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       }
     }
   }
-  
 }
