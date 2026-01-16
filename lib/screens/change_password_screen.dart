@@ -23,7 +23,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final newPassword = newPass.text.trim();
     final confirm = confirmPass.text.trim();
 
-    // 1️⃣ Basic validation
     if (current.isEmpty || newPassword.isEmpty || confirm.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All fields are required')),
@@ -57,7 +56,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         const SnackBar(content: Text('Password updated successfully')),
       );
 
-      Navigator.pop(context); // go back to profile
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
@@ -79,77 +78,116 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     const primary = Color(0xFF1F4B63);
 
+    /// ===== PASSWORD FIELD BUILDER =====
+    Widget passwordField({
+      required String label,
+      required String hint,
+      required TextEditingController controller,
+      required bool visible,
+      required VoidCallback toggle,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: primary, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    obscureText: !visible,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: hint,
+                      hintStyle: const TextStyle(
+                        color: Colors.black38,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    visible ? Icons.visibility : Icons.visibility_off,
+                    color: primary,
+                  ),
+                  onPressed: toggle,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Change Password'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
+            const SizedBox(height: 20),
+
+            passwordField(
+              label: 'Current password',
+              hint: 'Enter current password',
               controller: oldPass,
-              obscureText: !showOld,
-              decoration: InputDecoration(
-                labelText: 'Current Password',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    showOld ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() => showOld = !showOld);
-                  },
-                ),
-              ),
+              visible: showOld,
+              toggle: () => setState(() => showOld = !showOld),
             ),
-            const SizedBox(height: 16),
-            TextField(
+
+            const SizedBox(height: 20),
+
+            passwordField(
+              label: 'New password',
+              hint: 'At least 6 characters',
               controller: newPass,
-              obscureText: !showNew,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    showNew ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() => showNew = !showNew);
-                  },
-                ),
-              ),
+              visible: showNew,
+              toggle: () => setState(() => showNew = !showNew),
             ),
-            const SizedBox(height: 16),
-            TextField(
+
+            const SizedBox(height: 20),
+
+            passwordField(
+              label: 'Confirm new password',
+              hint: 'Re-enter new password',
               controller: confirmPass,
-              obscureText: !showConfirm,
-              decoration: InputDecoration(
-                labelText: 'Confirm New Password',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    showConfirm ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() => showConfirm = !showConfirm);
-                  },
-                ),
-              ),
+              visible: showConfirm,
+              toggle: () => setState(() => showConfirm = !showConfirm),
             ),
+
             const Spacer(),
+
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 56,
               child: ElevatedButton(
                 onPressed: loading ? null : _changePassword,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 child: loading

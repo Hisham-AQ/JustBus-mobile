@@ -10,7 +10,6 @@ import '../screens/wallet_screen.dart';
 import '../screens/lost_and_found_screen.dart';
 import '../screens/notifications_screen.dart';
 
-
 class DrawerMenu extends StatelessWidget {
   final String name;
   final String phone;
@@ -153,6 +152,12 @@ class DrawerMenu extends StatelessWidget {
                   const Divider(height: 1),
                   _item(
                     context: context,
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Wallet',
+                    onTap: () => _go(context, const WalletScreen()),
+                  ),
+                  _item(
+                    context: context,
                     icon: Icons.card_giftcard_outlined,
                     title: 'Rewards',
                     onTap: () => _go(context, const RewardsScreen()),
@@ -174,12 +179,6 @@ class DrawerMenu extends StatelessWidget {
                     icon: Icons.notifications_none_rounded,
                     title: 'Notifications',
                     onTap: () => _go(context, const NotificationsScreen()),
-                  ),
-                  _item(
-                    context: context,
-                    icon: Icons.account_balance_wallet_outlined,
-                    title: 'Wallet',
-                    onTap: () => _go(context, const WalletScreen()),
                   ),
                   const Divider(height: 1),
                   _item(

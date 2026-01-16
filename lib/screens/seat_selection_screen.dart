@@ -16,9 +16,18 @@ class Seat {
 }
 
 class SeatSelectionScreen extends StatefulWidget {
+  final int tripId;
   final int persons;
+  final String pickup;
+  final String dropoff;
 
-  const SeatSelectionScreen({super.key, required this.persons});
+  const SeatSelectionScreen({
+    super.key,
+    required this.tripId,
+    required this.persons,
+    required this.pickup,
+    required this.dropoff,
+  });
 
   @override
   State<SeatSelectionScreen> createState() => _SeatSelectionScreenState();
@@ -59,8 +68,10 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2FAFD),
       appBar: AppBar(
-        title: const Text('Select Seat',
-            style: TextStyle(fontWeight: FontWeight.w900)),
+        title: const Text(
+          'Select Seat',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -70,6 +81,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           const SizedBox(height: 8),
           _legend(),
           const SizedBox(height: 12),
+
+          // ===== BUS =====
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 90),
@@ -83,15 +96,14 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   ),
                   child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: Column(
-                          children: const [
-                            Icon(Icons.person, size: 28),
-                            Text('Driver',
-                                style: TextStyle(fontWeight: FontWeight.w700)),
-                          ],
-                        ),
+                      Column(
+                        children: const [
+                          Icon(Icons.person, size: 28),
+                          Text(
+                            'Driver',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ],
                       ),
                       const Divider(),
                       ...bus.map(_row),
@@ -101,6 +113,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               ),
             ),
           ),
+
+          // ===== CONFIRM =====
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
             child: SizedBox(
@@ -113,6 +127,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => ConfirmBookingScreen(
+                              tripId: widget.tripId,
+                              pickup: widget.pickup,
+                              dropoff: widget.dropoff,
                               seats: selectedSeats.toList(),
                             ),
                           ),
@@ -123,7 +140,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   backgroundColor: primary,
                   disabledBackgroundColor: Colors.grey,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18)),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                 ),
                 child: const Text(
                   'Confirm Seat',
@@ -214,7 +232,10 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
             ),
             Text(
               seat.number.toString(),
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ],
         ),
@@ -227,16 +248,23 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
       return Row(
         children: [
           Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                  color: c, borderRadius: BorderRadius.circular(4))),
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(
+              color: c,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
           const SizedBox(width: 4),
           Icon(i, size: 14),
           const SizedBox(width: 4),
-          Text(t,
-              style:
-                  const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+          Text(
+            t,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
         ],
       );
     }

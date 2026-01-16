@@ -4,9 +4,18 @@ import 'ticket_screen.dart';
 enum PaymentMethod { ApplePay, visa, wallet }
 
 class ConfirmBookingScreen extends StatefulWidget {
+  final int tripId;
+  final String pickup;
+  final String dropoff;
   final List<int> seats;
 
-  const ConfirmBookingScreen({super.key, required this.seats});
+  const ConfirmBookingScreen({
+    super.key,
+    required this.tripId,
+    required this.pickup,
+    required this.dropoff,
+    required this.seats,
+  });
 
   @override
   State<ConfirmBookingScreen> createState() => _ConfirmBookingScreenState();
@@ -18,11 +27,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
   PaymentMethod payment = PaymentMethod.wallet;
 
-  // =========================
-  // TEMP USER (UI ONLY)
-  // =========================
   Future<String> _getUserName() async {
-    await Future.delayed(const Duration(milliseconds: 200)); // fake load
+    await Future.delayed(const Duration(milliseconds: 200));
     return 'Student Name';
   }
 
@@ -49,8 +55,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
               title: 'Trip Details',
               child: Column(
                 children: [
-                  _row(Icons.place_rounded, 'From', 'Amman – Abdali Station'),
-                  _row(Icons.flag_rounded, 'To', 'JUST – Main Gate'),
+                  _row(Icons.place_rounded, 'From', widget.pickup),
+                  _row(Icons.flag_rounded, 'To', widget.dropoff),
                   const Divider(),
                   _row(Icons.calendar_month_rounded, 'Date', '1/1/2026'),
                   _row(
@@ -165,7 +171,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     );
   }
 
-  // ========================= UI HELPERS =========================
+  // ================= UI HELPERS =================
 
   Widget _card({required String title, required Widget child}) {
     return Container(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/trip_service.dart';
+import 'seat_selection_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String from;
@@ -70,7 +71,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 
 // ================= CARD =================
 
-class TripCard extends StatelessWidget {
+class TripCard extends StatefulWidget {
   final Map<String, dynamic> trip;
   final int persons;
 
@@ -81,9 +82,38 @@ class TripCard extends StatelessWidget {
   });
 
   @override
+  State<TripCard> createState() => _TripCardState();
+}
+
+class _TripCardState extends State<TripCard> {
+  late List<String> pickupOptions;
+  late List<String> dropoffOptions;
+
+  String? selectedPickup;
+  String? selectedDropoff;
+
+  @override
+  void initState() {
+    super.initState();
+
+    pickupOptions =
+        List<String>.from(widget.trip['pickup_location'] ?? []);
+    dropoffOptions =
+        List<String>.from(widget.trip['dropoff_location'] ?? []);
+
+    selectedPickup =
+        pickupOptions.isNotEmpty ? pickupOptions.first : null;
+    selectedDropoff =
+        dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final int availableSeats = trip['available_seats'] ?? 0;
-    final bool canBook = availableSeats >= persons;
+    final int availableSeats = widget.trip['available_seats'] ?? 0;
+    final bool canBook =
+        availableSeats >= widget.persons &&
+        selectedPickup != null &&
+        selectedDropoff != null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -95,103 +125,97 @@ class TripCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ===== HEADER =====
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${trip['from_city']} → ${trip['to_city']}',
+                '${widget.trip['from_city']} → ${widget.trip['to_city']}',
                 style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
+                    fontWeight: FontWeight.w800, fontSize: 16),
               ),
               Text(
-                '${trip['price']} JD',
+                '${widget.trip['price']} JD',
                 style: const TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                ),
+                    fontWeight: FontWeight.w900, fontSize: 16),
               ),
             ],
           ),
 
           const SizedBox(height: 10),
 
-          // ===== TIME FROM → TO =====
           Row(
             children: [
               const Icon(Icons.access_time, size: 18),
               const SizedBox(width: 6),
               Text(
-                '${trip['departure_time']} → ${trip['arrival_time']}',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                '${widget.trip['departure_time']} → ${widget.trip['arrival_time']}',
               ),
             ],
           ),
 
           const SizedBox(height: 6),
 
-          // ===== DURATION + SEATS =====
           Row(
             children: [
               const Icon(Icons.timelapse, size: 18),
               const SizedBox(width: 6),
-              Text(
-                '${trip['duration_minutes']} min',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
+              Text('${widget.trip['duration_minutes']} min'),
               const SizedBox(width: 20),
               const Icon(Icons.event_seat, size: 18),
               const SizedBox(width: 6),
-              Text(
-                '$availableSeats seats',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: availableSeats == 0 ? Colors.red : Colors.black,
-                ),
-              ),
+              Text('$availableSeats seats'),
             ],
           ),
 
           const SizedBox(height: 14),
 
-          // ===== PICKUP =====
           _DropdownField(
             label: 'Pickup',
-            value: trip['pickup_location'] ?? '',
+            items: pickupOptions,
+            value: selectedPickup,
+            onChanged: (v) => setState(() => selectedPickup = v),
           ),
 
           const SizedBox(height: 10),
 
-          // ===== DROPOFF =====
           _DropdownField(
             label: 'Drop-off',
-            value: trip['dropoff_location'] ?? '',
+            items: dropoffOptions,
+            value: selectedDropoff,
+            onChanged: (v) => setState(() => selectedDropoff = v),
           ),
 
           const SizedBox(height: 16),
 
-          // ===== BOOK BUTTON =====
           SizedBox(
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: canBook ? () {} : null,
+              onPressed: canBook
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SeatSelectionScreen(
+                            tripId: widget.trip['id'],
+                            persons: widget.persons,
+                            pickup: selectedPickup!,
+                            dropoff: selectedDropoff!,
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1F4B63),
-                disabledBackgroundColor: Colors.grey.shade400,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                disabledBackgroundColor: Colors.grey,
               ),
               child: const Text(
                 'Book',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white),
               ),
             ),
           ),
@@ -201,42 +225,31 @@ class TripCard extends StatelessWidget {
   }
 }
 
-// ================= DROPDOWN FIELD =================
-
 class _DropdownField extends StatelessWidget {
   final String label;
-  final String value;
+  final List<String> items;
+  final String? value;
+  final ValueChanged<String?> onChanged;
 
   const _DropdownField({
     required this.label,
+    required this.items,
     required this.value,
+    required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      height: 48,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-          const Icon(Icons.keyboard_arrow_down_rounded),
-        ],
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      items:
+          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
