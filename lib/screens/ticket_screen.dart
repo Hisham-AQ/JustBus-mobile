@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class TicketScreen extends StatelessWidget {
   final List<int> seats;
   final String userName;
+  final String qrToken;
+  final int bookingId;
+
+  final String from;
+  final String to;
+  final String date;
+  final String time;
+  final int? busNumber;
 
   const TicketScreen({
     super.key,
     required this.seats,
     required this.userName,
+    required this.qrToken,
+    required this.bookingId,
+    required this.from,
+    required this.to,
+    required this.date,
+    required this.time,
+    required this.busNumber,
   });
 
   static const Color bg = Color(0xFF4E6F87);
@@ -26,7 +42,6 @@ class TicketScreen extends StatelessWidget {
           'Your Ticket',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
-        leading: const BackButton(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -48,7 +63,10 @@ class TicketScreen extends StatelessWidget {
                 ),
                 child: const Text(
                   'Download Ticket',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
             ),
@@ -57,6 +75,8 @@ class TicketScreen extends StatelessWidget {
       ),
     );
   }
+
+  // ================= TICKET =================
 
   Widget _ticket() {
     return Stack(
@@ -69,6 +89,8 @@ class TicketScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 22),
+
+              // ===== USER =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -77,7 +99,9 @@ class TicketScreen extends StatelessWidget {
                       radius: 26,
                       backgroundColor: primary,
                       child: Text(
-                        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                        userName.isNotEmpty
+                            ? userName[0].toUpperCase()
+                            : 'U',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -86,100 +110,112 @@ class TicketScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
+                    Expanded(
+                      child: Text(
+                        userName,
+                        maxLines: 2,
+                        overflow: TextOverflow.visible,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 20),
               _perforation(),
               const SizedBox(height: 20),
+
+              // ===== FROM / TO =====
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
                   children: [
-                    _routePoint('FROM', 'Home', filled: true),
-                    Expanded(child: _routeLine()),
-                    _routePoint('TO', 'JUST'),
+                    _routeBlock('FROM', from, alignStart: true),
+                    const SizedBox(width: 12),
+                    _routeLine(),
+                    const SizedBox(width: 12),
+                    _routeBlock('TO', to, alignStart: false),
                   ],
                 ),
               ),
+
               const SizedBox(height: 22),
+
+              // ===== DATE & TIME =====
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _infoCard(Icons.calendar_month, '1/1/2026'),
-                    _infoCard(Icons.access_time, '11:30 AM'),
+                    Expanded(child: _infoCard(Icons.calendar_month, date)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _infoCard(Icons.access_time, time)),
                   ],
                 ),
               ),
+
               const SizedBox(height: 22),
               _perforation(),
               const SizedBox(height: 18),
+
+              // ===== SEAT & BUS =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _bigInfo('SEAT', seats.join(', ')),
-                    _bigInfo('BUS', '2'),
+                    _bigInfo(
+                      'BUS',
+                      (busNumber == null || busNumber == 0)
+                          ? '-'
+                          : busNumber.toString(),
+                    ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 22),
+
+              // ===== QR =====
               Container(
                 width: 190,
                 height: 190,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Image.asset(
-                  'assets/images/QR_TEST.png',
-                  fit: BoxFit.contain,
+                child: QrImageView(
+                  data: qrToken,
+                  version: QrVersions.auto,
                 ),
               ),
+
               const SizedBox(height: 26),
             ],
           ),
         ),
-        Positioned(
-          left: -12,
-          top: 82,
-          child: _cut(),
-        ),
-        Positioned(
-          right: -12,
-          top: 82,
-          child: _cut(),
-        ),
-        Positioned(
-          right: -12,
-          bottom: 298,
-          child: _cut(),
-        ),
-        Positioned(
-          left: -12,
-          bottom: 298,
-          child: _cut(),
-        ),
+
+        // ===== CUTS =====
+        Positioned(left: -12, top: 90, child: _cut()),
+        Positioned(right: -12, top: 90, child: _cut()),
+        Positioned(left: -12, bottom: 290, child: _cut()),
+        Positioned(right: -12, bottom: 290, child: _cut()),
       ],
     );
   }
+
+  // ================= HELPERS =================
 
   Widget _cut() {
     return Container(
       width: 24,
       height: 24,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: bg,
         shape: BoxShape.circle,
       ),
@@ -203,56 +239,48 @@ class TicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _routePoint(String label, String value, {bool filled = false}) {
-    return Column(
-      crossAxisAlignment:
-          filled ? CrossAxisAlignment.start : CrossAxisAlignment.end,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.black54,
-            fontWeight: FontWeight.w700,
+  Widget _routeBlock(String label, String value,
+      {required bool alignStart}) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment:
+            alignStart ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: filled ? primary : Colors.transparent,
-                border: Border.all(color: primary, width: 2),
-              ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.visible,
+            textAlign: alignStart ? TextAlign.start : TextAlign.end,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
             ),
-            const SizedBox(width: 6),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _routeLine() {
     return Container(
+      width: 40,
       height: 2,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
       color: primary,
     );
   }
 
   Widget _infoCard(IconData icon, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -261,9 +289,11 @@ class TicketScreen extends StatelessWidget {
         children: [
           Icon(icon, size: 18),
           const SizedBox(width: 8),
-          Text(
-            text,
-            style: const TextStyle(fontWeight: FontWeight.w800),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),

@@ -1,19 +1,35 @@
 import 'package:flutter/material.dart';
 import 'ticket_screen.dart';
+import '../services/booking_service.dart';
+import '../services/secure_storage.dart';
 
-enum PaymentMethod { ApplePay, visa, wallet }
+enum PaymentMethod { applePay, visa, wallet }
 
 class ConfirmBookingScreen extends StatefulWidget {
+  final int bookingId;
   final int tripId;
+  final String fromCity;
+  final String toCity;
   final String pickup;
   final String dropoff;
+  final String tripDate;
+  final String departureTime;
+  final String arrivalTime;
+  final String busNumber;
   final List<int> seats;
 
   const ConfirmBookingScreen({
     super.key,
+    required this.bookingId,
     required this.tripId,
+    required this.fromCity,
+    required this.toCity,
     required this.pickup,
     required this.dropoff,
+    required this.tripDate,
+    required this.departureTime,
+    required this.arrivalTime,
+    required this.busNumber,
     required this.seats,
   });
 
@@ -26,12 +42,63 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   static const Color lightGrey = Color(0xFFEDEDED);
 
   PaymentMethod payment = PaymentMethod.wallet;
+  bool _isSubmitting = false;
+  String _userName = 'User';
 
-  Future<String> _getUserName() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return 'Student Name';
+  // ✅ المكان الصحيح
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
   }
 
+  Future<void> _loadUserName() async {
+    final name = await SecureStorage.getUserName();
+    if (!mounted) return;
+
+    setState(() {
+      _userName = name?.isNotEmpty == true ? name! : 'User';
+    });
+  }
+
+  // ================= CONFIRM =================
+  Future<void> _confirmBooking() async {
+    setState(() => _isSubmitting = true);
+
+    try {
+      await BookingService.confirmBooking(
+        bookingId: widget.bookingId,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TicketScreen(
+            seats: widget.seats,
+            userName: _userName,
+            bookingId: widget.bookingId,
+            qrToken: '',
+            from: widget.fromCity,
+            to: widget.toCity,
+            date: widget.tripDate,
+            time: '${widget.departureTime} → ${widget.arrivalTime}',
+            busNumber: int.tryParse(widget.busNumber) ?? 0,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Confirm failed')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     final totalPrice = widget.seats.length * 2.5;
@@ -55,15 +122,14 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
               title: 'Trip Details',
               child: Column(
                 children: [
-                  _row(Icons.place_rounded, 'From', widget.pickup),
-                  _row(Icons.flag_rounded, 'To', widget.dropoff),
+                  _row(Icons.place_rounded, 'From',
+                      '${widget.fromCity} (${widget.pickup})'),
+                  _row(Icons.flag_rounded, 'To',
+                      '${widget.toCity} (${widget.dropoff})'),
                   const Divider(),
-                  _row(Icons.calendar_month_rounded, 'Date', '1/1/2026'),
-                  _row(
-                    Icons.access_time_rounded,
-                    'Time',
-                    '08:00 AM → 09:15 AM',
-                  ),
+                  _row(Icons.calendar_month_rounded, 'Date', widget.tripDate),
+                  _row(Icons.access_time_rounded, 'Time',
+                      '${widget.departureTime} → ${widget.arrivalTime}'),
                 ],
               ),
             ),
@@ -98,7 +164,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     icon: Icons.payments_rounded,
                     title: 'Apple Pay / Google Pay',
                     subtitle: 'Double Click',
-                    value: PaymentMethod.ApplePay,
+                    value: PaymentMethod.applePay,
                   ),
                 ],
               ),
@@ -116,17 +182,13 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Total Price',
-                          style: TextStyle(fontWeight: FontWeight.w800),
-                        ),
+                        const Text('Total Price',
+                            style: TextStyle(fontWeight: FontWeight.w800)),
                         const SizedBox(height: 4),
                         Text(
                           '$totalPrice JD',
                           style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                          ),
+                              fontSize: 22, fontWeight: FontWeight.w900),
                         ),
                       ],
                     ),
@@ -134,32 +196,21 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        final name = await _getUserName();
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => TicketScreen(
-                              seats: widget.seats,
-                              userName: name,
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed: _isSubmitting ? null : _confirmBooking,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Confirm',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                      child: _isSubmitting
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              'Confirm',
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900),
+                            ),
                     ),
                   ),
                 ],
@@ -171,7 +222,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     );
   }
 
-  // ================= UI HELPERS =================
+  // ================= HELPERS =================
 
   Widget _card({required String title, required Widget child}) {
     return Container(
@@ -259,12 +310,12 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style: const TextStyle(fontWeight: FontWeight.w900)),
+                      style:
+                          const TextStyle(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
+                  Text(subtitle,
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.black54)),
                 ],
               ),
             ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'confirm_booking_screen.dart';
+import '../services/trip_service.dart';
+import '../services/booking_service.dart';
 
 enum Gender { male, female, none }
 
@@ -20,6 +22,12 @@ class SeatSelectionScreen extends StatefulWidget {
   final int persons;
   final String pickup;
   final String dropoff;
+  final String fromCity;
+  final String toCity;
+  final String tripDate;
+  final String departureTime;
+  final String arrivalTime;
+  final String busNumber;
 
   const SeatSelectionScreen({
     super.key,
@@ -27,6 +35,12 @@ class SeatSelectionScreen extends StatefulWidget {
     required this.persons,
     required this.pickup,
     required this.dropoff,
+    required this.fromCity,
+    required this.toCity,
+    required this.tripDate,
+    required this.departureTime,
+    required this.arrivalTime,
+    required this.busNumber,
   });
 
   @override
@@ -38,40 +52,113 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   static const Color aisle = Color(0xFFD6EBF3);
 
   final Set<int> selectedSeats = {};
+  final Map<int, Gender> reservedSeats = {};
 
-  final List<List<Seat?>> bus = [
-    [_s(1), _s(2), null, _s(3), _s(4)],
-    [_s(5), _s(6), null, _s(7), _s(8)],
-    [_s(9), _s(10), null, _s(11), _s(12)],
-    [_s(13), _s(14), null, _s(15), _s(16)],
-    [_s(17), _s(18), null, _s(19), _s(20)],
-    [_s(21), _s(22), null, _s(23), _s(24)],
-    [_s(25), _s(26), null, _s(27), _s(28)],
-    [_s(29), _s(30), null, _s(31), _s(32)],
-    [_s(33), _s(34), null, _s(35), _s(36)],
-    [_s(37), _s(38), null, _s(39), _s(40)],
-    [_s(41), _s(42), null, _s(43), _s(44)],
-    [_s(45), _s(46), null, _s(47), _s(48)],
-  ];
+  bool _loading = false;
 
-  static Seat _s(int n) {
-    if ([6, 14, 18, 25, 33].contains(n)) {
-      return Seat(number: n, reserved: true);
+  @override
+  void initState() {
+    super.initState();
+    _loadReservedSeats();
+  }
+
+  // ================= LOAD RESERVED =================
+  Future<void> _loadReservedSeats() async {
+    try {
+      final data = await TripService.getReservedSeats(widget.tripId);
+
+      reservedSeats.clear();
+
+      for (final seat in data) {
+        final int? seatNumber = seat['seat_number'];
+        if (seatNumber == null) continue;
+
+        final gender = seat['gender']?.toString().toLowerCase() ?? 'none';
+
+        reservedSeats[seatNumber] = gender == 'male'
+            ? Gender.male
+            : gender == 'female'
+                ? Gender.female
+                : Gender.none;
+      }
+
+      if (mounted) setState(() {});
+    } catch (_) {}
+  }
+
+  Seat _seatFromNumber(int n) {
+    if (reservedSeats.containsKey(n)) {
+      return Seat(
+        number: n,
+        reserved: true,
+        gender: reservedSeats[n]!,
+      );
     }
-    if (n % 3 == 0) return Seat(number: n, gender: Gender.female);
-    if (n % 2 == 0) return Seat(number: n, gender: Gender.male);
     return Seat(number: n);
   }
 
+  List<List<Seat?>> get bus => List.generate(11, (row) {
+        final start = row * 4 + 1;
+        return [
+          _seatFromNumber(start),
+          _seatFromNumber(start + 1),
+          null,
+          _seatFromNumber(start + 2),
+          _seatFromNumber(start + 3),
+        ];
+      });
+
+  // ================= CONFIRM SEAT (HOLD) =================
+  Future<void> _onConfirmSeat() async {
+    setState(() => _loading = true);
+
+    try {
+      final result = await BookingService.holdSeats(
+        tripId: widget.tripId,
+        pickup: widget.pickup,
+        dropoff: widget.dropoff,
+        seats: selectedSeats.toList(),
+      );
+
+      final bookingId = result['bookingId'];
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ConfirmBookingScreen(
+            bookingId: bookingId, // 🔥 المهم
+            tripId: widget.tripId,
+            fromCity: widget.fromCity,
+            toCity: widget.toCity,
+            pickup: widget.pickup,
+            dropoff: widget.dropoff,
+            tripDate: widget.tripDate,
+            departureTime: widget.departureTime,
+            arrivalTime: widget.arrivalTime,
+            busNumber: widget.busNumber,
+            seats: selectedSeats.toList(),
+          ),
+        ),
+      );
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Seats are no longer available')),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2FAFD),
       appBar: AppBar(
-        title: const Text(
-          'Select Seat',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
+        title: const Text('Select Seat',
+            style: TextStyle(fontWeight: FontWeight.w900)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -81,8 +168,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           const SizedBox(height: 8),
           _legend(),
           const SizedBox(height: 12),
-
-          // ===== BUS =====
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 90),
@@ -96,15 +181,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   ),
                   child: Column(
                     children: [
-                      Column(
-                        children: const [
-                          Icon(Icons.person, size: 28),
-                          Text(
-                            'Driver',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ],
-                      ),
+                      const Icon(Icons.person, size: 28),
+                      const Text('Driver',
+                          style: TextStyle(fontWeight: FontWeight.w700)),
                       const Divider(),
                       ...bus.map(_row),
                     ],
@@ -113,29 +192,16 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               ),
             ),
           ),
-
-          // ===== CONFIRM =====
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 10, 18, 22),
             child: SizedBox(
               width: double.infinity,
               height: 58,
               child: ElevatedButton(
-                onPressed: selectedSeats.length == widget.persons
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ConfirmBookingScreen(
-                              tripId: widget.tripId,
-                              pickup: widget.pickup,
-                              dropoff: widget.dropoff,
-                              seats: selectedSeats.toList(),
-                            ),
-                          ),
-                        );
-                      }
-                    : null,
+                onPressed:
+                    _loading || selectedSeats.length != widget.persons
+                        ? null
+                        : _onConfirmSeat,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primary,
                   disabledBackgroundColor: Colors.grey,
@@ -143,14 +209,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                     borderRadius: BorderRadius.circular(18),
                   ),
                 ),
-                child: const Text(
-                  'Confirm Seat',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Confirm Seat',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w900),
+                      ),
               ),
             ),
           ),
@@ -187,13 +252,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
     Color bg;
     if (seat.reserved) {
-      bg = Colors.grey;
+      bg = seat.gender == Gender.male
+          ? Colors.blue.shade300
+          : seat.gender == Gender.female
+              ? Colors.pink.shade300
+              : Colors.grey;
     } else if (selected) {
       bg = Colors.green;
-    } else if (seat.gender == Gender.male) {
-      bg = Colors.blue.shade300;
-    } else if (seat.gender == Gender.female) {
-      bg = Colors.pink.shade300;
     } else {
       bg = Colors.white;
     }
@@ -232,10 +297,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
             ),
             Text(
               seat.number.toString(),
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-              ),
+              style:
+                  const TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
             ),
           ],
         ),
@@ -250,21 +313,15 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           Container(
             width: 14,
             height: 14,
-            decoration: BoxDecoration(
-              color: c,
-              borderRadius: BorderRadius.circular(4),
-            ),
+            decoration:
+                BoxDecoration(color: c, borderRadius: BorderRadius.circular(4)),
           ),
           const SizedBox(width: 4),
           Icon(i, size: 14),
           const SizedBox(width: 4),
-          Text(
-            t,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
-          ),
+          Text(t,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
         ],
       );
     }

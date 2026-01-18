@@ -60,6 +60,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
               return TripCard(
                 trip: trips[index],
                 persons: widget.persons,
+                tripDate: widget.date,
               );
             },
           );
@@ -74,11 +75,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
 class TripCard extends StatefulWidget {
   final Map<String, dynamic> trip;
   final int persons;
+  final String tripDate;
 
   const TripCard({
     super.key,
     required this.trip,
     required this.persons,
+    required this.tripDate,
   });
 
   @override
@@ -96,22 +99,17 @@ class _TripCardState extends State<TripCard> {
   void initState() {
     super.initState();
 
-    pickupOptions =
-        List<String>.from(widget.trip['pickup_location'] ?? []);
-    dropoffOptions =
-        List<String>.from(widget.trip['dropoff_location'] ?? []);
+    pickupOptions = List<String>.from(widget.trip['pickup_location'] ?? []);
+    dropoffOptions = List<String>.from(widget.trip['dropoff_location'] ?? []);
 
-    selectedPickup =
-        pickupOptions.isNotEmpty ? pickupOptions.first : null;
-    selectedDropoff =
-        dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
+    selectedPickup = pickupOptions.isNotEmpty ? pickupOptions.first : null;
+    selectedDropoff = dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
   }
 
   @override
   Widget build(BuildContext context) {
     final int availableSeats = widget.trip['available_seats'] ?? 0;
-    final bool canBook =
-        availableSeats >= widget.persons &&
+    final bool canBook = availableSeats >= widget.persons &&
         selectedPickup != null &&
         selectedDropoff != null;
 
@@ -130,19 +128,17 @@ class _TripCardState extends State<TripCard> {
             children: [
               Text(
                 '${widget.trip['from_city']} → ${widget.trip['to_city']}',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w800, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
               Text(
                 '${widget.trip['price']} JD',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w900, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-
           Row(
             children: [
               const Icon(Icons.access_time, size: 18),
@@ -152,9 +148,7 @@ class _TripCardState extends State<TripCard> {
               ),
             ],
           ),
-
           const SizedBox(height: 6),
-
           Row(
             children: [
               const Icon(Icons.timelapse, size: 18),
@@ -166,27 +160,21 @@ class _TripCardState extends State<TripCard> {
               Text('$availableSeats seats'),
             ],
           ),
-
           const SizedBox(height: 14),
-
           _DropdownField(
             label: 'Pickup',
             items: pickupOptions,
             value: selectedPickup,
             onChanged: (v) => setState(() => selectedPickup = v),
           ),
-
           const SizedBox(height: 10),
-
           _DropdownField(
             label: 'Drop-off',
             items: dropoffOptions,
             value: selectedDropoff,
             onChanged: (v) => setState(() => selectedDropoff = v),
           ),
-
           const SizedBox(height: 16),
-
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -197,10 +185,17 @@ class _TripCardState extends State<TripCard> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => SeatSelectionScreen(
-                            tripId: widget.trip['id'],
+                            tripId: widget.trip['id'] ?? 0,
                             persons: widget.persons,
                             pickup: selectedPickup!,
                             dropoff: selectedDropoff!,
+                            fromCity: widget.trip['from_city'] ?? '',
+                            toCity: widget.trip['to_city'] ?? '',
+                            tripDate: widget.tripDate,
+                            departureTime: widget.trip['departure_time'] ?? '',
+                            arrivalTime: widget.trip['arrival_time'] ?? '',
+                            busNumber:
+                                widget.trip['bus_number']?.toString() ?? '',
                           ),
                         ),
                       );
