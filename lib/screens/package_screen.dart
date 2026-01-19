@@ -413,8 +413,6 @@ class _PackageScreenState extends State<PackageScreen> {
                     ),
                   ),
                 );
-
-                // send request to backend/firebase
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: primary,

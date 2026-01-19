@@ -11,9 +11,6 @@ class _WalletScreenState extends State<WalletScreen> {
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
 
-  // =====================
-  // TEMP UI DATA
-  // =====================
   double balance = 25.00;
 
   void _showTopUpSheet(BuildContext context) {

@@ -70,8 +70,6 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   }
 }
 
-// ================= CARD =================
-
 class TripCard extends StatefulWidget {
   final Map<String, dynamic> trip;
   final int persons;

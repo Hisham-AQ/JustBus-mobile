@@ -4,6 +4,8 @@ import 'package:justbus/services/auth_service.dart';
 import 'home_screen.dart';
 import 'forgot_password_screen.dart';
 import 'driver_home_screen.dart';
+import 'package:justbus/services/profile_service.dart';
+import 'package:justbus/services/secure_storage.dart';
 
 enum UserRole { student, driver }
 
@@ -252,7 +254,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               email: emailCtrl.text.trim(),
                               password: passCtrl.text.trim(),
                             );
-
+                            final profile = await ProfileService.getProfile();
+                            await SecureStorage.saveUserName(
+                                profile['name'] ?? 'User');
                             if (role == 'driver') {
                               Navigator.pushReplacement(
                                 context,

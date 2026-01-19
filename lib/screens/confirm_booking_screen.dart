@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'ticket_screen.dart';
 import '../services/booking_service.dart';
@@ -7,6 +8,7 @@ enum PaymentMethod { applePay, visa, wallet }
 
 class ConfirmBookingScreen extends StatefulWidget {
   final int bookingId;
+  final String holdExpiresAt;
   final int tripId;
   final String fromCity;
   final String toCity;
@@ -21,6 +23,7 @@ class ConfirmBookingScreen extends StatefulWidget {
   const ConfirmBookingScreen({
     super.key,
     required this.bookingId,
+    required this.holdExpiresAt,
     required this.tripId,
     required this.fromCity,
     required this.toCity,
@@ -45,13 +48,24 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   bool _isSubmitting = false;
   String _userName = 'User';
 
-  // ✅ المكان الصحيح
+  // ===== TIMER =====
+  Timer? _timer;
+  int _remainingSeconds = 0;
+
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _initTimerFromServer();
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  // ===== USER NAME =====
   Future<void> _loadUserName() async {
     final name = await SecureStorage.getUserName();
     if (!mounted) return;
@@ -61,7 +75,45 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     });
   }
 
-  // ================= CONFIRM =================
+  // ===== INIT TIMER FROM hold_expires_at =====
+  void _initTimerFromServer() {
+    final expiry = DateTime.parse(widget.holdExpiresAt).toLocal();
+
+    final diff = expiry.difference(DateTime.now());
+
+    _remainingSeconds = diff.inSeconds > 0 ? diff.inSeconds : 0;
+
+    _startTimer();
+  }
+
+  // ===== START TIMER =====
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds <= 0) {
+        timer.cancel();
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('⏰ Hold expired')),
+        );
+
+        Navigator.pop(context);
+      } else {
+        setState(() {
+          _remainingSeconds--;
+        });
+      }
+    });
+  }
+
+  String get _timeText {
+    final m = (_remainingSeconds ~/ 60).toString().padLeft(2, '0');
+    final s = (_remainingSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  // ===== CONFIRM =====
   Future<void> _confirmBooking() async {
     setState(() => _isSubmitting = true);
 
@@ -88,7 +140,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
           ),
         ),
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Confirm failed')),
@@ -102,6 +154,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   @override
   Widget build(BuildContext context) {
     final totalPrice = widget.seats.length * 2.5;
+    final isDanger = _remainingSeconds <= 30;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -114,10 +167,41 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
+            // ===== TIMER UI =====
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: isDanger ? Colors.red.shade50 : Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDanger ? Colors.red : Colors.orange,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.timer_rounded,
+                      color: isDanger ? Colors.red : Colors.orange),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Seat locked for $_timeText',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      color: isDanger ? Colors.red : Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
             _card(
               title: 'Trip Details',
               child: Column(
@@ -133,7 +217,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
+
             const SizedBox(height: 14),
+
             _card(
               title: 'Passengers',
               child: Column(
@@ -143,7 +229,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
+
             const SizedBox(height: 14),
+
             _card(
               title: 'Payment Method',
               child: Column(
@@ -169,7 +257,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
-            const Spacer(),
+
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -196,7 +284,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _confirmBooking,
+                      onPressed: (_isSubmitting || _remainingSeconds <= 0)
+                          ? null
+                          : _confirmBooking,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         shape: RoundedRectangleBorder(
@@ -208,8 +298,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                           : const Text(
                               'Confirm',
                               style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900),
+                                  fontSize: 18, fontWeight: FontWeight.w900),
                             ),
                     ),
                   ),
@@ -310,8 +399,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style:
-                          const TextStyle(fontWeight: FontWeight.w900)),
+                      style: const TextStyle(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 2),
                   Text(subtitle,
                       style:

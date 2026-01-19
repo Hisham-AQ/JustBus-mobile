@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/screens/welcome_screen.dart';
 
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -16,16 +15,14 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkLogin();
   }
 
- Future<void> _checkLogin() async {
-  await Future.delayed(const Duration(milliseconds: 800));
+  Future<void> _checkLogin() async {
+    await Future.delayed(const Duration(milliseconds: 800));
 
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-  );
-}
-
-
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

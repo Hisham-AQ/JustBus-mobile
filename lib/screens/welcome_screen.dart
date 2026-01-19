@@ -11,7 +11,6 @@ class WelcomeScreen extends StatelessWidget {
     final token = await SecureStorage.getToken();
 
     if (token == null) {
-      // No token → go to login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -29,7 +28,6 @@ class WelcomeScreen extends StatelessWidget {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } catch (_) {
-      // Token invalid / expired
       await SecureStorage.clear();
 
       Navigator.pushReplacement(

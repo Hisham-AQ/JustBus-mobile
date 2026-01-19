@@ -229,9 +229,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-/* =========================
-   INTERNAL UI WIDGETS
-========================= */
+//INTERNAL UI WIDGETS
 
 class _Section extends StatelessWidget {
   final List<Widget> children;

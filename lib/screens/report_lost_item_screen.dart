@@ -31,7 +31,6 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category
               const Text(
                 'Item Category',
                 style: TextStyle(fontWeight: FontWeight.w700),
@@ -94,7 +93,7 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                 height: 46,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    // TODO: Image picker
+                    //Image picker
                   },
                   icon: const Icon(Icons.camera_alt_outlined),
                   label: const Text('Upload Item Image'),
@@ -150,7 +149,6 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
         return;
       }
 
-      // API submit
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Report submitted successfully')),
       );

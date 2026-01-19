@@ -45,15 +45,12 @@ class HelpCenterScreen extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 26),
-
           const Text(
             'Frequently Asked Questions',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 12),
-
           _faqTile(
             question: 'How do I book a trip?',
             answer:
@@ -74,15 +71,12 @@ class HelpCenterScreen extends StatelessWidget {
             answer:
                 'You earn points for trips, packages, and special trips. Points can be redeemed for discounts and free services.',
           ),
-
           const SizedBox(height: 26),
-
           const Text(
             'Contact Us',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 12),
-
           _contactTile(
             icon: Icons.email_outlined,
             title: 'Email Support',

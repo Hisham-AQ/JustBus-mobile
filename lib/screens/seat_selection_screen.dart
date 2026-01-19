@@ -62,7 +62,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     _loadReservedSeats();
   }
 
-  // ================= LOAD RESERVED =================
+  // LOAD RESERVED
   Future<void> _loadReservedSeats() async {
     try {
       final data = await TripService.getReservedSeats(widget.tripId);
@@ -108,7 +108,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ];
       });
 
-  // ================= CONFIRM SEAT (HOLD) =================
+  // CONFIRM SEAT (HOLD)
   Future<void> _onConfirmSeat() async {
     setState(() => _loading = true);
 
@@ -121,6 +121,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
       );
 
       final bookingId = result['bookingId'];
+      final holdExpiresAt = result['holdExpiresAt'];
 
       if (!mounted) return;
 
@@ -128,7 +129,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => ConfirmBookingScreen(
-            bookingId: bookingId, // 🔥 المهم
+            bookingId: bookingId,
+            holdExpiresAt: holdExpiresAt,
             tripId: widget.tripId,
             fromCity: widget.fromCity,
             toCity: widget.toCity,
@@ -151,7 +153,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     }
   }
 
-  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -198,10 +199,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               width: double.infinity,
               height: 58,
               child: ElevatedButton(
-                onPressed:
-                    _loading || selectedSeats.length != widget.persons
-                        ? null
-                        : _onConfirmSeat,
+                onPressed: _loading || selectedSeats.length != widget.persons
+                    ? null
+                    : _onConfirmSeat,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primary,
                   disabledBackgroundColor: Colors.grey,
@@ -297,8 +297,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
             ),
             Text(
               seat.number.toString(),
-              style:
-                  const TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
             ),
           ],
         ),

@@ -42,32 +42,25 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
 
           final topTrips = List.of(allTrips)
             ..sort(
-              (a, b) =>
-                  (b['rating'] ?? 0).compareTo(a['rating'] ?? 0),
+              (a, b) => (b['rating'] ?? 0).compareTo(a['rating'] ?? 0),
             );
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-
-              /// ===== Tabs =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _buildTabs(),
               ),
-
               const SizedBox(height: 16),
-
-              /// ===== Horizontal Trips =====
               SizedBox(
                 height: 360,
                 child: filteredTrips.isEmpty
                     ? const Center(child: Text('No trips found'))
                     : ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: filteredTrips.length,
                         itemBuilder: (context, index) {
                           return _TripCard(
@@ -76,10 +69,7 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
                         },
                       ),
               ),
-
               const SizedBox(height: 24),
-
-              /// ===== Top Destinations =====
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
@@ -90,13 +80,10 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               Expanded(
                 child: ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: topTrips.take(3).length,
                   itemBuilder: (context, index) {
                     final trip = topTrips[index];
@@ -105,25 +92,19 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _TopDestinationItem(
                         title: trip['title'],
-                        subtitle:
-                            trip['category'].toString().capitalize(),
+                        subtitle: trip['category'].toString().capitalize(),
                         imageUrl: trip['image_url'],
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  SpecialTripDetailsScreen(
+                              builder: (_) => SpecialTripDetailsScreen(
                                 title: trip['title'],
-                                description:
-                                    trip['description'],
-                                price:
-                                    trip['price'].toString(),
+                                description: trip['description'],
+                                price: trip['price'].toString(),
                                 duration: trip['duration'],
-                                rating:
-                                    trip['rating'].toString(),
-                                imageUrl:
-                                    trip['image_url'],
+                                rating: trip['rating'].toString(),
+                                imageUrl: trip['image_url'],
                               ),
                             ),
                           );
@@ -140,15 +121,13 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
     );
   }
 
-  /// ===== Tabs =====
   Widget _buildTabs() {
     return Row(
       children: TripCategory.values.map((cat) {
         final isSelected = selectedCategory == cat;
 
         return GestureDetector(
-          onTap: () =>
-              setState(() => selectedCategory = cat),
+          onTap: () => setState(() => selectedCategory = cat),
           child: Padding(
             padding: const EdgeInsets.only(right: 24),
             child: Column(
@@ -157,8 +136,7 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
                   cat.name.capitalize(),
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color:
-                        isSelected ? Colors.black : Colors.grey,
+                    color: isSelected ? Colors.black : Colors.grey,
                   ),
                 ),
                 if (isSelected)
@@ -177,7 +155,6 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
   }
 }
 
-/// ===== Trip Card =====
 class _TripCard extends StatelessWidget {
   final Map trip;
 
@@ -242,13 +219,11 @@ class _TripCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.star,
-                        color: Colors.amber, size: 16),
+                    const Icon(Icons.star, color: Colors.amber, size: 16),
                     const SizedBox(width: 4),
                     Text(
                       trip['rating'].toString(),
-                      style:
-                          const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ],
                 ),
@@ -261,7 +236,6 @@ class _TripCard extends StatelessWidget {
   }
 }
 
-/// ===== Top Destination Item =====
 class _TopDestinationItem extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -298,8 +272,7 @@ class _TopDestinationItem extends StatelessWidget {
                   width: 90,
                   height: 90,
                   color: Colors.grey.shade300,
-                  child:
-                      const Icon(Icons.image_not_supported),
+                  child: const Icon(Icons.image_not_supported),
                 ),
               ),
             ),
@@ -318,8 +291,7 @@ class _TopDestinationItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style:
-                      const TextStyle(color: Colors.grey),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             )
@@ -330,8 +302,6 @@ class _TopDestinationItem extends StatelessWidget {
   }
 }
 
-/// ===== Capitalize Extension =====
 extension Cap on String {
-  String capitalize() =>
-      '${this[0].toUpperCase()}${substring(1)}';
+  String capitalize() => '${this[0].toUpperCase()}${substring(1)}';
 }

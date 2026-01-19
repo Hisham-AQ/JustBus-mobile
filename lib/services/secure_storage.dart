@@ -13,29 +13,25 @@ class SecureStorage {
   static Future<void> saveToken(String token) =>
       _storage.write(key: _keyToken, value: token);
 
-  static Future<String?> getToken() =>
-      _storage.read(key: _keyToken);
+  static Future<String?> getToken() => _storage.read(key: _keyToken);
 
   // ===== ROLE =====
   static Future<void> saveRole(String role) =>
       _storage.write(key: _keyRole, value: role);
 
-  static Future<String?> getRole() =>
-      _storage.read(key: _keyRole);
+  static Future<String?> getRole() => _storage.read(key: _keyRole);
 
   // ===== EMAIL =====
   static Future<void> saveEmail(String email) =>
       _storage.write(key: _keyEmail, value: email);
 
-  static Future<String?> getEmail() =>
-      _storage.read(key: _keyEmail);
+  static Future<String?> getEmail() => _storage.read(key: _keyEmail);
 
   // ===== USER NAME ✅ =====
   static Future<void> saveUserName(String name) =>
       _storage.write(key: _keyUserName, value: name);
 
-  static Future<String?> getUserName() =>
-      _storage.read(key: _keyUserName);
+  static Future<String?> getUserName() => _storage.read(key: _keyUserName);
 
   // ===== CLEAR =====
   static Future<void> clear() async {

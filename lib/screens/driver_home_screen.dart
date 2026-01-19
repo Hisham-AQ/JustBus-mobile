@@ -23,7 +23,6 @@ class DriverHomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
-              // ✅ JWT-based logout (correct)
               await AuthService.logout();
 
               Navigator.pushAndRemoveUntil(

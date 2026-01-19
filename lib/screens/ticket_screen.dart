@@ -1,4 +1,7 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class TicketScreen extends StatelessWidget {
@@ -13,7 +16,7 @@ class TicketScreen extends StatelessWidget {
   final String time;
   final int? busNumber;
 
-  const TicketScreen({
+  TicketScreen({
     super.key,
     required this.seats,
     required this.userName,
@@ -25,6 +28,8 @@ class TicketScreen extends StatelessWidget {
     required this.time,
     required this.busNumber,
   });
+
+  final GlobalKey _ticketKey = GlobalKey();
 
   static const Color bg = Color(0xFF4E6F87);
   static const Color primary = Color(0xFF1F4B63);
@@ -47,13 +52,16 @@ class TicketScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            _ticket(),
+            RepaintBoundary(
+              key: _ticketKey,
+              child: _ticket(),
+            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () => _saveTicketAsImage(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: primary,
@@ -76,7 +84,37 @@ class TicketScreen extends StatelessWidget {
     );
   }
 
-  // ================= TICKET =================
+  // SAVE IMAGE
+
+  Future<void> _saveTicketAsImage(BuildContext context) async {
+    try {
+      final boundary = _ticketKey.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
+
+      final image = await boundary.toImage(pixelRatio: 3);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+
+      final pngBytes = byteData!.buffer.asUint8List();
+
+      final directory = Directory('/storage/emulated/0/Pictures/JustBus');
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      final filePath = '${directory.path}/ticket_$bookingId.png';
+      final file = File(filePath);
+
+      await file.writeAsBytes(pngBytes);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ticket saved to Gallery')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to save ticket')),
+      );
+    }
+  }
 
   Widget _ticket() {
     return Stack(
@@ -90,7 +128,6 @@ class TicketScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 22),
 
-              // ===== USER =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -99,9 +136,7 @@ class TicketScreen extends StatelessWidget {
                       radius: 26,
                       backgroundColor: primary,
                       child: Text(
-                        userName.isNotEmpty
-                            ? userName[0].toUpperCase()
-                            : 'U',
+                        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -113,8 +148,6 @@ class TicketScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         userName,
-                        maxLines: 2,
-                        overflow: TextOverflow.visible,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
@@ -129,7 +162,6 @@ class TicketScreen extends StatelessWidget {
               _perforation(),
               const SizedBox(height: 20),
 
-              // ===== FROM / TO =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -145,7 +177,6 @@ class TicketScreen extends StatelessWidget {
 
               const SizedBox(height: 22),
 
-              // ===== DATE & TIME =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -161,7 +192,6 @@ class TicketScreen extends StatelessWidget {
               _perforation(),
               const SizedBox(height: 18),
 
-              // ===== SEAT & BUS =====
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Row(
@@ -170,7 +200,7 @@ class TicketScreen extends StatelessWidget {
                     _bigInfo('SEAT', seats.join(', ')),
                     _bigInfo(
                       'BUS',
-                      (busNumber == null || busNumber == 0)
+                      busNumber == null || busNumber == 0
                           ? '-'
                           : busNumber.toString(),
                     ),
@@ -180,7 +210,7 @@ class TicketScreen extends StatelessWidget {
 
               const SizedBox(height: 22),
 
-              // ===== QR =====
+              //  QR
               Container(
                 width: 190,
                 height: 190,
@@ -199,8 +229,6 @@ class TicketScreen extends StatelessWidget {
             ],
           ),
         ),
-
-        // ===== CUTS =====
         Positioned(left: -12, top: 90, child: _cut()),
         Positioned(right: -12, top: 90, child: _cut()),
         Positioned(left: -12, bottom: 290, child: _cut()),
@@ -208,8 +236,6 @@ class TicketScreen extends StatelessWidget {
       ],
     );
   }
-
-  // ================= HELPERS =================
 
   Widget _cut() {
     return Container(
@@ -239,8 +265,7 @@ class TicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _routeBlock(String label, String value,
-      {required bool alignStart}) {
+  Widget _routeBlock(String label, String value, {required bool alignStart}) {
     return Expanded(
       child: Column(
         crossAxisAlignment:
@@ -257,9 +282,6 @@ class TicketScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            maxLines: 2,
-            overflow: TextOverflow.visible,
-            textAlign: alignStart ? TextAlign.start : TextAlign.end,
             style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w900,

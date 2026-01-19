@@ -47,13 +47,11 @@ class SpecialTripDetailsScreen extends StatelessWidget {
               ),
             ],
           ),
-
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(32)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                 color: Colors.white,
               ),
               child: Column(
@@ -62,15 +60,11 @@ class SpecialTripDetailsScreen extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold),
+                        fontSize: 26, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  Text(description,
-                      style: const TextStyle(color: Colors.grey)),
-
+                  Text(description, style: const TextStyle(color: Colors.grey)),
                   const SizedBox(height: 24),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -79,9 +73,7 @@ class SpecialTripDetailsScreen extends StatelessWidget {
                       _infoBox('Price', '$price JD'),
                     ],
                   ),
-
                   const Spacer(),
-
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -90,8 +82,7 @@ class SpecialTripDetailsScreen extends StatelessWidget {
                       child: const Text(
                         'Book Now',
                         style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                   )
@@ -116,9 +107,7 @@ class SpecialTripDetailsScreen extends StatelessWidget {
         children: [
           Text(title, style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 6),
-          Text(value,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
       ),
     );

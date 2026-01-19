@@ -83,7 +83,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   final phone = v.trim();
 
-                  // basic phone validation (digits only, 9–15 length)
                   if (!RegExp(r'^\d{9,15}$').hasMatch(phone)) {
                     return 'Enter a valid phone number';
                   }
@@ -200,9 +199,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // ======================
-  // BACKEND REGISTER ONLY
-  // ======================
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 

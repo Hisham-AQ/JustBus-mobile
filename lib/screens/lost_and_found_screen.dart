@@ -16,7 +16,6 @@ class LostAndFoundScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Top card
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -43,9 +42,7 @@ class LostAndFoundScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
-
             _actionButton(
               context,
               icon: Icons.report_gmailerrorred_rounded,
@@ -60,9 +57,7 @@ class LostAndFoundScreen extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 12),
-
             _actionButton(
               context,
               icon: Icons.list_alt_rounded,
