@@ -239,7 +239,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 60,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (emailCtrl.text.isEmpty || passCtrl.text.isEmpty) {
+                          if (emailCtrl.text.isEmpty ||
+                              passCtrl.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content:
@@ -249,33 +250,48 @@ class _LoginScreenState extends State<LoginScreen> {
                             return;
                           }
 
+                          String role;
+
+                          // ✅ LOGIN ONLY
                           try {
-                            final role = await AuthService.login(
+                            role = await AuthService.login(
                               email: emailCtrl.text.trim(),
                               password: passCtrl.text.trim(),
                             );
-                            final profile = await ProfileService.getProfile();
-                            await SecureStorage.saveUserName(
-                                profile['name'] ?? 'User');
-                            if (role == 'driver') {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const DriverHomeScreen(),
-                                ),
-                              );
-                            } else {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const HomeScreen(),
-                                ),
-                              );
-                            }
                           } catch (_) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Invalid email or password'),
+                                content:
+                                    Text('Invalid email or password'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          // ✅ PROFILE (does NOT affect login)
+                          try {
+                            final profile =
+                                await ProfileService.getProfile();
+                            await SecureStorage.saveUserName(
+                                profile['name'] ?? 'User');
+                          } catch (e) {
+                            debugPrint('Profile fetch failed: $e');
+                          }
+
+                          // ✅ NAVIGATION
+                          if (role == 'driver') {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const DriverHomeScreen(),
+                              ),
+                            );
+                          } else {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HomeScreen(),
                               ),
                             );
                           }
@@ -306,7 +322,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const Text(
                     'Don’t have an account? ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                   ),
                   TextButton(
                     onPressed: () {

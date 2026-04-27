@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
 
 class BookingService {
-  static const String _baseUrl = 'https://justbus-backend.onrender.com';
+  //static const String _baseUrl = 'https://justbus-backend.onrender.com';
+  static const String _baseUrl = 'http://10.0.2.2:3000';
 
   // ================= HOLD =================
   static Future<Map<String, dynamic>> holdSeats({

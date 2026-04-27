@@ -124,11 +124,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 controller: confirmPasswordController,
                 obscureText: obscurePassword,
                 validator: (value) {
-                  if (value != passwordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
+  if (value == null || value.isEmpty) {
+    return 'Confirm password is required';
+  }
+  if (value != passwordController.text) {
+    return 'Passwords do not match';
+  }
+  return null;
+},
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
                   prefixIcon: const Icon(Icons.lock),
