@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/parcel_service.dart';
 
 class PackageScreen extends StatefulWidget {
   const PackageScreen({super.key});
@@ -397,7 +398,7 @@ class _PackageScreenState extends State<PackageScreen> {
             width: double.infinity,
             height: 62,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (pickup == dropoff) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -406,20 +407,96 @@ class _PackageScreenState extends State<PackageScreen> {
                   return;
                 }
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Parcel: ${selectedType.name} | ${weightKg.toStringAsFixed(1)}kg | ${deliveryOption == 0 ? "Standard" : "Express"} | $pickup → $dropoff | ~$price JD',
-                    ),
-                  ),
+                final price = _estimatePriceJOD();
+
+                bool? confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text("Confirm Request"),
+                      content: Text(
+                        "Send parcel from $pickup to $dropoff?\n\n"
+                        "Type: ${selectedType.name}\n"
+                        "Weight: ${weightKg.toStringAsFixed(1)} kg\n"
+                        "Delivery: ${deliveryOption == 0 ? "Standard" : "Express"}\n"
+                        "Price: $price JD",
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("Cancel"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text("Confirm"),
+                        ),
+                      ],
+                    );
+                  },
                 );
+
+                if (confirm != true) return;
+
+                try {
+                  final result = await ParcelService.submitParcel(
+                    pickup: pickup,
+                    dropoff: dropoff,
+                    type: selectedType.name,
+                    weight: weightKg,
+                    deliveryType: deliveryOption == 0 ? "standard" : "express",
+                    notes: notesCtrl.text,
+                    price: price,
+                  );
+
+                  final orderNumber = result['orderNumber'];
+                  final pinCode = result['pinCode'];
+
+                  await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text("✅ Booking Confirmed"),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                                "Your parcel request has been accepted.\n"),
+                            Text("Order ID: $orderNumber",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 8),
+                            Text("PIN Code: $pinCode",
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green)),
+                            const SizedBox(height: 10),
+                            const Text("Give this PIN to confirm delivery."),
+                          ],
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("OK"),
+                          )
+                        ],
+                      );
+                    },
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("❌ Failed: $e")),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: primary,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18)),
+                  borderRadius: BorderRadius.circular(18),
+                ),
               ),
               child: const Text(
                 'Submit Request',
