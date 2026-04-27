@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import '../services/special_trip_service.dart';
 import 'special_trip_details_screen.dart';
 
-enum TripCategory { jungle, beach, mountain, water }
-
+enum TripCategory {desert,        
+historical,   
+  water,        
+  nature,        
+  camping,          
+}
 class SpecialTripScreen extends StatefulWidget {
   const SpecialTripScreen({super.key});
 
@@ -12,14 +16,17 @@ class SpecialTripScreen extends StatefulWidget {
 }
 
 class _SpecialTripScreenState extends State<SpecialTripScreen> {
-  TripCategory selectedCategory = TripCategory.jungle;
+  TripCategory selectedCategory = TripCategory.desert;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Special Trip'),
-        centerTitle: true,
+        title: const Text('Special Trip',
+            style: TextStyle(fontWeight: FontWeight.w900)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
       ),
       body: FutureBuilder<List<dynamic>>(
         future: SpecialTripService.fetchTrips(),
