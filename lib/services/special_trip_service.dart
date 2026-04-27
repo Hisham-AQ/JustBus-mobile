@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http;
 
 class SpecialTripService {
   //static const String baseUrl = 'https://justbus-backend.onrender.com';
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  //static const String baseUrl = 'http://10.0.2.2:3000';
+  static const baseUrl = 'https://justbus-backend-production.up.railway.app';
+
 
   static Future<List<dynamic>> fetchTrips() async {
     final response = await http.get(Uri.parse('$baseUrl/special-trips'));

@@ -4,7 +4,8 @@ import 'secure_storage.dart';
 
 class AuthService {
   //static const String baseUrl = 'https://justbus-backend.onrender.com';
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  //static const String baseUrl = 'http://10.0.2.2:3000';
+  static const baseUrl = 'https://justbus-backend-production.up.railway.app';
 
   // ================= LOGIN =================
   static Future<String> login({

@@ -4,8 +4,8 @@ import 'secure_storage.dart';
 
 class ProfileService {
   //static const String _baseUrl = 'https://justbus-backend.onrender.com';
-  static const String _baseUrl = 'http://10.0.2.2:3000';
-
+  //static const String _baseUrl = 'http://10.0.2.2:3000';
+  static const _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
   // ================= GET PROFILE =================
   static Future<Map<String, dynamic>> getProfile() async {
