@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/wallet_service.dart';
+import '../services/card_service.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -11,7 +13,28 @@ class _WalletScreenState extends State<WalletScreen> {
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
 
-  double balance = 25.00;
+  double balance = 0;
+  List<dynamic> cards = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    try {
+      final b = await WalletService.getBalance();
+      final c = await CardService.getCards();
+
+      setState(() {
+        balance = b;
+        cards = c;
+      });
+    } catch (e) {
+      print("WALLET ERROR: $e");
+    }
+  }
 
   void _showTopUpSheet(BuildContext context) {
     final amountCtrl = TextEditingController();
@@ -71,8 +94,9 @@ class _WalletScreenState extends State<WalletScreen> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final amount = double.tryParse(amountCtrl.text);
+
                     if (amount == null || amount <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Enter a valid amount')),
@@ -80,15 +104,21 @@ class _WalletScreenState extends State<WalletScreen> {
                       return;
                     }
 
-                    setState(() {
-                      balance += amount;
-                    });
+                    try {
+                      await WalletService.topUp(amount);
+                      await loadData();
 
-                    Navigator.pop(context);
+                      Navigator.pop(context);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Wallet topped up (demo)')),
-                    );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Wallet topped up successfully')),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString())),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primary,
@@ -203,8 +233,79 @@ class _WalletScreenState extends State<WalletScreen> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
           ),
           const SizedBox(height: 12),
-          _buildSavedCard(brand: 'Visa', last4: '4242'),
-          _buildSavedCard(brand: 'MasterCard', last4: '1122'),
+          ElevatedButton(
+            onPressed: () {
+              final number = TextEditingController();
+              final name = TextEditingController();
+              final expiry = TextEditingController();
+
+              showDialog(
+                context: context,
+                builder: (_) {
+                  return AlertDialog(
+                    title: const Text("Add Card"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                            controller: number,
+                            decoration:
+                                InputDecoration(labelText: "Card Number")),
+                        TextField(
+                            controller: name,
+                            decoration: InputDecoration(labelText: "Name")),
+                        TextField(
+                            controller: expiry,
+                            decoration: InputDecoration(labelText: "MM/YY")),
+                      ],
+                    ),
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          // ✅ validation أول شي
+                          if (number.text.isEmpty ||
+                              name.text.isEmpty ||
+                              expiry.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Fill all fields')),
+                            );
+                            return;
+                          }
+
+                          try {
+                            await CardService.addCard(
+                              number: number.text,
+                              holder: name.text,
+                              expiry: expiry.text,
+                              brand: "Visa",
+                            );
+
+                            await loadData();
+
+                            Navigator.pop(context); // 🔥 مهم تسكر الديالوج
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Card added successfully')),
+                            );
+                          } catch (e) {
+                            print(e);
+                          }
+                        },
+                        child: const Text("Save"),
+                      )
+                    ],
+                  );
+                },
+              );
+            },
+            child: const Text("Add Card"),
+          ),
+          // 🔥 هنا التعديل الحقيقي
+          ...cards.map((card) => _buildSavedCard(
+                brand: card['brand'],
+                last4: card['card_number'],
+              )),
         ],
       ),
     );

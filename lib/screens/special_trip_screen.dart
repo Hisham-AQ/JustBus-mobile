@@ -106,6 +106,7 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (_) => SpecialTripDetailsScreen(
+                                tripId: trip['id'],
                                 title: trip['title'],
                                 description: trip['description'],
                                 price: trip['price'].toString(),
@@ -175,6 +176,7 @@ class _TripCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (_) => SpecialTripDetailsScreen(
+              tripId: trip['id'],
               title: trip['title'],
               description: trip['description'],
               price: trip['price'].toString(),
