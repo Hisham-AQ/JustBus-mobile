@@ -11,18 +11,21 @@ class AuthService {
   static Future<String> login({
     required String email,
     required String password,
+    required String role,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
+      Uri.parse('$baseUrl/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
         'password': password,
+        'role': role,
       }),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Login failed');
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Login failed');
     }
 
     final data = jsonDecode(response.body);
@@ -45,7 +48,7 @@ class AuthService {
     required DateTime birthDate,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
+      Uri.parse('$baseUrl/api/auth/register'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'name': name,
@@ -58,6 +61,8 @@ class AuthService {
       }),
     );
 
+    print("RESPONSE: ${response.body}");
+    print("STATUS: ${response.statusCode}");
     if (response.statusCode != 201) {
       final data = jsonDecode(response.body);
       throw Exception(data['message'] ?? 'Registration failed');
@@ -86,7 +91,7 @@ class AuthService {
     }
 
     final response = await http.put(
-      Uri.parse('$baseUrl/auth/change-password'),
+      Uri.parse('$baseUrl/api/auth/change-password'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -99,13 +104,13 @@ class AuthService {
 
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body);
-      throw Exception(data['message']);
+      throw Exception(data['message'] ?? 'Login failed');
     }
   }
 
   static Future<void> forgotPassword(String email) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/forgot-password'),
+      Uri.parse('$baseUrl/api/auth/forgot-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
@@ -121,7 +126,7 @@ class AuthService {
     required String newPassword,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/reset-password'),
+      Uri.parse('$baseUrl/api/auth/reset-password'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'code': code,
@@ -130,7 +135,7 @@ class AuthService {
     );
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body);
-      throw Exception(data['message']);
+      throw Exception(data['message'] ?? 'Login failed');
     }
   }
 }

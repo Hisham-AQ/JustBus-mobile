@@ -128,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               builder: (_) => EditSingleFieldScreen(
                                 title: 'Edit Phone Number',
                                 subtitle: 'Enter your phone number',
-                                fieldKey: 'phone', // ✅ MUST be exactly 'phone'
+                                fieldKey: 'phone', 
                                 initialValue: phone,
                                 keyboardType: TextInputType.phone,
                               ),

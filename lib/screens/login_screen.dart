@@ -239,8 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 60,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (emailCtrl.text.isEmpty ||
-                              passCtrl.text.isEmpty) {
+                          if (emailCtrl.text.isEmpty || passCtrl.text.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content:
@@ -257,21 +256,21 @@ class _LoginScreenState extends State<LoginScreen> {
                             role = await AuthService.login(
                               email: emailCtrl.text.trim(),
                               password: passCtrl.text.trim(),
+                              role: selectedRole == UserRole.driver
+                                  ? 'driver'
+                                  : 'student',
                             );
-                          } catch (_) {
+                          } catch (e) {
+                            print("LOGIN ERROR: $e");
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Invalid email or password'),
-                              ),
+                              SnackBar(content: Text(e.toString())),
                             );
                             return;
                           }
 
                           // ✅ PROFILE (does NOT affect login)
                           try {
-                            final profile =
-                                await ProfileService.getProfile();
+                            final profile = await ProfileService.getProfile();
                             await SecureStorage.saveUserName(
                                 profile['name'] ?? 'User');
                           } catch (e) {
@@ -283,8 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const DriverHomeScreen(),
+                                builder: (_) => const DriverHomeScreen(),
                               ),
                             );
                           } else {
@@ -322,8 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const Text(
                     'Don’t have an account? ',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                   ),
                   TextButton(
                     onPressed: () {

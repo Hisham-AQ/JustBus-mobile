@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
 
 class ParcelService {
-  static const String _baseUrl = 'https://justbus-backend.onrender.com';
+  static const String _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
  static Future<Map<String, dynamic>> submitParcel({
   required String pickup,

@@ -60,7 +60,8 @@ class ProfileService {
     );
 
     if (response.statusCode != 200) {
-      throw Exception(response.body);
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Login failed');
     }
   }
 }
