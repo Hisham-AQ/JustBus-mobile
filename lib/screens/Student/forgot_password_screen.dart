@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:justbus/screens/reset_password_screen.dart';
+import 'package:justbus/screens/Student/reset_password_screen.dart';
 import 'package:justbus/services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {

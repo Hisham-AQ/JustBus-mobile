@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/special_trip_service.dart';
+import '../../services/special_trip_service.dart';
 import 'special_trip_details_screen.dart';
 
 enum TripCategory {desert,        

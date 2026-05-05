@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../widgets/drawer_menu.dart';
-import '../services/profile_service.dart';
-import '../services/city_service.dart';
+import '../../widgets/drawer_menu.dart';
+import '../../services/profile_service.dart';
+import '../../services/city_service.dart';
 import 'search_results_screen.dart';
 import 'just_bot_sheet.dart';
 

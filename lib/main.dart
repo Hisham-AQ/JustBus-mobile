@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/Student/welcome_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

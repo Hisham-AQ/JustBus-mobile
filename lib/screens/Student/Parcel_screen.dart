@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/parcel_service.dart';
+import '../../services/parcel_service.dart';
+import 'package:justbus/screens/Student/home_screen.dart';
+import 'package:flutter/services.dart';
 
 class PackageScreen extends StatefulWidget {
   const PackageScreen({super.key});
@@ -11,6 +13,8 @@ class PackageScreen extends StatefulWidget {
 class _PackageScreenState extends State<PackageScreen> {
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
+  final TextEditingController receiverNameCtrl = TextEditingController();
+  bool isSubmitting = false;
 
   final List<String> locations = const [
     'Amman office',
@@ -30,6 +34,42 @@ class _PackageScreenState extends State<PackageScreen> {
     _ParcelType('Large Box', Icons.archive_outlined),
   ];
 
+  Future<void> _applyReward() async {
+    final code = rewardCtrl.text.trim();
+    if (code.isEmpty) return;
+
+    setState(() {
+      isCheckingReward = true;
+      rewardMessage = null;
+    });
+
+    try {
+      final result = await ParcelService.validateReward(
+        code: code,
+        pickup: pickup,
+        dropoff: dropoff,
+        weight: weightKg,
+        type: selectedType.name,
+      );
+
+      setState(() {
+        isRewardApplied = result['valid'];
+        previewPrice = result['finalPrice'];
+
+        rewardMessage =
+            result['valid'] ? "Discount applied 🎉" : "Invalid code";
+      });
+    } catch (e) {
+      setState(() {
+        rewardMessage = "Error validating code";
+      });
+    } finally {
+      setState(() {
+        isCheckingReward = false;
+      });
+    }
+  }
+
   _ParcelType selectedType =
       const _ParcelType('Small Box', Icons.inventory_2_outlined);
 
@@ -38,10 +78,17 @@ class _PackageScreenState extends State<PackageScreen> {
   int deliveryOption = 0;
 
   final TextEditingController notesCtrl = TextEditingController();
+  final TextEditingController rewardCtrl = TextEditingController();
+  bool isRewardApplied = false;
+  bool isCheckingReward = false;
+  String? rewardMessage;
+  double? previewPrice;
 
   @override
   void dispose() {
     notesCtrl.dispose();
+    receiverNameCtrl.dispose();
+    rewardCtrl.dispose();
     super.dispose();
   }
 
@@ -85,9 +132,17 @@ class _PackageScreenState extends State<PackageScreen> {
     return double.parse(total.toStringAsFixed(2));
   }
 
+  void _resetReward() {
+    setState(() {
+      previewPrice = null;
+      isRewardApplied = false;
+      rewardMessage = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final price = _estimatePriceJOD();
+    final price = previewPrice ?? _estimatePriceJOD();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -128,7 +183,10 @@ class _PackageScreenState extends State<PackageScreen> {
                         label: 'Pickup',
                         value: pickup,
                         items: locations,
-                        onChanged: (v) => setState(() => pickup = v ?? pickup),
+                        onChanged: (v) {
+                          setState(() => pickup = v ?? pickup);
+                          _resetReward();
+                        },
                       ),
                       const SizedBox(height: 12),
                       _DropdownPill(
@@ -318,6 +376,38 @@ class _PackageScreenState extends State<PackageScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text('Receiver Name',
+                    style: TextStyle(fontWeight: FontWeight.w900)),
+                const SizedBox(height: 10),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  child: TextField(
+                    controller: receiverNameCtrl,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Enter receiver name',
+                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: lightGrey,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 const Text('Notes (optional)',
                     style: TextStyle(fontWeight: FontWeight.w900)),
                 const SizedBox(height: 10),
@@ -339,6 +429,72 @@ class _PackageScreenState extends State<PackageScreen> {
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: lightGrey,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Reward Code',
+                    style: TextStyle(fontWeight: FontWeight.w900)),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        child: TextField(
+                          controller: rewardCtrl,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Enter coupon code',
+                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: isCheckingReward ? null : _applyReward,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: isCheckingReward
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text("Apply"),
+                    ),
+                  ],
+                ),
+                if (rewardMessage != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    rewardMessage!,
+                    style: TextStyle(
+                      color: isRewardApplied ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -399,15 +555,23 @@ class _PackageScreenState extends State<PackageScreen> {
             height: 62,
             child: ElevatedButton(
               onPressed: () async {
-                if (pickup == dropoff) {
+                if (receiverNameCtrl.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Pickup and Drop-off must be different')),
+                    const SnackBar(content: Text('Enter receiver name')),
                   );
                   return;
                 }
 
-                final price = _estimatePriceJOD();
+                if (pickup == dropoff) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Pickup and Drop-off must be different'),
+                    ),
+                  );
+                  return;
+                }
+
+                final price = previewPrice ?? _estimatePriceJOD();
 
                 bool? confirm = await showDialog<bool>(
                   context: context,
@@ -437,6 +601,8 @@ class _PackageScreenState extends State<PackageScreen> {
 
                 if (confirm != true) return;
 
+                setState(() => isSubmitting = true);
+
                 try {
                   final result = await ParcelService.submitParcel(
                     pickup: pickup,
@@ -445,7 +611,10 @@ class _PackageScreenState extends State<PackageScreen> {
                     weight: weightKg,
                     deliveryType: deliveryOption == 0 ? "standard" : "express",
                     notes: notesCtrl.text,
-                    price: price,
+                    receiverName: receiverNameCtrl.text,
+                    rewardCode: rewardCtrl.text.trim().isEmpty
+                        ? null
+                        : rewardCtrl.text.trim(),
                   );
 
                   final orderNumber = result['orderNumber'];
@@ -453,41 +622,180 @@ class _PackageScreenState extends State<PackageScreen> {
 
                   await showDialog(
                     context: context,
+                    barrierDismissible: false,
                     builder: (context) {
-                      return AlertDialog(
-                        title: const Text("✅ Booking Confirmed"),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                                "Your parcel request has been accepted.\n"),
-                            Text("Order ID: $orderNumber",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            Text("PIN Code: $pinCode",
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green)),
-                            const SizedBox(height: 10),
-                            const Text("Give this PIN to confirm delivery."),
-                          ],
+                      return Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
                         ),
-                        actions: [
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("OK"),
-                          )
-                        ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(22),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // ✅ ICON
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 50,
+                                ),
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // ✅ TITLE
+                              const Text(
+                                "Parcel Sent Successfully",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              // ✅ INFO BOX
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F5F5),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text("Order"),
+                                        Row(
+                                          children: [
+                                            Text(orderNumber,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w900)),
+                                            const SizedBox(width: 6),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(
+                                                    text: orderNumber));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                      content:
+                                                          Text("Order copied")),
+                                                );
+                                              },
+                                              child: const Icon(Icons.copy,
+                                                  size: 18),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text("PIN"),
+                                        Row(
+                                          children: [
+                                            Text(pinCode,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w900)),
+                                            const SizedBox(width: 6),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(
+                                                    text: pinCode));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                      content:
+                                                          Text("PIN copied")),
+                                                );
+                                              },
+                                              child: const Icon(Icons.copy,
+                                                  size: 18),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 20),
+
+                              Row(
+                                children: [
+                                  // OK
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        Navigator.pop(context); //
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                        ),
+                                      ),
+                                      child: const Text("OK"),
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 10),
+
+                                  // HOME
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const HomeScreen()),
+                                          (route) => false,
+                                        );
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primary,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                        ),
+                                      ),
+                                      child: const Text("Home"),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
                   );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("❌ Failed: $e")),
+                    SnackBar(content: Text("Server error: $e")),
                   );
+                } finally {
+                  setState(() => isSubmitting = false);
+                  receiverNameCtrl.clear();
+                  notesCtrl.clear();
+                  rewardCtrl.clear();
+                  _resetReward();
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -498,10 +806,9 @@ class _PackageScreenState extends State<PackageScreen> {
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              child: const Text(
-                'Submit Request',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-              ),
+              child: isSubmitting
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Submit Request'),
             ),
           ),
         ],

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
 
-
 class CardService {
   static const baseUrl = 'https://justbus-backend-production.up.railway.app';
 
@@ -18,7 +17,7 @@ class CardService {
   }
 
   static Future<void> addCard({
-    required String number,
+    required String cardNumber,
     required String holder,
     required String expiry,
     required String brand,
@@ -32,11 +31,26 @@ class CardService {
         'Authorization': 'Bearer $token'
       },
       body: jsonEncode({
-        "cardNumber": number,
+        "cardNumber": cardNumber,
         "holder": holder,
         "expiry": expiry,
         "brand": brand
       }),
     );
+  }
+
+  static Future<void> deleteCard(int id) async {
+    final token = await SecureStorage.getToken();
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/api/cards/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Delete failed");
+    }
   }
 }

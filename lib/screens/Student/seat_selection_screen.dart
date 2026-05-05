@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'confirm_booking_screen.dart';
-import '../services/trip_service.dart';
-import '../services/booking_service.dart';
+import '../../services/trip_service.dart';
+import '../../services/booking_service.dart';
 
 enum Gender { male, female, none }
 
@@ -28,11 +28,13 @@ class SeatSelectionScreen extends StatefulWidget {
   final String departureTime;
   final String arrivalTime;
   final String busNumber;
+  final double pricePerSeat;
 
   const SeatSelectionScreen({
     super.key,
     required this.tripId,
     required this.persons,
+    required this.pricePerSeat,
     required this.pickup,
     required this.dropoff,
     required this.fromCity,
@@ -118,6 +120,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         pickup: widget.pickup,
         dropoff: widget.dropoff,
         seats: selectedSeats.toList(),
+        
       );
 
       final bookingId = result['bookingId'];
@@ -141,6 +144,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
             arrivalTime: widget.arrivalTime,
             busNumber: widget.busNumber,
             seats: selectedSeats.toList(),
+            pricePerSeat: widget.pricePerSeat,
           ),
         ),
       );

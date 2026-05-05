@@ -19,7 +19,7 @@ class WalletService {
     return double.parse(data['balance'].toString());
   }
 
-  static Future<void> topUp(double amount) async {
+  static Future<double> topUp(double amount) async {
     final token = await SecureStorage.getToken();
 
     final response = await http.post(
@@ -31,8 +31,50 @@ class WalletService {
       body: jsonEncode({"amount": amount}),
     );
 
+    final data = jsonDecode(response.body);
+
     if (response.statusCode != 200) {
-      throw Exception("Top up failed");
+      throw Exception(data['message'] ?? "Top up failed");
     }
+
+    return double.parse(data['balance'].toString());
+  }
+
+  static Future<double> pay(double amount) async {
+    final token = await SecureStorage.getToken();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/wallet/pay'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({"amount": amount}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode != 200) {
+      throw Exception(data['message'] ?? "Payment failed");
+    }
+
+    return double.parse(data['balance'].toString());
+  }
+
+  static Future<List<dynamic>> getTransactions() async {
+    final token = await SecureStorage.getToken();
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/wallet/transactions'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to load transactions");
+    }
+
+    return jsonDecode(response.body);
   }
 }

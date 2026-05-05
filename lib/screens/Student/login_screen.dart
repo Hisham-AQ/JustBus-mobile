@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:justbus/screens/SignUp_screen.dart';
+import 'package:justbus/screens/Student/SignUp_screen.dart';
 import 'package:justbus/services/auth_service.dart';
 import 'home_screen.dart';
 import 'forgot_password_screen.dart';
-import 'driver_home_screen.dart';
+import '../Driver/driver_home_screen.dart';
 import 'package:justbus/services/profile_service.dart';
 import 'package:justbus/services/secure_storage.dart';
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/lostItems_service.dart';
 
 class ReportLostItemScreen extends StatefulWidget {
   const ReportLostItemScreen({super.key});
@@ -140,19 +141,35 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
     }
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      if (lostDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select lost date')),
-        );
-        return;
-      }
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (lostDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select lost date')),
+      );
+      return;
+    }
+
+    try {
+      await LostItemsService.submitReport(
+        category: selectedCategory,
+        itemName: itemController.text,
+        rideId: rideController.text,
+        date:
+            "${lostDate!.year}-${lostDate!.month.toString().padLeft(2, '0')}-${lostDate!.day.toString().padLeft(2, '0')}",
+        description: descriptionController.text,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pop(context, true); // 🔥 مهم
+    } catch (e) {
+      print("ERROR: $e");
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report submitted successfully')),
+        SnackBar(content: Text(e.toString())),
       );
-      Navigator.pop(context);
     }
   }
 

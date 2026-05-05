@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import '../services/trip_service.dart';
+import '../../services/trip_service.dart';
 import 'seat_selection_screen.dart';
+import 'package:intl/intl.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String from;
   final String to;
   final String date;
   final int persons;
+  
 
   const SearchResultsScreen({
     super.key,
@@ -23,15 +25,21 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
   late Future<List<Map<String, dynamic>>> _tripsFuture;
 
-  @override
-  void initState() {
-    super.initState();
-    _tripsFuture = TripService.searchTrips(
-      from: widget.from,
-      to: widget.to,
-      date: widget.date,
-    );
-  }
+@override
+void initState() {
+  super.initState();
+
+  final parsedDate = DateTime.parse(widget.date);
+
+  final formattedDate =
+      DateFormat('yyyy-MM-dd').format(parsedDate);
+
+  _tripsFuture = TripService.searchTrips(
+    from: widget.from.trim(),
+    to: widget.to.trim(),
+    date: formattedDate,
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -93,16 +101,18 @@ class _TripCardState extends State<TripCard> {
   String? selectedPickup;
   String? selectedDropoff;
 
-  @override
-  void initState() {
-    super.initState();
+@override
+void initState() {
+  super.initState();
 
-    pickupOptions = List<String>.from(widget.trip['pickup_location'] ?? []);
-    dropoffOptions = List<String>.from(widget.trip['dropoff_location'] ?? []);
+  pickupOptions =
+      List<String>.from(widget.trip['pickup_location'] ?? []);
+  dropoffOptions =
+      List<String>.from(widget.trip['dropoff_location'] ?? []);
 
-    selectedPickup = pickupOptions.isNotEmpty ? pickupOptions.first : null;
-    selectedDropoff = dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
-  }
+  selectedPickup = pickupOptions.isNotEmpty ? pickupOptions.first : null;
+  selectedDropoff = dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -184,6 +194,7 @@ class _TripCardState extends State<TripCard> {
                         MaterialPageRoute(
                           builder: (_) => SeatSelectionScreen(
                             tripId: widget.trip['id'] ?? 0,
+                            pricePerSeat: double.parse(widget.trip['price'].toString()),
                             persons: widget.persons,
                             pickup: selectedPickup!,
                             dropoff: selectedDropoff!,

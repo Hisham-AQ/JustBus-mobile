@@ -32,38 +32,69 @@ class BookingService {
       }),
     );
 
-    print('HOLD STATUS: ${response.statusCode}');
-    print('HOLD BODY: ${response.body}');
-
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+
+      return {
+        'bookingId': data['bookingId'],
+        'holdExpiresAt': data['holdExpiresAt'],
+        'totalPrice': double.parse(data['totalPrice'].toString()),
+      };
     }
 
     throw Exception('Hold failed (${response.statusCode})');
   }
 
   // ================= CONFIRM =================
-static Future<void> confirmBooking({
-  required int bookingId,
-}) async {
-  final token = await SecureStorage.getToken();
+  static Future<void> confirmBooking({
+    required int bookingId,
+    String? rewardCode,
+  }) async {
+    final token = await SecureStorage.getToken();
 
-  final response = await http.post(
-    Uri.parse('$_baseUrl/api/bookings/confirm'),
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    },
-    body: jsonEncode({
-      'bookingId': bookingId,
-    }),
-  );
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/bookings/confirm'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        "bookingId": bookingId,
+        if (rewardCode != null && rewardCode.isNotEmpty)
+          "rewardCode": rewardCode,
+      }),
+    );
 
-  print('CONFIRM STATUS: ${response.statusCode}');
-  print('CONFIRM BODY: ${response.body}');
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
 
-  if (response.statusCode != 200) {
-    throw Exception('Confirm failed');
+      throw Exception(data['message'] ?? 'Confirm failed');
+    }
   }
-}
+
+  static Future<Map<String, dynamic>> validateReward({
+    required String code,
+    required int tripId,
+  }) async {
+    final token = await SecureStorage.getToken();
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/rewards/validate-reward'),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode({
+        "code": code,
+        "tripId": tripId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      final body = jsonDecode(response.body);
+      throw Exception(body['message']);
+    }
+  }
 }

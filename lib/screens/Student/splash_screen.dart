@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:justbus/screens/welcome_screen.dart';
+import 'package:justbus/screens/Student/welcome_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

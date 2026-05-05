@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/services/secure_storage.dart';
 import 'package:justbus/services/profile_service.dart';
-import 'package:justbus/screens/login_screen.dart';
-import 'package:justbus/screens/edit_single_field_screen.dart';
-import 'package:justbus/screens/edit_date_screen.dart';
-import 'package:justbus/screens/change_password_screen.dart';
+import 'package:justbus/screens/Student/login_screen.dart';
+import 'package:justbus/screens/Student/edit_single_field_screen.dart';
+import 'package:justbus/screens/Student/edit_date_screen.dart';
+import 'package:justbus/screens/Student/change_password_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -56,38 +56,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 16),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1F4B63), Color(0xFF2F6F8F)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 42,
-                      backgroundColor: const Color(0xFFD9D9D9),
-                      backgroundImage:
-                          avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-                      child: avatarUrl == null
-                          ? Text(
-                              name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
-                              ),
-                            )
-                          : null,
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 42,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       name.isNotEmpty ? name : email,
                       style: const TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       phone,
                       style: const TextStyle(
-                        color: Colors.black54,
+                        color: Colors.white70,
                         fontSize: 13,
                       ),
                     ),
@@ -97,6 +113,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: ListView(
                   children: [
+                    const SizedBox(height: 12), 
+
                     _Section(children: [
                       _Item(
                         icon: Icons.person_outline,
@@ -128,7 +146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               builder: (_) => EditSingleFieldScreen(
                                 title: 'Edit Phone Number',
                                 subtitle: 'Enter your phone number',
-                                fieldKey: 'phone', 
+                                fieldKey: 'phone',
                                 initialValue: phone,
                                 keyboardType: TextInputType.phone,
                               ),
@@ -239,8 +257,18 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      color: Colors.white,
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Column(children: children),
     );
   }
@@ -266,9 +294,20 @@ class _Item extends StatelessWidget {
     final titleColor = isDanger ? Colors.red : Colors.black87;
 
     return ListTile(
-      leading: Icon(
-        icon,
-        color: isDanger ? Colors.red : Colors.black54,
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isDanger
+              ? Colors.red.withOpacity(0.1)
+              : const Color(0xFF1F4B63).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: isDanger ? Colors.red : const Color(0xFF1F4B63),
+        ),
       ),
       title: Text(
         title,
@@ -281,7 +320,14 @@ class _Item extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (value != null) Text(value!, style: const TextStyle(fontSize: 13)),
+          if (value != null)
+            Text(
+              value!,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.black54,
+              ),
+            ),
           if (onTap != null) ...[
             const SizedBox(width: 6),
             const Icon(Icons.chevron_right_rounded, color: Colors.black38),

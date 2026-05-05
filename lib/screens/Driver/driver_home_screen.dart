@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/services/auth_service.dart';
-import 'login_screen.dart';
+import '../Student/login_screen.dart';
 
 class DriverHomeScreen extends StatelessWidget {
   const DriverHomeScreen({super.key});

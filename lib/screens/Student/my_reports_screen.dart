@@ -1,32 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../services/lostItems_service.dart';
 
-class MyReportsScreen extends StatelessWidget {
+class MyReportsScreen extends StatefulWidget {
   const MyReportsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Reports'),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          _ReportCard(
-            item: 'Black Wallet',
-            status: 'Pending',
-            date: '12 Sep 2025',
-          ),
-          _ReportCard(
-            item: 'iPhone 14',
-            status: 'Found',
-            date: '08 Sep 2025',
-          ),
-        ],
-      ),
-    );
-  }
+  State<MyReportsScreen> createState() => _MyReportsScreenState();
 }
 
 class _ReportCard extends StatelessWidget {
@@ -42,7 +21,7 @@ class _ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isFound = status == 'Found';
+    final bool isFound = status == 'found';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -96,7 +75,7 @@ class _ReportCard extends StatelessWidget {
             ),
           ),
           Text(
-            status,
+            status.toUpperCase(),
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: isFound ? Colors.green : Colors.orange,
@@ -105,5 +84,77 @@ class _ReportCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _MyReportsScreenState extends State<MyReportsScreen> {
+  late Future<List<dynamic>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = LostItemsService.getMyReports();
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _future = LostItemsService.getMyReports();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Reports'),
+        centerTitle: true,
+      ),
+      body: FutureBuilder(
+        future: _future,
+        builder: (context, snapshot) {
+          // 🔄 loading
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // ❌ error
+          if (snapshot.hasError) {
+            return const Center(child: Text("Failed to load reports"));
+          }
+
+          final data = snapshot.data as List;
+
+          // 💤 empty
+          if (data.isEmpty) {
+            return const Center(
+              child: Text("No reports yet"),
+            );
+          }
+
+          // 🔥 list
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: data.length,
+              itemBuilder: (context, i) {
+                final r = data[i];
+
+                return _ReportCard(
+                  item: r['item_name'],
+                  status: r['status'],
+                  date: _formatDate(r['lost_date']),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _formatDate(String date) {
+    final d = DateTime.parse(date);
+    return "${d.day}/${d.month}/${d.year}";
   }
 }

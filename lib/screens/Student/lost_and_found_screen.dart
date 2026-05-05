@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'report_lost_item_screen.dart';
 import 'my_reports_screen.dart';
 
-class LostAndFoundScreen extends StatelessWidget {
+class LostAndFoundScreen extends StatefulWidget {
   const LostAndFoundScreen({super.key});
 
+  @override
+  State<LostAndFoundScreen> createState() => _LostAndFoundScreenState();
+}
+
+class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,6 +21,7 @@ class LostAndFoundScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // 🔵 HEADER
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -42,34 +48,52 @@ class LostAndFoundScreen extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
+
+            // 🔥 REPORT BUTTON
             _actionButton(
               context,
               icon: Icons.report_gmailerrorred_rounded,
               title: 'Report Lost Item',
               subtitle: 'Submit a new lost item report',
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => const ReportLostItemScreen(),
                   ),
                 );
+
+                // 🔥 بعد الرجوع
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Report submitted successfully"),
+                    ),
+                  );
+                }
               },
             ),
+
             const SizedBox(height: 12),
+
+            // 🔥 MY REPORTS
             _actionButton(
               context,
               icon: Icons.list_alt_rounded,
               title: 'My Reports',
               subtitle: 'View your previous reports',
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => const MyReportsScreen(),
                   ),
                 );
+
+                // 🔄 تحديث عند الرجوع (مستقبلاً)
+                if (mounted) setState(() {});
               },
             ),
           ],
@@ -78,6 +102,7 @@ class LostAndFoundScreen extends StatelessWidget {
     );
   }
 
+  // 🔹 BUTTON UI
   static Widget _actionButton(
     BuildContext context, {
     required IconData icon,

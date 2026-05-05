@@ -1,10 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'ticket_screen.dart';
-import '../services/booking_service.dart';
-import '../services/secure_storage.dart';
+import '../../services/booking_service.dart';
+import '../../services/secure_storage.dart';
 
 enum PaymentMethod { applePay, visa, wallet }
+
+TextEditingController _rewardController = TextEditingController();
+bool isRewardApplied = false;
+bool isCheckingReward = false;
+String? rewardMessage;
+double? previewPrice;
 
 class ConfirmBookingScreen extends StatefulWidget {
   final int bookingId;
@@ -19,6 +25,7 @@ class ConfirmBookingScreen extends StatefulWidget {
   final String arrivalTime;
   final String busNumber;
   final List<int> seats;
+  final double pricePerSeat;
 
   const ConfirmBookingScreen({
     super.key,
@@ -34,6 +41,7 @@ class ConfirmBookingScreen extends StatefulWidget {
     required this.arrivalTime,
     required this.busNumber,
     required this.seats,
+    required this.pricePerSeat,
   });
 
   @override
@@ -117,12 +125,16 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   Future<void> _confirmBooking() async {
     setState(() => _isSubmitting = true);
 
+    final code = _rewardController.text.trim();
     try {
       await BookingService.confirmBooking(
         bookingId: widget.bookingId,
+        rewardCode: isRewardApplied ? code : null,
       );
 
       if (!mounted) return;
+
+      _rewardController.clear();
 
       Navigator.pushReplacement(
         context,
@@ -140,20 +152,26 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
           ),
         ),
       );
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+
+      String msg = e.toString();
+
+      msg = msg.replaceAll("Exception: ", "");
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Confirm failed')),
+        SnackBar(content: Text(msg)),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
-
   // ================= UI =================
+
   @override
   Widget build(BuildContext context) {
-    final totalPrice = widget.seats.length * 2.5;
+    final originalPrice = widget.seats.length * widget.pricePerSeat;
+    final totalPrice = previewPrice ?? originalPrice;
     final isDanger = _remainingSeconds <= 30;
 
     return Scaffold(
@@ -233,6 +251,57 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
             const SizedBox(height: 14),
 
             _card(
+              title: 'Reward Code',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _rewardController,
+                          decoration: InputDecoration(
+                            hintText: "Enter code",
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: isCheckingReward ? null : _applyReward,
+                        child: isCheckingReward
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Text("Apply"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  if (rewardMessage != null &&
+                      _rewardController.text.isNotEmpty)
+                    Text(
+                      rewardMessage!,
+                      style: TextStyle(
+                        color: isRewardApplied ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            _card(
               title: 'Payment Method',
               child: Column(
                 children: [
@@ -258,6 +327,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
               ),
             ),
 
+            const SizedBox(height: 14),
+
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -267,20 +338,29 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Total Price',
-                            style: TextStyle(fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 4),
+                      child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Total Price',
+                          style: TextStyle(fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 4),
+                      if (previewPrice != null)
                         Text(
-                          '$totalPrice JD',
+                          '$originalPrice JD',
                           style: const TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.w900),
+                            decoration: TextDecoration.lineThrough,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
+                      Text(
+                        '$totalPrice JD',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  )),
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
@@ -413,5 +493,51 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _applyReward() async {
+    final code = _rewardController.text.trim();
+
+    if (code.isEmpty) return;
+
+    setState(() {
+      isCheckingReward = true;
+      rewardMessage = null;
+    });
+
+    try {
+      final result = await BookingService.validateReward(
+        code: code,
+        tripId: widget.tripId,
+      );
+
+      if (result['type'] != 'free_trip') {
+        setState(() {
+          isRewardApplied = false;
+          rewardMessage = "Only free trip allowed";
+          previewPrice = null;
+        });
+        return;
+      }
+
+      setState(() {
+        isRewardApplied = result['valid'] == true;
+        previewPrice = (result['finalPrice'] as num).toDouble();
+
+        rewardMessage = result['valid']
+            ? "Reward applied 🎉"
+            : result['message'] ?? "Invalid code";
+      });
+    } catch (e) {
+      setState(() {
+        isRewardApplied = false;
+        previewPrice = null;
+        rewardMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        isCheckingReward = false;
+      });
+    }
   }
 }
