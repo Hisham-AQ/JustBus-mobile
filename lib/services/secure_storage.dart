@@ -8,6 +8,8 @@ class SecureStorage {
   static const _keyRole = 'role';
   static const _keyEmail = 'email';
   static const _keyUserName = 'user_name';
+  static const _keyTrackingTrip = 'tracking_trip';
+  static const _keyPickupLocation = 'pickup_location';
 
   // ===== TOKEN =====
   static Future<void> saveToken(String token) =>
@@ -27,11 +29,54 @@ class SecureStorage {
 
   static Future<String?> getEmail() => _storage.read(key: _keyEmail);
 
-  // ===== USER NAME ✅ =====
+  // ===== USER NAME  =====
   static Future<void> saveUserName(String name) =>
       _storage.write(key: _keyUserName, value: name);
 
   static Future<String?> getUserName() => _storage.read(key: _keyUserName);
+
+  //saveTrackingTrip
+  static Future<void> saveTrackingTrip(
+    int tripId,
+  ) =>
+      _storage.write(
+        key: _keyTrackingTrip,
+        value: tripId.toString(),
+      );
+
+  static Future<int?> getTrackingTrip() async {
+    final value = await _storage.read(
+      key: _keyTrackingTrip,
+    );
+
+    if (value == null) {
+      return null;
+    }
+
+    return int.tryParse(value);
+  }
+
+  static Future<void> clearTrackingTrip() async {
+    await _storage.delete(
+      key: _keyTrackingTrip,
+    );
+  }
+
+  static Future<void> savePickupLocation(
+    String value,
+  ) =>
+      _storage.write(
+        key: _keyPickupLocation,
+        value: value,
+      );
+  static Future<String?> getPickupLocation() => _storage.read(
+        key: _keyPickupLocation,
+      );
+  static Future<void> clearPickupLocation() async {
+    await _storage.delete(
+      key: _keyPickupLocation,
+    );
+  }
 
   // ===== CLEAR =====
   static Future<void> clear() async {

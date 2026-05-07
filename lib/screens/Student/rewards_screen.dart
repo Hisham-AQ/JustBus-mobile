@@ -12,7 +12,7 @@ class RewardsScreen extends StatefulWidget {
 
 class _RewardsScreenState extends State<RewardsScreen> {
   static const Color primary = Color(0xFF1F4B63);
-  static const Color lightGrey = Color(0xFFEDEDED);
+  //static const Color lightGrey = Color(0xFFEDEDED);
 
   int points = 0;
   bool isLoading = true;
@@ -28,7 +28,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
       final result = await RewardsService.getPoints();
 
       setState(() {
-        points = result ?? 0;
+        points = result; //?? 0
         isLoading = false;
       });
     } catch (e) {
@@ -74,7 +74,6 @@ class _RewardsScreenState extends State<RewardsScreen> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    // 👈 هذا أهم سطر
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -223,7 +222,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                           ),
                         ),
 
-                        // COPY BUTTON 🔥
+                        // COPY BUTTON
                         InkWell(
                           onTap: () {
                             Clipboard.setData(ClipboardData(text: code));
@@ -385,7 +384,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
               ),
               const SizedBox(height: 6),
               SizedBox(
-                height: 32, // 👈 مهم
+                height: 32,
                 child: ElevatedButton(
                   onPressed: canRedeem ? onRedeem : null,
                   style: ElevatedButton.styleFrom(

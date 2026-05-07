@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AIService {
-  static const _baseUrlUrl =
+  static const baseUrl =
       'https://justbus-backend-production.up.railway.app';
 
 static Future<Map<String, dynamic>> sendMessage(String message) async {

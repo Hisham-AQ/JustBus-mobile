@@ -46,7 +46,6 @@ class DrawerMenu extends StatelessWidget {
         color: const Color(0xFFF7F9FB),
         child: Column(
           children: [
-            // 🔥 HEADER
             Container(
               padding: const EdgeInsets.fromLTRB(16, 36, 16, 20),
               decoration: const BoxDecoration(
@@ -104,9 +103,9 @@ class DrawerMenu extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            // 🔹 MAIN SECTION
+            //  MAIN SECTION
             _section([
-              _tile(context, Icons.inventory_2_outlined, 'Package',
+              _tile(context, Icons.inventory_2_outlined, 'Parcel',
                   () => _go(context, const PackageScreen())),
               _tile(context, Icons.star_border, 'Special Trip',
                   () => _go(context, const SpecialTripScreen())),
@@ -124,8 +123,6 @@ class DrawerMenu extends StatelessWidget {
             _section([
               _tile(context, Icons.search_off, 'Lost & Found',
                   () => _go(context, const LostAndFoundScreen())),
-
-              // 🔥 Notifications with badge
               ListTile(
                 leading: Stack(
                   children: [
@@ -182,7 +179,6 @@ class DrawerMenu extends StatelessWidget {
     );
   }
 
-  // 🔹 ITEM
   Widget _tile(
     BuildContext context,
     IconData icon,

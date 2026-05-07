@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/trip_service.dart';
 import '../../services/activity_service.dart';
 
 class MyActivityScreen extends StatefulWidget {

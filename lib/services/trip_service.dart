@@ -31,7 +31,6 @@ class TripService {
       },
     );
 
-
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(
         json.decode(response.body),
@@ -68,9 +67,6 @@ class TripService {
       },
     );
 
-    print("MY TRIPS STATUS: ${response.statusCode}");
-    print("MY TRIPS BODY: ${response.body}");
-
     if (response.statusCode == 200) {
       return List<Map<String, dynamic>>.from(
         jsonDecode(response.body),
@@ -78,5 +74,32 @@ class TripService {
     } else {
       throw Exception(response.body);
     }
+  }
+
+  static Future<Map<String, dynamic>> getLiveLocation({
+    required int tripId,
+    required String pickupLocation,
+  }) async {
+    final token = await SecureStorage.getToken();
+
+    final res = await http.get(
+      Uri.parse(
+        '$_baseUrl/api/trips/live-location/$tripId',
+      ).replace(
+        queryParameters: {
+          'pickupLocation': pickupLocation,
+        },
+      ),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception("Failed");
+    }
+
+    return jsonDecode(res.body);
   }
 }

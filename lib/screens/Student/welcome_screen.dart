@@ -3,36 +3,51 @@ import 'login_screen.dart';
 import 'home_screen.dart';
 import 'package:justbus/services/profile_service.dart';
 import 'package:justbus/services/secure_storage.dart';
+import '../Driver/driver_home_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   Future<void> _handleGetStarted(BuildContext context) async {
     final token = await SecureStorage.getToken();
+    final role = await SecureStorage.getRole();
 
     if (token == null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        ),
       );
       return;
     }
 
     try {
-      // Validate token by calling backend
       await ProfileService.getProfile();
 
-      // Token valid → go to home
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      if (role == 'driver') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const DriverHomeScreen(),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const HomeScreen(),
+          ),
+        );
+      }
     } catch (_) {
       await SecureStorage.clear();
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(),
+        ),
       );
     }
   }

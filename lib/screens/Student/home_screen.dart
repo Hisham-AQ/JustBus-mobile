@@ -1,21 +1,41 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-
+import '../../services/trip_service.dart';
 import '../../widgets/drawer_menu.dart';
 import '../../services/profile_service.dart';
 import '../../services/city_service.dart';
 import 'search_results_screen.dart';
 import 'just_bot_sheet.dart';
+import '../../services/secure_storage.dart';
+import 'rating_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final int? trackingTripId;
+  final String? pickupLocation;
+
+  const HomeScreen({
+    super.key,
+    this.trackingTripId,
+    this.pickupLocation,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final MapController mapController = MapController();
+  int? activeTrackingTripId;
+  Timer? trackingTimer;
+  LatLng? busLocation;
+  String pickupLocation = "";
+
+  double etaMinutes = 0;
+  bool isBoarded = false;
+  bool trackingMode = false;
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late Future<Map<String, dynamic>> _profileFuture;
@@ -24,18 +44,124 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<String> cityLocations = [];
   bool isLoadingCities = true;
-
+  bool firstMapMove = true;
   String city = '';
   bool cityOnTop = true;
 
   DateTime selectedDate = DateTime(2026, 1, 1);
   int persons = 1;
 
+  Future<void> loadBusLocation() async {
+    if (activeTrackingTripId == null) {
+      return;
+    }
+    try {
+      final data = await TripService.getLiveLocation(
+        tripId: activeTrackingTripId!,
+        pickupLocation: pickupLocation,
+      );
+      if (data['status'] == 'completed') {
+        final finishedTripId = activeTrackingTripId;
+
+        await SecureStorage.clearTrackingTrip();
+        await SecureStorage.clearPickupLocation();
+
+        trackingTimer?.cancel();
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RatingScreen(
+              tripId: finishedTripId!,
+            ),
+          ),
+        );
+        setState(() {
+          trackingMode = false;
+
+          busLocation = null;
+
+          activeTrackingTripId = null;
+        });
+
+        return;
+      }
+      if (data['current_lat'] == null || data['current_lng'] == null) {
+        return;
+      }
+
+      final location = LatLng(
+        data['current_lat'],
+        data['current_lng'],
+      );
+      if (!mounted) return;
+      setState(() {
+        busLocation = location;
+        etaMinutes = (data['eta_minutes'] ?? 0).toDouble();
+        isBoarded = data['is_boarded'] == 1;
+      });
+
+      if (firstMapMove) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          mapController.move(location, 15);
+        });
+
+        firstMapMove = false;
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> startTracking() async {
+    trackingTimer?.cancel();
+    await loadBusLocation();
+
+    trackingTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => loadBusLocation(),
+    );
+  }
+
+  Future<void> _restoreTracking() async {
+    int? tripId = widget.trackingTripId;
+
+    tripId ??= await SecureStorage.getTrackingTrip();
+
+    if (tripId == null) {
+      return;
+    }
+
+    final savedPickupLocation =
+        widget.pickupLocation ?? await SecureStorage.getPickupLocation() ?? "";
+
+    if (savedPickupLocation.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      trackingMode = true;
+      activeTrackingTripId = tripId;
+      pickupLocation = savedPickupLocation;
+    });
+
+    startTracking();
+  }
+
   @override
   void initState() {
     super.initState();
     _profileFuture = ProfileService.getProfile();
     _loadCities();
+    _restoreTracking();
+  }
+
+  @override
+  void dispose() {
+    trackingTimer?.cancel();
+
+    super.dispose();
   }
 
   void _loadCities() async {
@@ -110,6 +236,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // ================= MAP =================
           Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.06),
+            ),
+          ),
+
+          Positioned.fill(
             child: FlutterMap(
               options: MapOptions(
                 initialCenter: justLocation,
@@ -124,14 +256,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   markers: [
                     Marker(
                       point: justLocation,
-                      width: 50,
-                      height: 50,
+                      width: 60,
+                      height: 60,
                       child: const Icon(
-                        Icons.location_pin,
-                        size: 50,
-                        color: Colors.red,
+                        Icons.trip_origin,
+                        size: 34,
+                        color: Colors.green,
                       ),
                     ),
+                    if (busLocation != null)
+                      Marker(
+                        point: busLocation!,
+                        width: 70,
+                        height: 70,
+                        child: const Icon(
+                          Icons.directions_bus_filled_rounded,
+                          size: 42,
+                          color: Colors.blue,
+                        ),
+                      ),
                   ],
                 ),
               ],
@@ -147,6 +290,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 14,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
                 ),
@@ -159,157 +309,301 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // ================= BOTTOM CARD =================
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Where would like\nto go today ?',
-                      style: TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.w900,
-                      ),
+          if (!trackingMode)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(34),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 30,
+                      offset: const Offset(0, -10),
                     ),
-                    const SizedBox(height: 14),
-
-                    // ===== LOCATIONS =====
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEDEDED),
-                        borderRadius: BorderRadius.circular(22),
+                  ],
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 52,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.black12,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
                       ),
-                      child: Row(
+
+                      const SizedBox(height: 18),
+
+                      const Text(
+                        'Where are you\ngoing today?',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // ===== LOCATIONS =====
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEDEDED),
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Container(
+                                  width: 2,
+                                  height: 70,
+                                  color: Color(0xFFD9D9D9),
+                                ),
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF1F4B63),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                children: cityOnTop
+                                    ? [
+                                        _cityDropdown(),
+                                        const SizedBox(height: 12),
+                                        const FixedLocation(
+                                            label: 'JUST university'),
+                                      ]
+                                    : [
+                                        const FixedLocation(
+                                            label: 'JUST university'),
+                                        const SizedBox(height: 12),
+                                        _cityDropdown(),
+                                      ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => cityOnTop = !cityOnTop),
+                              child: Container(
+                                width: 58,
+                                height: 58,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1F4B63),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.12),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.swap_vert_rounded,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      Row(
                         children: [
                           Expanded(
-                            child: Column(
-                              children: cityOnTop
-                                  ? [
-                                      _cityDropdown(),
-                                      const SizedBox(height: 12),
-                                      const FixedLocation(
-                                          label: 'JUST university'),
-                                    ]
-                                  : [
-                                      const FixedLocation(
-                                          label: 'JUST university'),
-                                      const SizedBox(height: 12),
-                                      _cityDropdown(),
-                                    ],
+                            child: SmallInfoCard(
+                              icon: Icons.calendar_month_rounded,
+                              text:
+                                  '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: selectedDate,
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2035),
+                                );
+                                if (picked != null) {
+                                  setState(() => selectedDate = picked);
+                                }
+                              },
                             ),
                           ),
                           const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: () => setState(() => cityOnTop = !cityOnTop),
-                            child: Container(
-                              width: 58,
-                              height: 58,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1F4B63),
-                                borderRadius: BorderRadius.circular(29),
-                              ),
-                              child: const Icon(
-                                Icons.swap_vert_rounded,
-                                color: Colors.white,
-                              ),
+                          Expanded(
+                            child: SmallInfoCard(
+                              icon: Icons.people_alt_rounded,
+                              text: persons == 1
+                                  ? '1 Person'
+                                  : '$persons Persons',
+                              onTap: () =>
+                                  setState(() => persons = (persons % 5) + 1),
                             ),
                           ),
                         ],
                       ),
-                    ),
 
-                    const SizedBox(height: 14),
+                      const SizedBox(height: 16),
 
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SmallInfoCard(
-                            icon: Icons.calendar_month_rounded,
-                            text:
-                                '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                            onTap: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: selectedDate,
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime(2035),
-                              );
-                              if (picked != null) {
-                                setState(() => selectedDate = picked);
-                              }
-                            },
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1F4B63).withOpacity(0.22),
+                              blurRadius: 18,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 64,
+                          child: ElevatedButton(
+                            onPressed: city.isEmpty
+                                ? null
+                                : () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => SearchResultsScreen(
+                                          from: cityOnTop
+                                              ? city
+                                              : 'JUST university',
+                                          to: cityOnTop
+                                              ? 'JUST university'
+                                              : city,
+                                          date: '${selectedDate.year}-'
+                                              '${selectedDate.month.toString().padLeft(2, '0')}-'
+                                              '${selectedDate.day.toString().padLeft(2, '0')}',
+                                          persons: persons,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              shadowColor: Colors.transparent,
+                              backgroundColor: const Color(0xFF1F4B63),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: const Text(
+                              'Search',
+                              style: TextStyle(
+                                fontSize: 26,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: SmallInfoCard(
-                            icon: Icons.people_alt_rounded,
-                            text:
-                                persons == 1 ? '1 Person' : '$persons Persons',
-                            onTap: () =>
-                                setState(() => persons = (persons % 5) + 1),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
+          // ================= JUST BOT =================
+          if (trackingMode)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 40,
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isBoarded
+                          ? "Heading to destination 🚍"
+                          : "Bus is on the way 🚍",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      busLocation == null
+                          ? "Calculating ETA..."
+                          : isBoarded
+                              ? "Destination ETA: ${etaMinutes.toStringAsFixed(1)} min"
+                              : "Pickup ETA: ${etaMinutes.toStringAsFixed(1)} min",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.green,
+                      ),
+                    ),
+                    Text(
+                      busLocation == null
+                          ? "Waiting for driver..."
+                          : isBoarded
+                              ? "Bus heading to destination"
+                              : "Bus heading to pickup point",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 16),
-
                     SizedBox(
                       width: double.infinity,
-                      height: 64,
-                      child: ElevatedButton(
-                        onPressed: city.isEmpty
-                            ? null
-                            : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => SearchResultsScreen(
-                                      from:
-                                          cityOnTop ? city : 'JUST university',
-                                      to: cityOnTop ? 'JUST university' : city,
-                                      date: '${selectedDate.year}-'
-                                          '${selectedDate.month.toString().padLeft(2, '0')}-'
-                                          '${selectedDate.day.toString().padLeft(2, '0')}',
-                                      persons: persons,
-                                    ),
-                                  ),
-                                );
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1F4B63),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: const Text(
-                          'Search',
+                      height: 58,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.qr_code),
+                        label: const Text(
+                          "Tracking Active",
                           style: TextStyle(
-                            fontSize: 26,
-                            color: Colors.white,
+                            fontSize: 18,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
+                        onPressed: () {},
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
-
-          // ================= JUST BOT =================
           Positioned(
             right: 16,
             bottom: 790,
@@ -345,26 +639,75 @@ class DropdownPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 54,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          items: items
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(28),
+            ),
+          ),
+          builder: (_) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: items.map((e) {
+                    return ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      title: Text(
+                        e,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      trailing: e == value
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: Color(0xFF1F4B63),
+                            )
+                          : null,
+                      onTap: () {
+                        onChanged(e);
+                        Navigator.pop(context);
+                      },
+                    );
+                  }).toList(),
                 ),
-              )
-              .toList(),
-          onChanged: onChanged,
+              ),
+            );
+          },
+        );
+      },
+      child: Container(
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Colors.black45,
+            ),
+          ],
         ),
       ),
     );

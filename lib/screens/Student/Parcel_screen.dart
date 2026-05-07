@@ -146,73 +146,543 @@ class _PackageScreenState extends State<PackageScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Estimated Total",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "$price JD",
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              SizedBox(
+                height: 58,
+                child: ElevatedButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          if (receiverNameCtrl.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Enter receiver name')),
+                            );
+                            return;
+                          }
+
+                          if (pickup == dropoff) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Pickup and Drop-off must be different'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final price = previewPrice ?? _estimatePriceJOD();
+
+                          bool? confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text("Confirm Request"),
+                                content: Text(
+                                  "Send parcel from $pickup to $dropoff?\n\n"
+                                  "Type: ${selectedType.name}\n"
+                                  "Weight: ${weightKg.toStringAsFixed(1)} kg\n"
+                                  "Delivery: ${deliveryOption == 0 ? "Standard" : "Express"}\n"
+                                  "Price: $price JD",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text("Confirm"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (confirm != true) return;
+
+                          setState(() => isSubmitting = true);
+
+                          try {
+                            final result = await ParcelService.submitParcel(
+                              pickup: pickup,
+                              dropoff: dropoff,
+                              type: selectedType.name,
+                              weight: weightKg,
+                              deliveryType:
+                                  deliveryOption == 0 ? "standard" : "express",
+                              notes: notesCtrl.text,
+                              receiverName: receiverNameCtrl.text,
+                              rewardCode: rewardCtrl.text.trim().isEmpty
+                                  ? null
+                                  : rewardCtrl.text.trim(),
+                            );
+
+                            final orderNumber = result['orderNumber'];
+                            final pinCode = result['pinCode'];
+
+                            await showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(22),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.green.withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.green,
+                                            size: 50,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          "Parcel Sent Successfully",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Container(
+                                          padding: const EdgeInsets.all(14),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF5F5F5),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text("Order"),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        orderNumber,
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w900,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      InkWell(
+                                                        onTap: () {
+                                                          Clipboard.setData(
+                                                            ClipboardData(
+                                                              text: orderNumber,
+                                                            ),
+                                                          );
+
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  "Order copied"),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.copy,
+                                                          size: 18,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  const Text("PIN"),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        pinCode,
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w900,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      InkWell(
+                                                        onTap: () {
+                                                          Clipboard.setData(
+                                                            ClipboardData(
+                                                              text: pinCode,
+                                                            ),
+                                                          );
+
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            const SnackBar(
+                                                              content: Text(
+                                                                  "PIN copied"),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.copy,
+                                                          size: 18,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: OutlinedButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            14),
+                                                  ),
+                                                ),
+                                                child: const Text("OK"),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pushAndRemoveUntil(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          const HomeScreen(),
+                                                    ),
+                                                    (route) => false,
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: primary,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            14),
+                                                  ),
+                                                ),
+                                                child: const Text("Home"),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Server error: $e")),
+                            );
+                          } finally {
+                            setState(() => isSubmitting = false);
+
+                            receiverNameCtrl.clear();
+                            notesCtrl.clear();
+                            rewardCtrl.clear();
+
+                            _resetReward();
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Row(
+                          children: [
+                            Icon(Icons.local_shipping_rounded),
+                            SizedBox(width: 10),
+                            Text(
+                              "Submit",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       appBar: AppBar(
         title: const Text('Parcel Delivery',
             style: TextStyle(fontWeight: FontWeight.w900)),
         backgroundColor: Colors.white,
-        elevation: 0,
+        scrolledUnderElevation: 0,
         foregroundColor: Colors.black,
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+        physics: const BouncingScrollPhysics(),
         children: [
-          const Text(
-            'Send a parcel',
-            style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.w900, height: 1.05),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Choose pickup/drop-off points and package details.',
-            style:
-                TextStyle(color: Colors.black54, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: lightGrey,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(30),
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF1F4B63),
+                  Color(0xFF2B6B8A),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Column(
-                    children: [
-                      _DropdownPill(
-                        label: 'Pickup',
-                        value: pickup,
-                        items: locations,
-                        onChanged: (v) {
-                          setState(() => pickup = v ?? pickup);
-                          _resetReward();
-                        },
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        "Fast Parcel Delivery",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      _DropdownPill(
-                        label: 'Drop-off',
-                        value: dropoff,
-                        items: locations,
-                        onChanged: (v) =>
-                            setState(() => dropoff = v ?? dropoff),
+                      SizedBox(height: 10),
+                      Text(
+                        "Deliver securely between JUST offices across Jordan.",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Icon(Icons.flash_on, color: Colors.amber, size: 18),
+                          SizedBox(width: 6),
+                          Text(
+                            "24-48 Hours Average",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: swapLocations,
-                  child: Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: primary,
-                      borderRadius: BorderRadius.circular(29),
-                    ),
-                    child: const Icon(Icons.swap_vert_rounded,
-                        color: Colors.white, size: 30),
+                const SizedBox(width: 16),
+                Container(
+                  width: 82,
+                  height: 82,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: const Icon(
+                    Icons.bus_alert,
+                    color: Colors.white,
+                    size: 42,
                   ),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: lightGrey,
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      children: [
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            color: Colors.green,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        Container(
+                          width: 2,
+                          height: 118,
+                          color: Colors.black12,
+                        ),
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            color: primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _DropdownPill(
+                            label: 'Pickup',
+                            parentContext: context,
+                            value: pickup,
+                            items: locations,
+                            onChanged: (v) {
+                              setState(() => pickup = v ?? pickup);
+                              _resetReward();
+                            },
+                          ),
+                          const SizedBox(height: 18),
+                          _DropdownPill(
+                            label: 'Drop-off',
+                            parentContext: context,
+                            value: dropoff,
+                            items: locations,
+                            onChanged: (v) {
+                              setState(() => dropoff = v ?? dropoff);
+                              _resetReward();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 50),
+                      child: GestureDetector(
+                        child: GestureDetector(
+                          onTap: swapLocations,
+                          child: Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: primary,
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primary.withOpacity(0.25),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.swap_vert_rounded,
+                              color: Colors.white,
+                              size: 30,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
               ],
             ),
           ),
@@ -229,51 +699,93 @@ class _PackageScreenState extends State<PackageScreen> {
                 const Text('Parcel type',
                     style: TextStyle(fontWeight: FontWeight.w900)),
                 const SizedBox(height: 12),
-                SizedBox(
-                  height: 56,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: parcelTypes.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
-                    itemBuilder: (context, i) {
-                      final t = parcelTypes[i];
-                      final selected = t.name == selectedType.name;
-
-                      return InkWell(
-                        borderRadius: BorderRadius.circular(18),
-                        onTap: () => setState(() => selectedType = t),
-                        child: Ink(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? Colors.white
-                                : const Color(0xFFF7F7F7),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color:
-                                  selected ? primary : const Color(0xFFD6D6D6),
-                              width: selected ? 1.6 : 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(t.icon,
-                                  color: selected ? primary : Colors.black54),
-                              const SizedBox(width: 8),
-                              Text(
-                                t.name,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  color:
-                                      selected ? Colors.black : Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: parcelTypes.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.45,
                   ),
+                  itemBuilder: (context, i) {
+                    final t = parcelTypes[i];
+                    final selected = t.name == selectedType.name;
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => selectedType = t);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOut,
+                        padding: const EdgeInsets.all(13),
+                        decoration: BoxDecoration(
+                          color:
+                              selected ? Colors.white : const Color(0xFFF7F7F7),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: selected ? primary : const Color(0xFFDADADA),
+                            width: selected ? 2 : 1,
+                          ),
+                          boxShadow: selected
+                              ? [
+                                  BoxShadow(
+                                    color: primary.withOpacity(0.15),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: selected
+                                    ? const Color(0xFFEAF4FA)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Icon(
+                                t.icon,
+                                color: selected ? primary : Colors.black54,
+                                size: 24,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              t.name,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: selected ? Colors.black : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              switch (t.name) {
+                                'Documents' => 'Light papers & files',
+                                'Small Box' => 'Compact delivery',
+                                'Medium Box' => 'Standard parcel',
+                                'Large Box' => 'Heavy shipment',
+                                _ => '',
+                              },
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -282,51 +794,71 @@ class _PackageScreenState extends State<PackageScreen> {
           Row(
             children: [
               Expanded(
-                child: SizedBox(
-                  height: 175,
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: lightGrey,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Estimated weight',
-                            style: TextStyle(fontWeight: FontWeight.w900)),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Text(
-                              '${weightKg.toStringAsFixed(1)} kg',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.w900),
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: const Text('0.5–10 kg',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.w800)),
-                            ),
-                          ],
+                child: Container(
+                  height: 174,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: lightGrey,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Weight',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
                         ),
-                        Slider(
+                      ),
+                      const SizedBox(height: 10),
+                      Center(
+                        child: Text(
+                          "${weightKg.toStringAsFixed(1)} KG",
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Center(
+                        child: Text(
+                          weightKg <= 2
+                              ? "Light Package"
+                              : weightKg <= 5
+                                  ? "Medium Weight"
+                                  : "Heavy Shipment",
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: primary,
+                          inactiveTrackColor: Colors.white,
+                          thumbColor: primary,
+                          overlayColor: primary.withOpacity(0.15),
+                        ),
+                        child: Slider(
                           value: weightKg,
                           min: 0.5,
                           max: 10,
                           divisions: 19,
-                          activeColor: primary,
-                          onChanged: (v) => setState(() => weightKg = v),
+                          label: "${weightKg.toStringAsFixed(1)} kg",
+                          onChanged: (v) {
+                            setState(() {
+                              weightKg = v;
+                            });
+
+                            _resetReward();
+                          },
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -372,6 +904,9 @@ class _PackageScreenState extends State<PackageScreen> {
             decoration: BoxDecoration(
               color: lightGrey,
               borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFFE8E8E8),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +916,7 @@ class _PackageScreenState extends State<PackageScreen> {
                 const SizedBox(height: 10),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: lightGrey,
                     borderRadius: BorderRadius.circular(18),
                   ),
                   padding:
@@ -404,6 +939,9 @@ class _PackageScreenState extends State<PackageScreen> {
             decoration: BoxDecoration(
               color: lightGrey,
               borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFFE8E8E8),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,7 +951,7 @@ class _PackageScreenState extends State<PackageScreen> {
                 const SizedBox(height: 10),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: lightGrey,
                     borderRadius: BorderRadius.circular(18),
                   ),
                   padding:
@@ -438,6 +976,9 @@ class _PackageScreenState extends State<PackageScreen> {
             decoration: BoxDecoration(
               color: lightGrey,
               borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFFE8E8E8),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,7 +991,7 @@ class _PackageScreenState extends State<PackageScreen> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: lightGrey,
                           borderRadius: BorderRadius.circular(18),
                         ),
                         padding: const EdgeInsets.symmetric(
@@ -499,318 +1040,7 @@ class _PackageScreenState extends State<PackageScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFE2E2E2)),
-              boxShadow: const [
-                BoxShadow(
-                    blurRadius: 18,
-                    offset: Offset(0, 10),
-                    color: Color(0x11000000)),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: lightGrey,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(Icons.price_check_rounded, color: primary),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Estimated price',
-                          style: TextStyle(fontWeight: FontWeight.w900)),
-                      SizedBox(height: 4),
-                      Text('Final price may change after confirmation.',
-                          style: TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12)),
-                    ],
-                  ),
-                ),
-                Text(
-                  '$price JD',
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: primary),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 62,
-            child: ElevatedButton(
-              onPressed: () async {
-                if (receiverNameCtrl.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter receiver name')),
-                  );
-                  return;
-                }
-
-                if (pickup == dropoff) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Pickup and Drop-off must be different'),
-                    ),
-                  );
-                  return;
-                }
-
-                final price = previewPrice ?? _estimatePriceJOD();
-
-                bool? confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: const Text("Confirm Request"),
-                      content: Text(
-                        "Send parcel from $pickup to $dropoff?\n\n"
-                        "Type: ${selectedType.name}\n"
-                        "Weight: ${weightKg.toStringAsFixed(1)} kg\n"
-                        "Delivery: ${deliveryOption == 0 ? "Standard" : "Express"}\n"
-                        "Price: $price JD",
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text("Cancel"),
-                        ),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text("Confirm"),
-                        ),
-                      ],
-                    );
-                  },
-                );
-
-                if (confirm != true) return;
-
-                setState(() => isSubmitting = true);
-
-                try {
-                  final result = await ParcelService.submitParcel(
-                    pickup: pickup,
-                    dropoff: dropoff,
-                    type: selectedType.name,
-                    weight: weightKg,
-                    deliveryType: deliveryOption == 0 ? "standard" : "express",
-                    notes: notesCtrl.text,
-                    receiverName: receiverNameCtrl.text,
-                    rewardCode: rewardCtrl.text.trim().isEmpty
-                        ? null
-                        : rewardCtrl.text.trim(),
-                  );
-
-                  final orderNumber = result['orderNumber'];
-                  final pinCode = result['pinCode'];
-
-                  await showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (context) {
-                      return Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(22),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // ✅ ICON
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 50,
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // ✅ TITLE
-                              const Text(
-                                "Parcel Sent Successfully",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // ✅ INFO BOX
-                              Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF5F5F5),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text("Order"),
-                                        Row(
-                                          children: [
-                                            Text(orderNumber,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.w900)),
-                                            const SizedBox(width: 6),
-                                            InkWell(
-                                              onTap: () {
-                                                Clipboard.setData(ClipboardData(
-                                                    text: orderNumber));
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                      content:
-                                                          Text("Order copied")),
-                                                );
-                                              },
-                                              child: const Icon(Icons.copy,
-                                                  size: 18),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text("PIN"),
-                                        Row(
-                                          children: [
-                                            Text(pinCode,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.w900)),
-                                            const SizedBox(width: 6),
-                                            InkWell(
-                                              onTap: () {
-                                                Clipboard.setData(ClipboardData(
-                                                    text: pinCode));
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                      content:
-                                                          Text("PIN copied")),
-                                                );
-                                              },
-                                              child: const Icon(Icons.copy,
-                                                  size: 18),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 20),
-
-                              Row(
-                                children: [
-                                  // OK
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: () {
-                                        Navigator.pop(context); //
-                                      },
-                                      style: OutlinedButton.styleFrom(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(14),
-                                        ),
-                                      ),
-                                      child: const Text("OK"),
-                                    ),
-                                  ),
-
-                                  const SizedBox(width: 10),
-
-                                  // HOME
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const HomeScreen()),
-                                          (route) => false,
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primary,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(14),
-                                        ),
-                                      ),
-                                      child: const Text("Home"),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Server error: $e")),
-                  );
-                } finally {
-                  setState(() => isSubmitting = false);
-                  receiverNameCtrl.clear();
-                  notesCtrl.clear();
-                  rewardCtrl.clear();
-                  _resetReward();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              child: isSubmitting
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Submit Request'),
-            ),
-          ),
+          const SizedBox(height: 90),
         ],
       ),
     );
@@ -822,55 +1052,102 @@ class _DropdownPill extends StatelessWidget {
   final String value;
   final List<String> items;
   final ValueChanged<String?> onChanged;
+  final BuildContext parentContext;
 
   const _DropdownPill({
     required this.label,
     required this.value,
     required this.items,
     required this.onChanged,
+    required this.parentContext,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 62,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 78,
-            child: Text(label,
-                style: const TextStyle(fontWeight: FontWeight.w900)),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: value,
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black,
-                ),
-                items: items
-                    .map(
-                      (e) => DropdownMenuItem<String>(
-                        value: e,
-                        child: Text(e),
-                      ),
-                    )
-                    .toList(),
-                onChanged: onChanged,
-              ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () {
+        showModalBottomSheet(
+          context: parentContext,
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(28),
             ),
           ),
-        ],
+          builder: (_) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: items.map((e) {
+                    return ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      title: Text(
+                        e,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      trailing: e == value
+                          ? const Icon(
+                              Icons.check_circle,
+                              color: Color(0xFF1F4B63),
+                            )
+                          : null,
+                      onTap: () {
+                        onChanged(e);
+                        Navigator.pop(parentContext);
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            );
+          },
+        );
+      },
+      child: Container(
+        height: 78,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Colors.black45,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -924,7 +1201,7 @@ class _ChoiceChip extends StatelessWidget {
                   Text(
                     subtitle,
                     style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: Colors.black54,
                         fontWeight: FontWeight.w600),
                   ),

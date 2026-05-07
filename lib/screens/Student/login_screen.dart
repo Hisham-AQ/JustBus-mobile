@@ -260,6 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ? 'driver'
                                   : 'student',
                             );
+                            print("ROLE AFTER LOGIN = $role");
                           } catch (e) {
                             print("LOGIN ERROR: $e");
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'home_screen.dart';
+import '../../services/secure_storage.dart';
 
 class TicketScreen extends StatelessWidget {
   final List<int> seats;
@@ -15,6 +17,7 @@ class TicketScreen extends StatelessWidget {
   final String date;
   final String time;
   final int? busNumber;
+  final int tripId;
 
   TicketScreen({
     super.key,
@@ -27,6 +30,7 @@ class TicketScreen extends StatelessWidget {
     required this.date,
     required this.time,
     required this.busNumber,
+    required this.tripId,
   });
 
   final GlobalKey _ticketKey = GlobalKey();
@@ -40,6 +44,7 @@ class TicketScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: bg,
         elevation: 0,
         foregroundColor: Colors.white,
@@ -48,37 +53,75 @@ class TicketScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            RepaintBoundary(
-              key: _ticketKey,
-              child: _ticket(),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () => _saveTicketAsImage(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              RepaintBoundary(
+                key: _ticketKey,
+                child: _ticket(),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () => _saveTicketAsImage(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Download Ticket',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
+                  child: const Text(
+                    'Download Ticket',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.location_on),
+                  label: const Text("Track Bus"),
+                  onPressed: () async {
+                    await SecureStorage.saveTrackingTrip(
+                      tripId,
+                    );
+                    print("FROM VALUE: $from");
+
+                    await SecureStorage.savePickupLocation(
+                      from,
+                    );
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HomeScreen(
+                          trackingTripId: tripId,
+                          pickupLocation: from,
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1F4B63),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -212,18 +255,26 @@ class TicketScreen extends StatelessWidget {
 
               //  QR
               Container(
-                width: 190,
-                height: 190,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: QrImageView(
-                  data: qrToken,
-                  version: QrVersions.auto,
-                ),
-              ),
+                  width: 220,
+                  height: 220,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: QrImageView(
+                    data: bookingId.toString(),
+                    version: QrVersions.auto,
+                    size: 180,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: Colors.black,
+                    ),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: Colors.black,
+                    ),
+                  )),
 
               const SizedBox(height: 26),
             ],

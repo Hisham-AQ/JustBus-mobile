@@ -1,15 +1,140 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/services/auth_service.dart';
 import '../Student/login_screen.dart';
+import '../Driver/driver_scan_screen.dart';
+import '../../services/driver_service.dart';
+import 'driver_passengers_screen.dart';
+import 'driver_report_screen.dart';
+import 'dart:async';
+import 'package:geolocator/geolocator.dart';
 
-class DriverHomeScreen extends StatelessWidget {
+class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
 
+  @override
+  State<DriverHomeScreen> createState() => _DriverHomeScreenState();
+}
+
+class _DriverHomeScreenState extends State<DriverHomeScreen> {
   static const Color primary = Color(0xFF1F4B63);
   static const Color bg = Color(0xFFF7F7F7);
 
+  Map<String, dynamic>? trip;
+  bool isLoading = true;
+  Timer? locationTimer;
+
+  Future<void> startLiveLocation(int tripId) async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (!serviceEnabled) {
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+
+      if (permission == LocationPermission.denied) {
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return;
+    }
+
+    locationTimer?.cancel();
+    try {
+      Position pos = await Geolocator.getCurrentPosition();
+
+      await DriverService.updateLocation(
+        tripId: tripId,
+        lat: pos.latitude,
+        lng: pos.longitude,
+      );
+
+      print(
+        "FIRST LOCATION SENT: "
+        "${pos.latitude}, ${pos.longitude}",
+      );
+    } catch (e) {
+      print(e);
+    }
+    locationTimer = Timer.periodic(
+      const Duration(seconds: 10),
+      (_) async {
+        try {
+          Position pos = await Geolocator.getCurrentPosition();
+
+          await DriverService.updateLocation(
+            tripId: tripId,
+            lat: pos.latitude,
+            lng: pos.longitude,
+          );
+
+          print(
+            "LOCATION SENT: "
+            "${pos.latitude}, ${pos.longitude}",
+          );
+        } catch (e) {
+          print(e);
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    locationTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrip();
+  }
+
+  Future<void> _loadTrip() async {
+    try {
+      final data = await DriverService.getCurrentTrip();
+      setState(() {
+        trip = data;
+        isLoading = false;
+      });
+
+      if (data['status'] == 'ongoing') {
+        await startLiveLocation(data['id']);
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (trip == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text("No assigned trip"),
+        ),
+      );
+    }
+
+    final tripId = trip!['id'];
+
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
@@ -56,20 +181,20 @@ class DriverHomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Driver Name',
-                        style: TextStyle(
+                        trip!['driver_name'] ?? '',
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'Bus #2',
-                        style: TextStyle(color: Colors.black54),
+                        'Bus #${trip!['bus_number']}',
+                        style: const TextStyle(color: Colors.black54),
                       ),
                     ],
                   ),
@@ -81,11 +206,32 @@ class DriverHomeScreen extends StatelessWidget {
               title: 'Current Trip',
               child: Column(
                 children: [
-                  _row(Icons.place_rounded, 'From', 'Abdali Station'),
-                  _row(Icons.flag_rounded, 'To', 'JUST Main Gate'),
+                  _row(
+                    Icons.place_rounded,
+                    'From',
+                    trip!['from_city'] ?? '',
+                  ),
+                  _row(
+                    Icons.flag_rounded,
+                    'To',
+                    trip!['to_city'] ?? '',
+                  ),
                   const Divider(),
-                  _row(Icons.calendar_month, 'Date', '1/1/2026'),
-                  _row(Icons.access_time, 'Time', '08:00 → 09:15'),
+                  _row(
+                    Icons.calendar_month,
+                    'Date',
+                    trip!['trip_date'] ?? '',
+                  ),
+                  _row(
+                    Icons.access_time,
+                    'Time',
+                    '${trip!['departure_time']} → ${trip!['arrival_time']}',
+                  ),
+                  _row(
+                    Icons.info_outline,
+                    'Status',
+                    trip!['status'],
+                  ),
                 ],
               ),
             ),
@@ -96,7 +242,17 @@ class DriverHomeScreen extends StatelessWidget {
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: const Text('Start Trip'),
-                    onPressed: () {},
+                    onPressed: () async {
+                      await DriverService.startTrip(tripId);
+                      await startLiveLocation(tripId);
+                      await _loadTrip();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Trip started"),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -111,7 +267,16 @@ class DriverHomeScreen extends StatelessWidget {
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.stop_rounded),
                     label: const Text('End Trip'),
-                    onPressed: () {},
+                    onPressed: () async {
+                      await DriverService.endTrip(tripId);
+                      locationTimer?.cancel();
+                      await _loadTrip();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Trip completed"),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -130,17 +295,38 @@ class DriverHomeScreen extends StatelessWidget {
                   _menuTile(
                     icon: Icons.qr_code_scanner_rounded,
                     title: 'Scan Passenger Ticket',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DriverScanScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _menuTile(
                     icon: Icons.people_outline_rounded,
                     title: 'Passenger Drop-off List',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DriverPassengersScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _menuTile(
                     icon: Icons.report_problem_outlined,
                     title: 'Report Misconduct',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DriverReportScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _menuTile(
                     icon: Icons.notifications_none_rounded,

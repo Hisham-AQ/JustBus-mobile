@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/Student/welcome_screen.dart';
+import 'screens/Student/splash_screen.dart';
+import 'screens/Student/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +14,10 @@ class JustBusApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const WelcomeScreen(),
+      routes: {
+        '/student-home': (_) => const HomeScreen(),
+      },
+      home: const SplashScreen(),
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.white,

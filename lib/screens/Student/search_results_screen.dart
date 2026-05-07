@@ -203,6 +203,7 @@ void initState() {
                             tripDate: widget.tripDate,
                             departureTime: widget.trip['departure_time'] ?? '',
                             arrivalTime: widget.trip['arrival_time'] ?? '',
+                          
                             busNumber:
                                 widget.trip['bus_number']?.toString() ?? '',
                           ),
