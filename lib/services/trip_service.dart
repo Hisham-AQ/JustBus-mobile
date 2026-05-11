@@ -78,26 +78,28 @@ class TripService {
 
   static Future<Map<String, dynamic>> getLiveLocation({
     required int tripId,
-    required String pickupLocation,
   }) async {
     final token = await SecureStorage.getToken();
 
     final res = await http.get(
       Uri.parse(
         '$_baseUrl/api/trips/live-location/$tripId',
-      ).replace(
-        queryParameters: {
-          'pickupLocation': pickupLocation,
-        },
       ),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
+    ).timeout(
+      const Duration(seconds: 15),
     );
 
     if (res.statusCode != 200) {
-      throw Exception("Failed");
+      print("STATUS: ${res.statusCode}");
+      print("BODY: ${res.body}");
+
+      final body = jsonDecode(res.body);
+
+      throw Exception(body['message']);
     }
 
     return jsonDecode(res.body);

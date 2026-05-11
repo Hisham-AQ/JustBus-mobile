@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'ticket_screen.dart';
 import '../../services/booking_service.dart';
 import '../../services/secure_storage.dart';
+import '../../services/card_service.dart';
+import '../../services/wallet_service.dart';
 
 enum PaymentMethod { applePay, visa, wallet }
 
@@ -55,6 +57,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   PaymentMethod payment = PaymentMethod.wallet;
   bool _isSubmitting = false;
   String _userName = 'User';
+  double walletBalance = 0;
+  String cardLast4 = '----';
+  String cardBrand = 'Visa';
 
   // ===== TIMER =====
   Timer? _timer;
@@ -65,6 +70,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     super.initState();
     _loadUserName();
     _initTimerFromServer();
+    _loadWallet();
+    _loadCards();
   }
 
   @override
@@ -83,7 +90,46 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     });
   }
 
+  Future<void> _loadWallet() async {
+    try {
+      final balance = await WalletService.getBalance();
+
+      if (!mounted) return;
+
+      setState(() {
+        walletBalance = balance;
+      });
+    } catch (e) {
+      debugPrint(
+        "Wallet error: $e",
+      );
+    }
+  }
+
+  Future<void> _loadCards() async {
+    try {
+      final cards = await CardService.getCards();
+
+      if (cards.isEmpty) return;
+
+      final firstCard = cards[0];
+
+      if (!mounted) return;
+
+      setState(() {
+        cardLast4 = firstCard['last4'] ?? '----';
+
+        cardBrand = firstCard['brand'] ?? 'Visa';
+      });
+    } catch (e) {
+      debugPrint(
+        "Cards error: $e",
+      );
+    }
+  }
+
   // ===== INIT TIMER FROM hold_expires_at =====
+
   void _initTimerFromServer() {
     final expiry = DateTime.parse(widget.holdExpiresAt).toLocal();
 
@@ -144,8 +190,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
             userName: _userName,
             bookingId: widget.bookingId,
             qrToken: '',
-            from: widget.pickup,
-            to: widget.dropoff,
+            from: widget.fromCity,
+            to: widget.toCity,
+            pickupLocation: widget.pickup,
+            dropoffLocation: widget.dropoff,
             date: widget.tripDate,
             time: '${widget.departureTime} → ${widget.arrivalTime}',
             busNumber: int.tryParse(widget.busNumber) ?? 0,
@@ -176,13 +224,13 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     final isDanger = _remainingSeconds <= 30;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(
         title: const Text(
           'Confirm Booking',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF6F8FB),
         foregroundColor: Colors.black,
         elevation: 0,
       ),
@@ -309,13 +357,13 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   _paymentTile(
                     icon: Icons.account_balance_wallet_rounded,
                     title: 'Wallet',
-                    subtitle: 'Balance: 12.50 JD',
+                    subtitle: 'Balance: ${walletBalance.toStringAsFixed(2)} JD',
                     value: PaymentMethod.wallet,
                   ),
                   _paymentTile(
                     icon: Icons.credit_card_rounded,
-                    title: 'Visa / MasterCard',
-                    subtitle: '**** **** **** 2413',
+                    title: cardBrand,
+                    subtitle: '•••• •••• •••• $cardLast4',
                     value: PaymentMethod.visa,
                   ),
                   _paymentTile(
@@ -353,11 +401,26 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             color: Colors.grey,
                           ),
                         ),
-                      Text(
-                        '$totalPrice JD',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: totalPrice.toStringAsFixed(2),
+                              style: const TextStyle(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const TextSpan(
+                              text: ' JD',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -398,8 +461,18 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: lightGrey,
-        borderRadius: BorderRadius.circular(22),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.grey.shade200,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,9 +533,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
     return InkWell(
       onTap: () => setState(() => payment = value),
-      child: Container(
+      child: AnimatedContainer(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(12),
+        duration: const Duration(milliseconds: 220),
         decoration: BoxDecoration(
           color: selected ? Colors.white : const Color(0xFFF5F5F5),
           borderRadius: BorderRadius.circular(16),
@@ -470,6 +544,15 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
             color: selected ? primary : Colors.transparent,
             width: 1.4,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: primary.withOpacity(0.18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : [],
         ),
         child: Row(
           children: [

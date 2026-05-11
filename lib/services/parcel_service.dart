@@ -41,7 +41,9 @@ class ParcelService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed (${response.statusCode})');
+      throw Exception(
+        'Failed (${response.statusCode}): ${response.body}',
+      );
     }
   }
 
@@ -72,7 +74,9 @@ class ParcelService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Invalid reward (${response.statusCode})');
+      throw Exception(
+        'Invalid reward (${response.statusCode}): ${response.body}',
+      );
     }
   }
 }

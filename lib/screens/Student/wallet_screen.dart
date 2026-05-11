@@ -111,7 +111,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -243,267 +243,334 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text(
           'Wallet',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF5F7FA),
         foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Current Balance',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${balance.toStringAsFixed(2)} JD',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _showTopUpSheet(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          'Top Up',
-                          style: TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Saved Cards',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: OutlinedButton(
-                    onPressed: () {
-                      final number = TextEditingController();
-                      final name = TextEditingController();
-                      final expiry = TextEditingController();
-
-                      showDialog(
-                        context: context,
-                        builder: (_) {
-                          return AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            title: const Text(
-                              "Add Card",
-                              style: TextStyle(fontWeight: FontWeight.w900),
-                            ),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                TextField(
-                                  controller: number,
-                                  keyboardType: TextInputType.number,
-                                  maxLength: 19,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  decoration: InputDecoration(
-                                    labelText: "Card Number",
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                TextField(
-                                  controller: name,
-                                  decoration: InputDecoration(
-                                    labelText: "Card Holder",
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                TextField(
-                                  controller: expiry,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[0-9/]')),
-                                  ],
-                                  decoration: InputDecoration(
-                                    labelText: "Expiry Date",
-                                    hintText: "MM/YY",
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Cancel"),
-                              ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  final clean = number.text.replaceAll(' ', '');
-
-                                  if (clean.length < 13 || clean.length > 19) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text("Invalid card number")),
-                                    );
-                                    return;
-                                  }
-
-                                  if (name.text.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text("Enter card holder name")),
-                                    );
-                                    return;
-                                  }
-
-                                  if (!RegExp(r'^\d{2}/\d{2}$')
-                                      .hasMatch(expiry.text)) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text("Invalid expiry format")),
-                                    );
-                                    return;
-                                  }
-                                  final brand = detectCardBrand(clean);
-
-                                  try {
-                                    await CardService.addCard(
-                                      cardNumber: clean,
-                                      holder: name.text,
-                                      expiry: expiry.text,
-                                      brand: brand,
-                                    );
-
-                                    await loadData();
-                                    Navigator.pop(context);
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
-                                    );
-                                  }
-                                },
-                                child: const Text("Save"),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: const Text("Add Card"),
-                  ),
-                ),
-                ...cards.map((c) {
-                  return _buildSavedCard(
-                    brand: c['brand'] ?? 'Unknown',
-                    last4: getLast4(c['card_number']),
-                    id: c['id'],
-                  );
-                }).toList(),
-                const SizedBox(height: 20),
-                const Text(
-                  'Transactions',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 12),
-                ...transactions.map((tx) {
-                  final isTopUp = tx['type'] == 'topup';
-
-                  final date = DateTime.parse(tx['created_at']);
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
+          : RefreshIndicator(
+              onRefresh: loadData,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: lightGrey,
-                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF1F4B63),
+                          Color(0xFF2C6B8A),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          backgroundColor:
-                              isTopUp ? Colors.green[100] : Colors.red[100],
-                          child: Icon(
-                            isTopUp ? Icons.arrow_downward : Icons.arrow_upward,
-                            color: isTopUp ? Colors.green : Colors.red,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                getTitle(tx['type']),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
+                              Icon(
+                                Icons.account_balance_wallet_rounded,
+                                color: Colors.white.withOpacity(0.9),
+                                size: 34,
                               ),
+                              const Text(
+                                'Current Balance',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
                               Text(
-                                formatDate(date),
+                                '${balance.toStringAsFixed(2)} JD',
                                 style: const TextStyle(
-                                    fontSize: 12, color: Colors.grey),
+                                  color: Colors.white,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        Text(
-                          "${isTopUp ? '+' : '-'}${double.parse(tx['amount'].toString()).toStringAsFixed(2)} JD",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isTopUp ? Colors.green : Colors.red,
+                        ElevatedButton(
+                          onPressed: () => _showTopUpSheet(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: primary,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 14,
+                            ),
+                          ),
+                          child: const Text(
+                            'Top Up',
+                            style: TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
-              ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.credit_card_rounded,
+                        color: primary,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Saved Cards',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.add),
+                      label: const Text("Add Card"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        final number = TextEditingController();
+                        final name = TextEditingController();
+                        final expiry = TextEditingController();
+
+                        showDialog(
+                          context: context,
+                          builder: (_) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              title: const Text(
+                                "Add Card",
+                                style: TextStyle(fontWeight: FontWeight.w900),
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextField(
+                                    controller: number,
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 19,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    decoration: InputDecoration(
+                                      labelText: "Card Number",
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  TextField(
+                                    controller: name,
+                                    decoration: InputDecoration(
+                                      labelText: "Card Holder",
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  TextField(
+                                    controller: expiry,
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp(r'[0-9/]')),
+                                    ],
+                                    decoration: InputDecoration(
+                                      labelText: "Expiry Date",
+                                      hintText: "MM/YY",
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Cancel"),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final clean =
+                                        number.text.replaceAll(' ', '');
+
+                                    if (clean.length < 13 ||
+                                        clean.length > 19) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text("Invalid card number")),
+                                      );
+                                      return;
+                                    }
+
+                                    if (name.text.isEmpty) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text("Enter card holder name")),
+                                      );
+                                      return;
+                                    }
+
+                                    if (!RegExp(r'^\d{2}/\d{2}$')
+                                        .hasMatch(expiry.text)) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text("Invalid expiry format")),
+                                      );
+                                      return;
+                                    }
+                                    final brand = detectCardBrand(clean);
+
+                                    try {
+                                      await CardService.addCard(
+                                        cardNumber: clean,
+                                        holder: name.text,
+                                        expiry: expiry.text,
+                                        brand: brand,
+                                      );
+
+                                      await loadData();
+                                      Navigator.pop(context);
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(content: Text(e.toString())),
+                                      );
+                                    }
+                                  },
+                                  child: const Text("Save"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  ...cards.map((c) {
+                    return _buildSavedCard(
+                      brand: c['brand'] ?? 'Unknown',
+                      last4: getLast4(c['card_number']),
+                      id: c['id'],
+                    );
+                  }).toList(),
+                  const SizedBox(height: 28),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.receipt_long_rounded,
+                        color: primary,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Transactions',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ...transactions.map((tx) {
+                    final isTopUp = tx['type'] == 'topup';
+
+                    final date = DateTime.parse(tx['created_at']);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor:
+                                isTopUp ? Colors.green[100] : Colors.red[100],
+                            child: Icon(
+                              isTopUp
+                                  ? Icons.arrow_downward
+                                  : Icons.arrow_upward,
+                              color: isTopUp ? Colors.green : Colors.red,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  getTitle(tx['type']),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  formatDate(date),
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            "${isTopUp ? '+' : '-'}${double.parse(tx['amount'].toString()).toStringAsFixed(2)} JD",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isTopUp ? Colors.green : Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
             ),
     );
   }

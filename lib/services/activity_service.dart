@@ -3,8 +3,7 @@ import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
 
 class ActivityService {
-  static const _baseUrl =
-      'https://justbus-backend-production.up.railway.app';
+  static const _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
   static Future<Map<String, dynamic>> getMyActivity() async {
     final token = await SecureStorage.getToken();
@@ -16,9 +15,6 @@ class ActivityService {
         "Content-Type": "application/json",
       },
     );
-
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);

@@ -7,6 +7,7 @@ import 'driver_passengers_screen.dart';
 import 'driver_report_screen.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
+import '../Student/notifications_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
@@ -159,201 +160,372 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           ),
         ],
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+        children: [
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF1F4B63),
+                  Color(0xFF2D6B8A),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: primary,
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 28,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: primary.withOpacity(0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white24,
+                      width: 2,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
+                  child: CircleAvatar(
+                    radius: 32,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      trip!['driver_name']
+                          .toString()
+                          .substring(0, 1)
+                          .toUpperCase(),
+                      style: const TextStyle(
+                        color: primary,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 28,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         trip!['driver_name'] ?? '',
                         style: const TextStyle(
-                          fontSize: 18,
+                          color: Colors.white,
+                          fontSize: 22,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Bus #${trip!['bus_number']}',
-                        style: const TextStyle(color: Colors.black54),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.directions_bus_rounded,
+                            color: Colors.white70,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Bus #${trip!['bus_number']}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          trip!['status'].toString().toUpperCase(),
+                          style: TextStyle(
+                            color: trip!['status'] == 'ongoing'
+                                ? Colors.green
+                                : Colors.orange,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ),
                     ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _card(
-              title: 'Current Trip',
-              child: Column(
-                children: [
-                  _row(
-                    Icons.place_rounded,
-                    'From',
-                    trip!['from_city'] ?? '',
-                  ),
-                  _row(
-                    Icons.flag_rounded,
-                    'To',
-                    trip!['to_city'] ?? '',
-                  ),
-                  const Divider(),
-                  _row(
-                    Icons.calendar_month,
-                    'Date',
-                    trip!['trip_date'] ?? '',
-                  ),
-                  _row(
-                    Icons.access_time,
-                    'Time',
-                    '${trip!['departure_time']} → ${trip!['arrival_time']}',
-                  ),
-                  _row(
-                    Icons.info_outline,
-                    'Status',
-                    trip!['status'],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Start Trip'),
-                    onPressed: () async {
-                      await DriverService.startTrip(tripId);
-                      await startLiveLocation(tripId);
-                      await _loadTrip();
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Trip started"),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.stop_rounded),
-                    label: const Text('End Trip'),
-                    onPressed: () async {
-                      await DriverService.endTrip(tripId);
-                      locationTimer?.cancel();
-                      await _loadTrip();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Trip completed"),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView(
+          ),
+          const SizedBox(height: 16),
+          if (trip!['status'] == 'ongoing')
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.green.shade200,
+                ),
+              ),
+              child: Row(
                 children: [
-                  _menuTile(
-                    icon: Icons.qr_code_scanner_rounded,
-                    title: 'Scan Passenger Ticket',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DriverScanScreen(),
-                        ),
-                      );
-                    },
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                  _menuTile(
-                    icon: Icons.people_outline_rounded,
-                    title: 'Passenger Drop-off List',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DriverPassengersScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _menuTile(
-                    icon: Icons.report_problem_outlined,
-                    title: 'Report Misconduct',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const DriverReportScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _menuTile(
-                    icon: Icons.notifications_none_rounded,
-                    title: 'Notifications',
-                    onTap: () {},
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Live tracking is active for passengers',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          _card(
+            title: 'Current Trip',
+            child: Column(
+              children: [
+                _row(
+                  Icons.place_rounded,
+                  'From',
+                  trip!['from_city'] ?? '',
+                ),
+                _row(
+                  Icons.flag_rounded,
+                  'To',
+                  trip!['to_city'] ?? '',
+                ),
+                const Divider(),
+                _row(
+                  Icons.calendar_month,
+                  'Date',
+                  trip!['trip_date'] ?? '',
+                ),
+                _row(
+                  Icons.access_time,
+                  'Time',
+                  '${trip!['departure_time']} → ${trip!['arrival_time']}',
+                ),
+                _row(
+                  Icons.info_outline,
+                  'Status',
+                  trip!['status'],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _actionCard(
+                  title: 'Start Trip',
+                  subtitle: 'Enable live tracking',
+                  icon: Icons.play_arrow_rounded,
+                  color: Colors.green,
+                  onTap: () async {
+                    final confirm = await _confirmDialog(
+                      context,
+                      title: 'Start Trip?',
+                      message: 'Live tracking will begin for passengers.',
+                      confirmText: 'Start',
+                      color: Colors.green,
+                    );
+
+                    if (confirm != true) return;
+
+                    await DriverService.startTrip(
+                      tripId,
+                    );
+
+                    await startLiveLocation(
+                      tripId,
+                    );
+
+                    await _loadTrip();
+
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        content: const Text(
+                          'Trip started successfully',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _actionCard(
+                  title: 'End Trip',
+                  subtitle: 'Finish current route',
+                  icon: Icons.stop_rounded,
+                  color: Colors.red,
+                  onTap: () async {
+                    final confirm = await _confirmDialog(
+                      context,
+                      title: 'End Trip?',
+                      message: 'Passengers will no longer see live tracking.',
+                      confirmText: 'End',
+                      color: Colors.red,
+                    );
+
+                    if (confirm != true) return;
+
+                    await DriverService.endTrip(
+                      tripId,
+                    );
+
+                    locationTimer?.cancel();
+
+                    await _loadTrip();
+
+                    if (!mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        content: const Text(
+                          'Trip completed',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _menuTile(
+            icon: Icons.qr_code_scanner_rounded,
+            title: 'Scan Passenger Ticket',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const DriverScanScreen(),
+                ),
+              );
+            },
+          ),
+          _menuTile(
+            icon: Icons.people_outline_rounded,
+            title: 'Passenger Drop-off List',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const DriverPassengersScreen(),
+                ),
+              );
+            },
+          ),
+          _menuTile(
+            icon: Icons.report_problem_outlined,
+            title: 'Report Misconduct',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const DriverReportScreen(),
+                ),
+              );
+            },
+          ),
+          _menuTile(
+            icon: Icons.notifications_none_rounded,
+            title: 'Notifications',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
 
-  static Widget _card({required String title, required Widget child}) {
+  static Widget _card({
+    required String title,
+    required Widget child,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
-          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: primary,
+                  borderRadius: BorderRadius.circular(
+                    999,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
           child,
         ],
       ),
@@ -393,9 +565,26 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: ListTile(
-        leading: Icon(icon, color: primary),
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: primary.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: primary,
+          ),
+        ),
         title: Text(
           title,
           style: const TextStyle(fontWeight: FontWeight.w800),
@@ -403,6 +592,135 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         trailing: const Icon(Icons.chevron_right_rounded),
         onTap: onTap,
       ),
+    );
+  }
+
+  static Widget _actionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              color,
+              color.withOpacity(0.75),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Future<bool?> _confirmDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required String confirmText,
+    required Color color,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(
+              height: 1.5,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  false,
+                );
+              },
+              child: const Text(
+                'Cancel',
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                  context,
+                  true,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    14,
+                  ),
+                ),
+              ),
+              child: Text(
+                confirmText,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

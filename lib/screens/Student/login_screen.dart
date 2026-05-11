@@ -251,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           String role;
 
-                          // ✅ LOGIN ONLY
+                          // LOGIN ONLY
                           try {
                             role = await AuthService.login(
                               email: emailCtrl.text.trim(),
@@ -269,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             return;
                           }
 
-                          // ✅ PROFILE (does NOT affect login)
+                          // PROFILE (
                           try {
                             final profile = await ProfileService.getProfile();
                             await SecureStorage.saveUserName(
@@ -278,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             debugPrint('Profile fetch failed: $e');
                           }
 
-                          // ✅ NAVIGATION
+                          // NAVIGATION
                           if (role == 'driver') {
                             Navigator.pushReplacement(
                               context,

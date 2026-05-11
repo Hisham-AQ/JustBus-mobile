@@ -14,6 +14,8 @@ class TicketScreen extends StatelessWidget {
 
   final String from;
   final String to;
+  final String pickupLocation;
+  final String dropoffLocation;
   final String date;
   final String time;
   final int? busNumber;
@@ -27,6 +29,8 @@ class TicketScreen extends StatelessWidget {
     required this.bookingId,
     required this.from,
     required this.to,
+    required this.pickupLocation,
+    required this.dropoffLocation,
     required this.date,
     required this.time,
     required this.busNumber,
@@ -94,10 +98,16 @@ class TicketScreen extends StatelessWidget {
                     await SecureStorage.saveTrackingTrip(
                       tripId,
                     );
-                    print("FROM VALUE: $from");
+                    print(
+                      "PICKUP LOCATION: "
+                      "$pickupLocation",
+                    );
 
                     await SecureStorage.savePickupLocation(
-                      from,
+                      pickupLocation,
+                    );
+                    await SecureStorage.saveDropoffLocation(
+                      dropoffLocation,
                     );
 
                     Navigator.push(
@@ -105,7 +115,7 @@ class TicketScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => HomeScreen(
                           trackingTripId: tripId,
-                          pickupLocation: from,
+                          pickupLocation: pickupLocation,
                         ),
                       ),
                     );

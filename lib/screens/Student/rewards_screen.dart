@@ -117,7 +117,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
           const SizedBox(height: 12),
           _earnTile(Icons.directions_bus_rounded, 'Take a trip', '+10 pts'),
           _earnTile(Icons.star_rounded, 'Take a special trip', '+20 pts'),
-          _earnTile(Icons.inventory_2_outlined, 'Send a package', '+15 pts'),
+          _earnTile(Icons.inventory_2_outlined, 'Send a Parcel', '+15 pts'),
           const SizedBox(height: 26),
           const Text(
             'Available Rewards',
@@ -134,13 +134,13 @@ class _RewardsScreenState extends State<RewardsScreen> {
             onRedeem: () => handleRedeem("free_trip"),
           ),
           _rewardTile(
-            title: 'Free Package',
-            subtitle: 'Send a package for free',
+            title: 'Free Parcel',
+            subtitle: 'Send a Parcel for free',
             points: 350,
             icon: Icons.inventory_2_outlined,
             context: context,
             currentPoints: points,
-            onRedeem: () => handleRedeem("free_package"),
+            onRedeem: () => handleRedeem("free_parcel"),
           ),
           _rewardTile(
             title: '10% Discount',

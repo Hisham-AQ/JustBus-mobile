@@ -82,4 +82,18 @@ class SecureStorage {
   static Future<void> clear() async {
     await _storage.deleteAll();
   }
+
+  static const _keyDropoff = 'dropoff_location';
+
+  static Future<void> saveDropoffLocation(
+    String value,
+  ) =>
+      _storage.write(
+        key: _keyDropoff,
+        value: value,
+      );
+
+  static Future<String?> getDropoffLocation() => _storage.read(
+        key: _keyDropoff,
+      );
 }

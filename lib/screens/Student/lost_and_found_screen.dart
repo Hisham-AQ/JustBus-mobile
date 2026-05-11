@@ -51,7 +51,6 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
 
             const SizedBox(height: 24),
 
-            // 🔥 REPORT BUTTON
             _actionButton(
               context,
               icon: Icons.report_gmailerrorred_rounded,
@@ -64,21 +63,12 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
                     builder: (_) => const ReportLostItemScreen(),
                   ),
                 );
-
-                // 🔥 بعد الرجوع
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Report submitted successfully"),
-                    ),
-                  );
-                }
               },
             ),
 
             const SizedBox(height: 12),
 
-            // 🔥 MY REPORTS
+            //  MY REPORTS
             _actionButton(
               context,
               icon: Icons.list_alt_rounded,
@@ -92,7 +82,6 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
                   ),
                 );
 
-                // 🔄 تحديث عند الرجوع (مستقبلاً)
                 if (mounted) setState(() {});
               },
             ),
@@ -102,7 +91,7 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
     );
   }
 
-  // 🔹 BUTTON UI
+  //  BUTTON UI
   static Widget _actionButton(
     BuildContext context, {
     required IconData icon,

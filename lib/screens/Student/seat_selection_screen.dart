@@ -29,12 +29,14 @@ class SeatSelectionScreen extends StatefulWidget {
   final String arrivalTime;
   final String busNumber;
   final double pricePerSeat;
+  final String tripStatus;
 
   const SeatSelectionScreen({
     super.key,
     required this.tripId,
     required this.persons,
     required this.pricePerSeat,
+    required this.tripStatus,
     required this.pickup,
     required this.dropoff,
     required this.fromCity,
@@ -120,7 +122,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         pickup: widget.pickup,
         dropoff: widget.dropoff,
         seats: selectedSeats.toList(),
-        
       );
 
       final bookingId = result['bookingId'];
@@ -132,20 +133,19 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => ConfirmBookingScreen(
-            bookingId: bookingId,
-            holdExpiresAt: holdExpiresAt,
-            tripId: widget.tripId,
-            fromCity: widget.fromCity,
-            toCity: widget.toCity,
-            pickup: widget.pickup,
-            dropoff: widget.dropoff,
-            tripDate: widget.tripDate,
-            departureTime: widget.departureTime,
-            arrivalTime: widget.arrivalTime,
-            busNumber: widget.busNumber,
-            seats: selectedSeats.toList(),
-            pricePerSeat: widget.pricePerSeat,
-          ),
+              bookingId: bookingId,
+              holdExpiresAt: holdExpiresAt,
+              tripId: widget.tripId,
+              fromCity: widget.fromCity,
+              toCity: widget.toCity,
+              pickup: widget.pickup,
+              dropoff: widget.dropoff,
+              tripDate: widget.tripDate,
+              departureTime: widget.departureTime,
+              arrivalTime: widget.arrivalTime,
+              busNumber: widget.busNumber,
+              seats: selectedSeats.toList(),
+              pricePerSeat: widget.pricePerSeat),
         ),
       );
     } catch (_) {
@@ -159,6 +159,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool canSelectSeats = widget.tripStatus == 'scheduled';
     return Scaffold(
       backgroundColor: const Color(0xFFF2FAFD),
       appBar: AppBar(
@@ -173,6 +174,33 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
           const SizedBox(height: 8),
           _legend(),
           const SizedBox(height: 12),
+          if (!canSelectSeats)
+            Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.red.shade100,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.red.shade700,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'This trip is no longer available.',
+                      style: TextStyle(
+                        color: Colors.red.shade900,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 90),
@@ -203,7 +231,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               width: double.infinity,
               height: 58,
               child: ElevatedButton(
-                onPressed: _loading || selectedSeats.length != widget.persons
+                onPressed: _loading ||
+                        selectedSeats.length != widget.persons ||
+                        !canSelectSeats
                     ? null
                     : _onConfirmSeat,
                 style: ElevatedButton.styleFrom(
@@ -215,8 +245,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                 ),
                 child: _loading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Confirm Seat',
+                    : Text(
+                        canSelectSeats ? 'Confirm Seat' : 'Trip Unavailable',
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.w900),
                       ),
@@ -254,6 +284,10 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   Widget _seat(Seat seat) {
     final selected = selectedSeats.contains(seat.number);
 
+    final bool disabled = widget.tripStatus != 'scheduled';
+
+    final bool canSelectSeats = widget.tripStatus == 'scheduled';
+
     Color bg;
     if (seat.reserved) {
       bg = seat.gender == Gender.male
@@ -263,12 +297,14 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
               : Colors.grey;
     } else if (selected) {
       bg = Colors.green;
+    } else if (disabled) {
+      bg = Colors.grey.shade300;
     } else {
       bg = Colors.white;
     }
 
     return GestureDetector(
-      onTap: seat.reserved
+      onTap: seat.reserved || !canSelectSeats
           ? null
           : () {
               setState(() {

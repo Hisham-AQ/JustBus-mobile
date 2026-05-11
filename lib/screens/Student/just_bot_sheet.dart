@@ -36,10 +36,8 @@ class _JustBotSheetState extends State<JustBotSheet> {
 
       if (trips.isNotEmpty) {
         setState(() {
-          messages
-              .add({"role": "bot", "text": "وجدت لك ${trips.length} رحلة 👇"});
+          messages.add({"role": "bot", "text": "كيف أقدر أساعدك كمان 👇"});
         });
-
       }
     } catch (e) {
       setState(() {
@@ -62,8 +60,24 @@ class _JustBotSheetState extends State<JustBotSheet> {
         padding: const EdgeInsets.all(12),
         constraints: const BoxConstraints(maxWidth: 250),
         decoration: BoxDecoration(
-          color: isUser ? Colors.blue : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
+          color: isUser ? const Color(0xFF1E4F6F) : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(
+              isUser ? 18 : 4,
+            ),
+            bottomRight: Radius.circular(
+              isUser ? 4 : 18,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Text(
           msg["text"] ?? "",
@@ -72,6 +86,28 @@ class _JustBotSheetState extends State<JustBotSheet> {
           ),
         ),
       ),
+    );
+  }
+
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    messages.add({
+      "role": "bot",
+      "text": "مرحبا 👋\nأنا JustBot.\nكيف أقدر أساعدك اليوم؟"
+    });
+    Future.delayed(
+      const Duration(milliseconds: 100),
+      () {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      },
     );
   }
 
@@ -113,9 +149,37 @@ class _JustBotSheetState extends State<JustBotSheet> {
           ),
 
           if (loading)
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: CircularProgressIndicator(),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                margin: const EdgeInsets.only(
+                  bottom: 10,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "JustBot is typing...",
+                    ),
+                  ],
+                ),
+              ),
             ),
 
           // Input

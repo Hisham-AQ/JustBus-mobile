@@ -54,14 +54,15 @@ class _PackageScreenState extends State<PackageScreen> {
 
       setState(() {
         isRewardApplied = result['valid'];
-        previewPrice = result['finalPrice'];
+        previewPrice = (result['finalPrice'] as num).toDouble();
 
         rewardMessage =
             result['valid'] ? "Discount applied 🎉" : "Invalid code";
       });
     } catch (e) {
       setState(() {
-        rewardMessage = "Error validating code";
+        isRewardApplied = false;
+        rewardMessage = e.toString();
       });
     } finally {
       setState(() {
@@ -261,6 +262,8 @@ class _PackageScreenState extends State<PackageScreen> {
 
                             final orderNumber = result['orderNumber'];
                             final pinCode = result['pinCode'];
+
+                            _resetReward();
 
                             await showDialog(
                               context: context,

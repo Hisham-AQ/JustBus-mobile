@@ -8,7 +8,6 @@ class SearchResultsScreen extends StatefulWidget {
   final String to;
   final String date;
   final int persons;
-  
 
   const SearchResultsScreen({
     super.key,
@@ -25,25 +24,41 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
   late Future<List<Map<String, dynamic>>> _tripsFuture;
 
-@override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  final parsedDate = DateTime.parse(widget.date);
+    final parsedDate = DateTime.parse(widget.date);
 
-  final formattedDate =
-      DateFormat('yyyy-MM-dd').format(parsedDate);
+    final formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
 
-  _tripsFuture = TripService.searchTrips(
-    from: widget.from.trim(),
-    to: widget.to.trim(),
-    date: formattedDate,
-  );
-}
+    _tripsFuture = TripService.searchTrips(
+      from: widget.from.trim(),
+      to: widget.to.trim(),
+      date: formattedDate,
+    );
+  }
+
+  Future<void> _refreshTrips() async {
+    final parsedDate = DateTime.parse(widget.date);
+
+    final formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
+
+    setState(() {
+      _tripsFuture = TripService.searchTrips(
+        from: widget.from.trim(),
+        to: widget.to.trim(),
+        date: formattedDate,
+      );
+    });
+
+    await _tripsFuture;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text('Available Trips'),
         leading: const BackButton(),
@@ -61,16 +76,19 @@ void initState() {
 
           final trips = snapshot.data!;
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: trips.length,
-            itemBuilder: (context, index) {
-              return TripCard(
-                trip: trips[index],
-                persons: widget.persons,
-                tripDate: widget.date,
-              );
-            },
+          return RefreshIndicator(
+            onRefresh: _refreshTrips,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: trips.length,
+              itemBuilder: (context, index) {
+                return TripCard(
+                  trip: trips[index],
+                  persons: widget.persons,
+                  tripDate: widget.date,
+                );
+              },
+            ),
           );
         },
       ),
@@ -101,23 +119,27 @@ class _TripCardState extends State<TripCard> {
   String? selectedPickup;
   String? selectedDropoff;
 
-@override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  pickupOptions =
-      List<String>.from(widget.trip['pickup_location'] ?? []);
-  dropoffOptions =
-      List<String>.from(widget.trip['dropoff_location'] ?? []);
+    pickupOptions = List<String>.from(widget.trip['pickup_location'] ?? []);
+    dropoffOptions = List<String>.from(widget.trip['dropoff_location'] ?? []);
 
-  selectedPickup = pickupOptions.isNotEmpty ? pickupOptions.first : null;
-  selectedDropoff = dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
-}
+    selectedPickup = pickupOptions.isNotEmpty ? pickupOptions.first : null;
+    selectedDropoff = dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
+  }
 
   @override
   Widget build(BuildContext context) {
     final int availableSeats = widget.trip['available_seats'] ?? 0;
-    final bool canBook = availableSeats >= widget.persons &&
+
+    final String tripStatus = widget.trip['status'] ?? '';
+
+    final bool isScheduled = tripStatus == 'scheduled';
+
+    final bool canBook = isScheduled &&
+        availableSeats >= widget.persons &&
         selectedPickup != null &&
         selectedDropoff != null;
 
@@ -125,54 +147,199 @@ void initState() {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F3),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${widget.trip['from_city']} → ${widget.trip['to_city']}',
-                style:
-                    const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              /// LEFT SIDE
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_rounded,
+                          color: Colors.blue.shade700,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            '${widget.trip['from_city']} → ${widget.trip['to_city']}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${widget.trip['departure_time']} → ${widget.trip['arrival_time']}',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              Text(
-                '${widget.trip['price']} JD',
-                style:
-                    const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+
+              const SizedBox(width: 12),
+
+              /// RIGHT SIDE
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  /// STATUS
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isScheduled
+                          ? Colors.green.shade100
+                          : Colors.red.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      tripStatus.toUpperCase(),
+                      style: TextStyle(
+                        color: isScheduled
+                            ? Colors.green.shade800
+                            : Colors.red.shade800,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  /// PRICE
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.payments_rounded,
+                        size: 18,
+                        color: Colors.green.shade700,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${widget.trip['price']} JD',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: 10),
+          const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.access_time, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                '${widget.trip['departure_time']} → ${widget.trip['arrival_time']}',
+              /// DURATION CHIP
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      size: 18,
+                      color: Colors.blue.shade700,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${widget.trip['duration_minutes']} min',
+                      style: TextStyle(
+                        color: Colors.blue.shade900,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              /// SEATS CHIP
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: availableSeats <= 5
+                      ? Colors.red.shade50
+                      : Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.airline_seat_recline_normal_rounded,
+                      size: 18,
+                      color: availableSeats <= 5
+                          ? Colors.red.shade700
+                          : Colors.green.shade700,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$availableSeats seats',
+                      style: TextStyle(
+                        color: availableSeats <= 5
+                            ? Colors.red.shade900
+                            : Colors.green.shade900,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const Icon(Icons.timelapse, size: 18),
-              const SizedBox(width: 6),
-              Text('${widget.trip['duration_minutes']} min'),
-              const SizedBox(width: 20),
-              const Icon(Icons.event_seat, size: 18),
-              const SizedBox(width: 6),
-              Text('$availableSeats seats'),
-            ],
+          const SizedBox(height: 18),
+          Divider(
+            color: Colors.grey.shade200,
+            thickness: 1,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           _DropdownField(
             label: 'Pickup',
             items: pickupOptions,
             value: selectedPickup,
+            enabled: isScheduled,
             onChanged: (v) => setState(() => selectedPickup = v),
           ),
           const SizedBox(height: 10),
@@ -180,6 +347,7 @@ void initState() {
             label: 'Drop-off',
             items: dropoffOptions,
             value: selectedDropoff,
+            enabled: isScheduled,
             onChanged: (v) => setState(() => selectedDropoff = v),
           ),
           const SizedBox(height: 16),
@@ -194,7 +362,9 @@ void initState() {
                         MaterialPageRoute(
                           builder: (_) => SeatSelectionScreen(
                             tripId: widget.trip['id'] ?? 0,
-                            pricePerSeat: double.parse(widget.trip['price'].toString()),
+                            pricePerSeat: double.parse(
+                              widget.trip['price'].toString(),
+                            ),
                             persons: widget.persons,
                             pickup: selectedPickup!,
                             dropoff: selectedDropoff!,
@@ -203,27 +373,29 @@ void initState() {
                             tripDate: widget.tripDate,
                             departureTime: widget.trip['departure_time'] ?? '',
                             arrivalTime: widget.trip['arrival_time'] ?? '',
-                          
                             busNumber:
                                 widget.trip['bus_number']?.toString() ?? '',
+                                tripStatus: tripStatus,
                           ),
                         ),
                       );
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1F4B63),
-                disabledBackgroundColor: Colors.grey,
+                backgroundColor:
+                    isScheduled ? const Color(0xFF1F4B63) : Colors.red,
+                disabledBackgroundColor: isScheduled ? Colors.grey : Colors.red,
               ),
-              child: const Text(
-                'Book',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white),
+              child: Text(
+                isScheduled ? 'Book' : 'Unavailable',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
+          )
         ],
       ),
     );
@@ -234,13 +406,15 @@ class _DropdownField extends StatelessWidget {
   final String label;
   final List<String> items;
   final String? value;
-  final ValueChanged<String?> onChanged;
+  final ValueChanged<String?>? onChanged;
+  final bool enabled;
 
   const _DropdownField({
     required this.label,
     required this.items,
     required this.value,
     required this.onChanged,
+    this.enabled = true,
   });
 
   @override
@@ -249,11 +423,11 @@ class _DropdownField extends StatelessWidget {
       initialValue: value,
       items:
           items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-      onChanged: onChanged,
+      onChanged: enabled ? onChanged : null,
       decoration: InputDecoration(
         labelText: label,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: enabled ? Colors.white : Colors.grey.shade200,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );

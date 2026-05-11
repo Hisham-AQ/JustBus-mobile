@@ -30,11 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
   int? activeTrackingTripId;
   Timer? trackingTimer;
   LatLng? busLocation;
-  String pickupLocation = "";
 
   double etaMinutes = 0;
   bool isBoarded = false;
   bool trackingMode = false;
+  String tripStatus = '';
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String city = '';
   bool cityOnTop = true;
 
-  DateTime selectedDate = DateTime(2026, 1, 1);
+  DateTime selectedDate = DateTime.now();
   int persons = 1;
 
   Future<void> loadBusLocation() async {
@@ -58,7 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final data = await TripService.getLiveLocation(
         tripId: activeTrackingTripId!,
-        pickupLocation: pickupLocation,
       );
       if (data['status'] == 'completed') {
         final finishedTripId = activeTrackingTripId;
@@ -87,6 +86,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return;
       }
+      setState(() {
+        tripStatus = data['status'] ?? '';
+      });
+
       if (data['current_lat'] == null || data['current_lng'] == null) {
         return;
       }
@@ -96,21 +99,58 @@ class _HomeScreenState extends State<HomeScreen> {
         data['current_lng'],
       );
       if (!mounted) return;
+      final boarded = data['is_boarded'] == 1 ||
+          data['is_boarded'] == true ||
+          data['is_boarded'].toString() == '1';
+
+      print("IS BOARDED => $boarded");
+
       setState(() {
+        tripStatus = data['status'] ?? '';
         busLocation = location;
         etaMinutes = (data['eta_minutes'] ?? 0).toDouble();
-        isBoarded = data['is_boarded'] == 1;
+        isBoarded = boarded;
       });
 
       if (firstMapMove) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          mapController.move(location, 15);
-        });
+        Future.delayed(
+          const Duration(milliseconds: 300),
+          () {
+            if (!mounted) return;
+
+            try {
+              mapController.move(
+                location,
+                15,
+              );
+            } catch (_) {}
+          },
+        );
 
         firstMapMove = false;
       }
     } catch (e) {
       print(e);
+
+      await SecureStorage.clearTrackingTrip();
+
+      await SecureStorage.clearPickupLocation();
+
+      if (!mounted) return;
+
+      trackingTimer?.cancel();
+
+      setState(() {
+        trackingMode = false;
+
+        activeTrackingTripId = null;
+
+        busLocation = null;
+
+        etaMinutes = 0;
+
+        isBoarded = false;
+      });
     }
   }
 
@@ -133,17 +173,21 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    final savedPickupLocation =
-        widget.pickupLocation ?? await SecureStorage.getPickupLocation() ?? "";
+    final data = await TripService.getLiveLocation(
+      tripId: tripId,
+    );
 
-    if (savedPickupLocation.isEmpty) {
+    if (data['status'] != 'ongoing' && data['status'] != 'scheduled') {
+      await SecureStorage.clearTrackingTrip();
+      await SecureStorage.clearPickupLocation();
+
       return;
     }
 
     setState(() {
       trackingMode = true;
+
       activeTrackingTripId = tripId;
-      pickupLocation = savedPickupLocation;
     });
 
     startTracking();
@@ -561,7 +605,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      busLocation == null
+                      tripStatus == 'scheduled'
                           ? "Calculating ETA..."
                           : isBoarded
                               ? "Destination ETA: ${etaMinutes.toStringAsFixed(1)} min"
@@ -573,7 +617,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     Text(
-                      busLocation == null
+                      tripStatus == 'scheduled'
                           ? "Waiting for driver..."
                           : isBoarded
                               ? "Bus heading to destination"
@@ -597,7 +641,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
                       ),
                     ),
                   ],

@@ -3,10 +3,10 @@ import '../../services/special_trip_service.dart';
 import 'special_trip_details_screen.dart';
 
 enum TripCategory {
-  desert,
-  historical,
   water,
   nature,
+  desert,
+  historical,
   camping,
 }
 
@@ -18,7 +18,7 @@ class SpecialTripScreen extends StatefulWidget {
 }
 
 class _SpecialTripScreenState extends State<SpecialTripScreen> {
-  TripCategory selectedCategory = TripCategory.desert;
+  TripCategory selectedCategory = TripCategory.water;
 
   @override
   Widget build(BuildContext context) {
@@ -204,9 +204,9 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
   Widget _buildTabs() {
     final icons = {
       TripCategory.desert: Icons.landscape_rounded,
+      TripCategory.nature: Icons.eco_rounded,
       TripCategory.historical: Icons.account_balance_rounded,
       TripCategory.water: Icons.water_rounded,
-      TripCategory.nature: Icons.eco_rounded,
       TripCategory.camping: Icons.forest_rounded,
     };
 
