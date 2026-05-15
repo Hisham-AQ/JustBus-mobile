@@ -113,8 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: ListView(
                   children: [
-                    const SizedBox(height: 12), 
-
+                    const SizedBox(height: 12),
                     _Section(children: [
                       _Item(
                         icon: Icons.person_outline,

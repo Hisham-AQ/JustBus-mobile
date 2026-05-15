@@ -5,25 +5,41 @@ import '../services/secure_storage.dart';
 class DriverService {
   static const _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
-  static Future<Map<String, dynamic>> getCurrentTrip() async {
+  static Future<List<dynamic>> getDriverTrips() async {
     final token = await SecureStorage.getToken();
 
-    print(token);
-
     final res = await http.get(
-      Uri.parse('$_baseUrl/api/driver/current-trip'),
+      Uri.parse('$_baseUrl/api/driver/trips'),
       headers: {
         "Authorization": "Bearer $token",
       },
     );
 
-    print(res.statusCode);
-    print(res.body);
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      throw Exception("Failed to load trips");
+    }
+  }
+
+  static Future<Map<String, dynamic>> getDriverTripById(
+    int tripId,
+  ) async {
+    final token = await SecureStorage.getToken();
+
+    final res = await http.get(
+      Uri.parse(
+        '$_baseUrl/api/driver/trips/$tripId',
+      ),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
 
     if (res.statusCode == 200) {
       return jsonDecode(res.body);
     } else {
-      throw Exception("No trip");
+      throw Exception("Failed to load trip");
     }
   }
 
@@ -69,7 +85,10 @@ class DriverService {
     }
   }
 
-  static Future<Map<String, dynamic>> scanTicket(String qrToken) async {
+  static Future<Map<String, dynamic>> scanTicket({
+    required String qrToken,
+    required int tripId,
+  }) async {
     final token = await SecureStorage.getToken();
 
     final res = await http.post(
@@ -80,17 +99,22 @@ class DriverService {
       },
       body: jsonEncode({
         "qrToken": qrToken,
+        "tripId": tripId,
       }),
     );
 
     return jsonDecode(res.body);
   }
 
-  static Future<List<dynamic>> getPassengers() async {
+  static Future<List<dynamic>> getPassengers(
+    int tripId,
+  ) async {
     final token = await SecureStorage.getToken();
 
     final res = await http.get(
-      Uri.parse('$_baseUrl/api/driver/passengers'),
+      Uri.parse(
+        '$_baseUrl/api/driver/passengers?tripId=$tripId',
+      ),
       headers: {
         "Authorization": "Bearer $token",
       },
@@ -103,7 +127,10 @@ class DriverService {
     }
   }
 
-  static Future<void> dropOffPassenger(int seatId) async {
+  static Future<void> dropOffPassenger({
+    required int seatId,
+    required int tripId,
+  }) async {
     final token = await SecureStorage.getToken();
 
     final res = await http.patch(
@@ -114,6 +141,7 @@ class DriverService {
       },
       body: jsonEncode({
         "seatId": seatId,
+        "tripId": tripId,
       }),
     );
 
@@ -130,6 +158,7 @@ class DriverService {
     required String category,
     required String severity,
     required String description,
+    required int tripId,
   }) async {
     final token = await SecureStorage.getToken();
 
@@ -147,6 +176,7 @@ class DriverService {
         "category": category,
         "severity": severity,
         "description": description,
+        "tripId": tripId,
       }),
     );
 

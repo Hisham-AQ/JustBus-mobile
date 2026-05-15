@@ -14,9 +14,9 @@ class RatingScreen extends StatefulWidget {
 }
 
 class _RatingScreenState extends State<RatingScreen> {
-  int driverRating = 5;
-  int tripRating = 5;
-  int serviceRating = 5;
+  int driverRating = 0;
+  int tripRating = 0;
+  int serviceRating = 0;
 
   final commentController = TextEditingController();
 

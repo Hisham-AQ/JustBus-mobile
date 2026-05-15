@@ -20,8 +20,8 @@ class Seat {
 class SeatSelectionScreen extends StatefulWidget {
   final int tripId;
   final int persons;
-  final String pickup;
-  final String dropoff;
+  final Map<String, dynamic> pickup;
+  final Map<String, dynamic> dropoff;
   final String fromCity;
   final String toCity;
   final String tripDate;
@@ -119,8 +119,8 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     try {
       final result = await BookingService.holdSeats(
         tripId: widget.tripId,
-        pickup: widget.pickup,
-        dropoff: widget.dropoff,
+        pickup: widget.pickup['name'],
+        dropoff: widget.dropoff['name'],
         seats: selectedSeats.toList(),
       );
 

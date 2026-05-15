@@ -40,19 +40,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: FutureBuilder(
         future: _future,
         builder: (context, snapshot) {
-          // 🔄 LOADING
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // ❌ ERROR
           if (snapshot.hasError) {
             return const Center(child: Text("Failed to load notifications"));
           }
 
           final data = snapshot.data as List;
 
-          // 💤 EMPTY
           if (data.isEmpty) {
             return const Center(
               child: Column(
@@ -69,7 +66,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             );
           }
 
-          // 🔥 LIST + REFRESH
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView.builder(
@@ -109,7 +105,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                       child: Row(
                         children: [
-                          // 🔹 ICON
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
@@ -121,10 +116,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               color: primary,
                             ),
                           ),
-
                           const SizedBox(width: 12),
-
-                          // 🔹 TEXT
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +157,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  // 🔥 ICON حسب النوع
   IconData _getIcon(String? type) {
     switch (type) {
       case 'booking':
@@ -179,7 +170,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  // 🔥 TIME AGO
   String _getTimeAgo(String date) {
     final dt = DateTime.parse(date);
     final diff = DateTime.now().difference(dt);

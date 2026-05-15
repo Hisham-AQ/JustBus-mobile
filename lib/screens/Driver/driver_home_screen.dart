@@ -20,7 +20,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   static const Color primary = Color(0xFF1F4B63);
   static const Color bg = Color(0xFFF7F7F7);
 
+  List<dynamic> trips = [];
+
   Map<String, dynamic>? trip;
+
+  int? selectedTripId;
   bool isLoading = true;
   Timer? locationTimer;
 
@@ -97,22 +101,68 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTrip();
+    _loadTrips();
   }
 
-  Future<void> _loadTrip() async {
+  Future<void> _loadTrips() async {
     try {
-      final data = await DriverService.getCurrentTrip();
+      final data = await DriverService.getDriverTrips();
+
+      if (data.isEmpty) {
+        setState(() {
+          isLoading = false;
+        });
+
+        return;
+      }
+
+      selectedTripId = data.first['id'];
+
+      final selectedTrip = await DriverService.getDriverTripById(
+        selectedTripId!,
+      );
+
       setState(() {
-        trip = data;
+        trips = data;
+        trip = selectedTrip;
         isLoading = false;
       });
 
-      if (data['status'] == 'ongoing') {
-        await startLiveLocation(data['id']);
+      if (selectedTrip['status'] == 'ongoing') {
+        await startLiveLocation(
+          selectedTrip['id'],
+        );
       }
     } catch (e) {
-      setState(() => isLoading = false);
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _changeTrip(
+    int tripId,
+  ) async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final selectedTrip = await DriverService.getDriverTripById(
+      tripId,
+    );
+
+    setState(() {
+      selectedTripId = tripId;
+      trip = selectedTrip;
+      isLoading = false;
+    });
+
+    if (selectedTrip['status'] == 'ongoing') {
+      await startLiveLocation(
+        selectedTrip['id'],
+      );
+    } else {
+      locationTimer?.cancel();
     }
   }
 
@@ -163,6 +213,37 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Container(
+            margin: const EdgeInsets.only(
+              bottom: 16,
+            ),
+            child: DropdownButtonFormField<int>(
+              value: selectedTripId,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                hintText: "Select Trip",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              items: trips.map((t) {
+                return DropdownMenuItem<int>(
+                  value: t['id'],
+                  child: Text(
+                    "${t['from_city']} → "
+                    "${t['to_city']} "
+                    "(${t['departure_time']})",
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) async {
+                if (value == null) return;
+
+                await _changeTrip(value);
+              },
+            ),
+          ),
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
@@ -365,7 +446,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       tripId,
                     );
 
-                    await _loadTrip();
+                    await _loadTrips();
 
                     if (!mounted) return;
 
@@ -408,7 +489,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
                     locationTimer?.cancel();
 
-                    await _loadTrip();
+                    await _loadTrips();
 
                     if (!mounted) return;
 
@@ -437,8 +518,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const DriverScanScreen(),
-                ),
+                    builder: (_) => DriverScanScreen(
+                          tripId: selectedTripId!,
+                        )),
               );
             },
           ),
@@ -449,7 +531,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const DriverPassengersScreen(),
+                  builder: (_) => DriverPassengersScreen(
+                    tripId: tripId,
+                  ),
                 ),
               );
             },
@@ -461,8 +545,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const DriverReportScreen(),
-                ),
+                    builder: (_) => DriverReportScreen(
+                          tripId: selectedTripId!,
+                        )),
               );
             },
           ),

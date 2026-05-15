@@ -20,8 +20,8 @@ class ConfirmBookingScreen extends StatefulWidget {
   final int tripId;
   final String fromCity;
   final String toCity;
-  final String pickup;
-  final String dropoff;
+  final Map<String, dynamic> pickup;
+  final Map<String, dynamic> dropoff;
   final String tripDate;
   final String departureTime;
   final String arrivalTime;
@@ -192,8 +192,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
             qrToken: '',
             from: widget.fromCity,
             to: widget.toCity,
-            pickupLocation: widget.pickup,
-            dropoffLocation: widget.dropoff,
+            pickupLocation: widget.pickup['name'],
+            dropoffLocation: widget.dropoff['name'],
             date: widget.tripDate,
             time: '${widget.departureTime} → ${widget.arrivalTime}',
             busNumber: int.tryParse(widget.busNumber) ?? 0,
@@ -274,9 +274,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
               child: Column(
                 children: [
                   _row(Icons.place_rounded, 'From',
-                      '${widget.fromCity} (${widget.pickup})'),
+                      '${widget.fromCity} (${widget.pickup['name']})'),
                   _row(Icons.flag_rounded, 'To',
-                      '${widget.toCity} (${widget.dropoff})'),
+                      '${widget.toCity} (${widget.dropoff['name']})'),
                   const Divider(),
                   _row(Icons.calendar_month_rounded, 'Date', widget.tripDate),
                   _row(Icons.access_time_rounded, 'Time',

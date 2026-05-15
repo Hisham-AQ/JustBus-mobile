@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../../services/secure_storage.dart';
+import '../../services/special_trip_service.dart';
 import 'package:justbus/services/profile_service.dart';
 import 'package:justbus/screens/Student/special_trip_ticket_screen.dart';
 
@@ -31,9 +30,6 @@ class SpecialTripDetailsScreen extends StatefulWidget {
 }
 
 class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
-  static const String _baseUrl =
-      'https://justbus-backend-production.up.railway.app';
-
   Map<String, dynamic>? trip;
   bool isLoading = true;
   bool isBooking = false;
@@ -49,13 +45,11 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
     return profile['name'] ?? "User";
   }
 
-  void loadTrip() async {
+  Future<void> loadTrip() async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/special-trips/${widget.tripId}'),
+      final data = await SpecialTripService.getTrip(
+        widget.tripId,
       );
-
-      final data = jsonDecode(response.body);
 
       setState(() {
         trip = data;
@@ -67,7 +61,9 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to load trip")),
+        const SnackBar(
+          content: Text("Failed to load trip"),
+        ),
       );
     }
   }
@@ -203,23 +199,11 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                 try {
                                   final token = await SecureStorage.getToken();
 
-                                  final response = await http.post(
-                                    Uri.parse(
-                                        '$_baseUrl/api/special-trips/book'),
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'Authorization': 'Bearer $token',
-                                    },
-                                    body: jsonEncode({
-                                      "tripId": widget.tripId,
-                                    }),
+                                  final data =
+                                      await SpecialTripService.bookTrip(
+                                    widget.tripId,
+                                    token!,
                                   );
-
-                                  final data = jsonDecode(response.body);
-
-                                  if (response.statusCode != 200) {
-                                    throw Exception(data['message']);
-                                  }
 
                                   await showDialog(
                                     context: context,

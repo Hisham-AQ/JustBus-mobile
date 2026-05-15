@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import '../../services/driver_service.dart';
 
 class DriverPassengersScreen extends StatefulWidget {
-  const DriverPassengersScreen({super.key});
+  final int tripId;
+
+  const DriverPassengersScreen({
+    super.key,
+    required this.tripId,
+  });
 
   @override
   State<DriverPassengersScreen> createState() => _DriverPassengersScreenState();
@@ -19,18 +24,25 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
   @override
   void initState() {
     super.initState();
-    passengersFuture = DriverService.getPassengers();
+    passengersFuture = DriverService.getPassengers(
+      widget.tripId,
+    );
   }
 
   Future<void> _refresh() async {
     setState(() {
-      passengersFuture = DriverService.getPassengers();
+      passengersFuture = DriverService.getPassengers(
+        widget.tripId,
+      );
     });
   }
 
   Future<void> _dropOff(int seatId) async {
     try {
-      await DriverService.dropOffPassenger(seatId);
+      await DriverService.dropOffPassenger(
+        seatId: seatId,
+        tripId: widget.tripId,
+      );
 
       if (!mounted) return;
 
@@ -83,26 +95,26 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
           }
 
           final passengers = snapshot.data ?? [];
-          final pickupPlaces = [
+          final List<String> pickupPlaces = [
             'All',
             ...passengers
-                .map((e) => (e['pickup_location'] ?? 'Unknown').toString())
+                .map((e) => (e['pickup_location']?['name'] ?? 'Unknown'))
                 .toSet(),
           ];
 
-          final dropoffPlaces = [
+          final List<String> dropoffPlaces = [
             'All',
             ...passengers
-                .map((e) => (e['dropoff_location'] ?? 'Unknown').toString())
+                .map((e) => ((e['dropoff_location']?['name'] ?? 'Unknown')))
                 .toSet(),
           ];
 
           final filteredPassengers = passengers.where((p) {
             final pickupMatch = selectedPickup == 'All' ||
-                p['pickup_location'] == selectedPickup;
+                p['pickup_location']?['name'] == selectedPickup;
 
             final dropoffMatch = selectedDropoff == 'All' ||
-                p['dropoff_location'] == selectedDropoff;
+                p['dropoff_location']?['name'] == selectedDropoff;
 
             return pickupMatch && dropoffMatch;
           }).toList();
@@ -122,11 +134,12 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: pickupPlaces.contains(selectedPickup)
                             ? selectedPickup
                             : 'All',
                         decoration: InputDecoration(
-                          labelText: 'Pickup',
+                          hintText: 'Pickup',
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -136,7 +149,11 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                         items: pickupPlaces.map((place) {
                           return DropdownMenuItem(
                             value: place,
-                            child: Text(place),
+                            child: Text(
+                              place,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           );
                         }).toList(),
                         onChanged: (v) {
@@ -149,11 +166,12 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<String>(
+                        isExpanded: true,
                         value: dropoffPlaces.contains(selectedDropoff)
                             ? selectedDropoff
                             : 'All',
                         decoration: InputDecoration(
-                          labelText: 'Drop-off',
+                          hintText: 'Drop-off',
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -163,7 +181,11 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                         items: dropoffPlaces.map((place) {
                           return DropdownMenuItem(
                             value: place,
-                            child: Text(place),
+                            child: Text(
+                              place,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           );
                         }).toList(),
                         onChanged: (v) {
@@ -297,7 +319,7 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
-                                            "Pickup: ${p['pickup_location']}",
+                                            "Pickup: ${p['pickup_location']?['name'] ?? ''}",
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -316,7 +338,7 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
-                                            "Drop-off: ${p['dropoff_location']}",
+                                            "Drop-off: ${p['dropoff_location']?['name'] ?? ''}",
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w600,
                                             ),

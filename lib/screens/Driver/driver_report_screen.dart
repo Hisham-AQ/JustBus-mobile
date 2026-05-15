@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import '../../services/driver_service.dart';
 
 class DriverReportScreen extends StatefulWidget {
-  const DriverReportScreen({super.key});
+  final int tripId;
+
+  const DriverReportScreen({
+    super.key,
+    required this.tripId,
+  });
 
   @override
   State<DriverReportScreen> createState() => _DriverReportScreenState();
@@ -46,6 +51,7 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
 
     try {
       await DriverService.reportMisconduct(
+        tripId: widget.tripId,
         seatNumber: seatController.text.trim(),
         passengerName: nameController.text.trim().isEmpty
             ? null
@@ -252,7 +258,7 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
             ),
 
             const SizedBox(height: 8),
-            
+
             const Text(
               "Passenger Name (Optional)",
               style: TextStyle(

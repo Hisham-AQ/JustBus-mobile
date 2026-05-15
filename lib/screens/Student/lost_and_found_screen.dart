@@ -21,7 +21,6 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // 🔵 HEADER
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(

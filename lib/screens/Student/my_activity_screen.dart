@@ -419,37 +419,46 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                     const Spacer(),
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: const Color(0xFF1F4B63),
+                      backgroundColor: status.toLowerCase() == "completed"
+                          ? Colors.grey
+                          : const Color(0xFF1F4B63),
                       child: IconButton(
-                        onPressed: () async {
-                          final userName = await SecureStorage.getUserName();
+                        onPressed: status.toLowerCase() == "completed"
+                            ? null
+                            : () async {
+                                final userName =
+                                    await SecureStorage.getUserName();
 
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => TicketScreen(
-                                seats: (t['seats'] ?? '')
-                                    .toString()
-                                    .split(',')
-                                    .map((e) => int.parse(e))
-                                    .toList(),
-                                userName: userName ?? 'Passenger',
-                                qrToken: t['qr_token'] ?? '',
-                                bookingId: t['booking_id'] ?? 0,
-                                from: t['from_city'] ?? '',
-                                to: t['to_city'] ?? '',
-                                pickupLocation: t['pickup_location'] ?? '',
-                                dropoffLocation: t['dropoff_location'] ?? '',
-                                date:
-                                    t['trip_date'].toString().split('T').first,
-                                time:
-                                    '${t['departure_time']} - ${t['arrival_time']}',
-                                busNumber: t['bus_id'],
-                                tripId: t['trip_id'] ?? 0,
-                              ),
-                            ),
-                          );
-                        },
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => TicketScreen(
+                                      seats: (t['seats'] ?? '')
+                                          .toString()
+                                          .split(',')
+                                          .map((e) => int.parse(e))
+                                          .toList(),
+                                      userName: userName ?? 'Passenger',
+                                      qrToken: t['qr_token'] ?? '',
+                                      bookingId: t['booking_id'] ?? 0,
+                                      from: t['from_city'] ?? '',
+                                      to: t['to_city'] ?? '',
+                                      pickupLocation:
+                                          t['pickup_location'] ?? '',
+                                      dropoffLocation:
+                                          t['dropoff_location'] ?? '',
+                                      date: t['trip_date']
+                                          .toString()
+                                          .split('T')
+                                          .first,
+                                      time:
+                                          '${t['departure_time']} - ${t['arrival_time']}',
+                                      busNumber: t['bus_id'],
+                                      tripId: t['trip_id'] ?? 0,
+                                    ),
+                                  ),
+                                );
+                              },
                         icon: const Icon(
                           Icons.qr_code_2,
                           color: Colors.white,

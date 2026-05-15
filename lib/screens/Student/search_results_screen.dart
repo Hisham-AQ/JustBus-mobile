@@ -113,18 +113,21 @@ class TripCard extends StatefulWidget {
 }
 
 class _TripCardState extends State<TripCard> {
-  late List<String> pickupOptions;
-  late List<String> dropoffOptions;
+  late List<Map<String, dynamic>> pickupOptions;
+  late List<Map<String, dynamic>> dropoffOptions;
 
-  String? selectedPickup;
-  String? selectedDropoff;
+  Map<String, dynamic>? selectedPickup;
+  Map<String, dynamic>? selectedDropoff;
 
   @override
   void initState() {
     super.initState();
 
-    pickupOptions = List<String>.from(widget.trip['pickup_location'] ?? []);
-    dropoffOptions = List<String>.from(widget.trip['dropoff_location'] ?? []);
+    pickupOptions = List<Map<String, dynamic>>.from(
+      widget.trip['pickup_location'] ?? [],
+    );
+    dropoffOptions =
+        List<Map<String, dynamic>>.from(widget.trip['dropoff_location'] ?? []);
 
     selectedPickup = pickupOptions.isNotEmpty ? pickupOptions.first : null;
     selectedDropoff = dropoffOptions.isNotEmpty ? dropoffOptions.first : null;
@@ -375,7 +378,7 @@ class _TripCardState extends State<TripCard> {
                             arrivalTime: widget.trip['arrival_time'] ?? '',
                             busNumber:
                                 widget.trip['bus_number']?.toString() ?? '',
-                                tripStatus: tripStatus,
+                            tripStatus: tripStatus,
                           ),
                         ),
                       );
@@ -404,9 +407,9 @@ class _TripCardState extends State<TripCard> {
 
 class _DropdownField extends StatelessWidget {
   final String label;
-  final List<String> items;
-  final String? value;
-  final ValueChanged<String?>? onChanged;
+  final List<Map<String, dynamic>> items;
+  final Map<String, dynamic>? value;
+  final ValueChanged<Map<String, dynamic>?>? onChanged;
   final bool enabled;
 
   const _DropdownField({
@@ -419,10 +422,11 @@ class _DropdownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
+    return DropdownButtonFormField<Map<String, dynamic>>(
       initialValue: value,
-      items:
-          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      items: items
+          .map((e) => DropdownMenuItem(value: e, child: Text(e['name'])))
+          .toList(),
       onChanged: enabled ? onChanged : null,
       decoration: InputDecoration(
         labelText: label,

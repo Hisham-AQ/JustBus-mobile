@@ -28,7 +28,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
       final result = await RewardsService.getPoints();
 
       setState(() {
-        points = result; //?? 0
+        points = result;
         isLoading = false;
       });
     } catch (e) {
@@ -175,7 +175,6 @@ class _RewardsScreenState extends State<RewardsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 🎉 ICON
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(

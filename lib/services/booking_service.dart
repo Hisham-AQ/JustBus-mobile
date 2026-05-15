@@ -42,7 +42,11 @@ class BookingService {
       };
     }
 
-    throw Exception('Hold failed (${response.statusCode})');
+    final body = jsonDecode(response.body);
+
+    throw Exception(
+      body['message'] ?? 'Hold failed (${response.statusCode})',
+    );
   }
 
   // ================= CONFIRM =================

@@ -36,7 +36,9 @@ class TripService {
         json.decode(response.body),
       );
     } else {
-      throw Exception('Failed to load trips');
+      throw Exception(
+        'Failed to load trips: ${response.body}',
+      );
     }
   }
 

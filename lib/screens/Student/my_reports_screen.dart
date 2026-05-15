@@ -112,26 +112,21 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
       body: FutureBuilder(
         future: _future,
         builder: (context, snapshot) {
-          // 🔄 loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // ❌ error
           if (snapshot.hasError) {
             return const Center(child: Text("Failed to load reports"));
           }
 
           final data = snapshot.data as List;
 
-          // 💤 empty
           if (data.isEmpty) {
             return const Center(
               child: Text("No reports yet"),
             );
           }
-
-          // 🔥 list
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView.builder(

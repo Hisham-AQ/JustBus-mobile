@@ -3,7 +3,12 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/driver_service.dart';
 
 class DriverScanScreen extends StatefulWidget {
-  const DriverScanScreen({super.key});
+  final int tripId;
+
+  const DriverScanScreen({
+    super.key,
+    required this.tripId,
+  });
 
   @override
   State<DriverScanScreen> createState() => _DriverScanScreenState();
@@ -25,7 +30,10 @@ class _DriverScanScreenState extends State<DriverScanScreen> {
     await controller.stop();
 
     try {
-      final result = await DriverService.scanTicket(qr);
+      final result = await DriverService.scanTicket(
+        qrToken: qr,
+        tripId: widget.tripId,
+      );
 
       if (!mounted) return;
 
