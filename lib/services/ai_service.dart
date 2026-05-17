@@ -6,7 +6,7 @@ class AIService {
 
   static Future<Map<String, dynamic>> sendMessage(String message) async {
     final response = await http.post(
-      Uri.parse("$baseUrl/api/ai/chat"),
+      Uri.parse("$baseUrl/api/ai"),
       headers: {
         "Content-Type": "application/json",
       },
@@ -24,3 +24,4 @@ class AIService {
     return jsonDecode(response.body);
   }
 }
+

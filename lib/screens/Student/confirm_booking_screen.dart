@@ -430,7 +430,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     child: ElevatedButton(
                       onPressed: (_isSubmitting || _remainingSeconds <= 0)
                           ? null
-                          : _confirmBooking,
+                          : _showConfirmDialog,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         shape: RoundedRectangleBorder(
@@ -455,6 +455,131 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     );
   }
 
+  Future<void> _showConfirmDialog() async {
+    final totalPrice =
+        previewPrice ?? (widget.seats.length * widget.pricePerSeat);
+
+    final paymentName = payment == PaymentMethod.wallet
+        ? "Wallet"
+        : payment == PaymentMethod.visa
+            ? "$cardBrand •••• $cardLast4"
+            : "Apple Pay / Google Pay";
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.directions_bus_rounded,
+                  size: 58,
+                  color: primary,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Confirm Booking",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _simpleRow(
+                  "Route",
+                  "${widget.fromCity} → ${widget.toCity}",
+                ),
+                _simpleRow(
+                  "Seats",
+                  widget.seats.join(", "),
+                ),
+                _simpleRow(
+                  "Date",
+                  widget.tripDate,
+                ),
+                _simpleRow(
+                  "Time",
+                  "${widget.departureTime} → ${widget.arrivalTime}",
+                ),
+                _simpleRow(
+                  "Payment",
+                  paymentName,
+                ),
+                const Divider(height: 28),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Total",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      "${totalPrice.toStringAsFixed(2)} JD",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(
+                            context,
+                            false,
+                          );
+                        },
+                        child: const Text("Cancel"),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primary,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(
+                            context,
+                            true,
+                          );
+                        },
+                        child: const Text(
+                          "Confirm",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _confirmBooking();
+    }
+  } 
+  
   // ================= HELPERS =================
 
   Widget _card({required String title, required Widget child}) {

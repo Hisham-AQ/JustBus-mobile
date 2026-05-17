@@ -490,7 +490,7 @@ class _WalletScreenState extends State<WalletScreen> {
                       last4: getLast4(c['card_number']),
                       id: c['id'],
                     );
-                  }).toList(),
+                  }),
                   const SizedBox(height: 28),
                   Row(
                     children: [
@@ -568,7 +568,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),

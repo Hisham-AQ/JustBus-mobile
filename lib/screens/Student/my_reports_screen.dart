@@ -74,11 +74,33 @@ class _ReportCard extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            status.toUpperCase(),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isFound ? Colors.green : Colors.orange,
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: isFound ? Colors.green.shade100 : Colors.orange.shade100,
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isFound ? Icons.check_circle : Icons.schedule,
+                  size: 14,
+                  color: isFound ? Colors.green : Colors.orange,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  isFound ? "FOUND" : "PENDING",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    color: isFound ? Colors.green : Colors.orange,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
