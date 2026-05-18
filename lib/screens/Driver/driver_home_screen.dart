@@ -166,6 +166,16 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     }
   }
 
+  String _formatDate(
+    String? date,
+  ) {
+    if (date == null) return '';
+
+    final d = DateTime.parse(date);
+
+    return "${d.day}/${d.month}/${d.year}";
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -199,11 +209,25 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           IconButton(
             icon: const Icon(Icons.logout_rounded),
             onPressed: () async {
+              final confirm = await _confirmDialog(
+                context,
+                title: 'Sign Out?',
+                message: 'Are you sure you want to sign out from your account?',
+                confirmText: 'Sign Out',
+                color: Colors.red,
+              );
+
+              if (confirm != true) return;
+
               await AuthService.logout();
+
+              if (!context.mounted) return;
 
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const LoginScreen(),
+                ),
                 (_) => false,
               );
             },
@@ -403,7 +427,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 _row(
                   Icons.calendar_month,
                   'Date',
-                  trip!['trip_date'] ?? '',
+                  _formatDate(
+                    trip!['trip_date'],
+                  ),
                 ),
                 _row(
                   Icons.access_time,

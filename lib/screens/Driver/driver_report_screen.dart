@@ -178,6 +178,34 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
     );
   }
 
+
+  IconData _categoryIcon(
+    String category,
+  ) {
+    switch (category) {
+      case "Smoking":
+        return Icons.smoke_free_rounded;
+
+      case "Violence":
+        return Icons.warning_amber_rounded;
+
+      case "Harassment":
+        return Icons.block_rounded;
+
+      case "Noise":
+        return Icons.volume_up_rounded;
+
+      case "Seat Damage":
+        return Icons.event_seat_rounded;
+
+      case "Fare Issue":
+        return Icons.payments_rounded;
+
+      default:
+        return Icons.report_problem_rounded;
+    }
+  }
+
   @override
   void dispose() {
     descriptionController.dispose();
@@ -251,7 +279,7 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
 
             // BOOKING ID
             const Text(
-              "Seat Number *",
+              "Passenger Name (Optional)",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
               ),
@@ -260,7 +288,7 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
             const SizedBox(height: 8),
 
             const Text(
-              "Passenger Name (Optional)",
+              "Seat Number *",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
               ),
@@ -309,31 +337,65 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
 
             const SizedBox(height: 8),
 
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: categories.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 2.2,
               ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: selectedCategory,
-                  isExpanded: true,
-                  items: categories.map((e) {
-                    return DropdownMenuItem(
-                      value: e,
-                      child: Text(e),
-                    );
-                  }).toList(),
-                  onChanged: (v) {
+              itemBuilder: (context, index) {
+                final category = categories[index];
+
+                final selected = selectedCategory == category;
+
+                return GestureDetector(
+                  onTap: () {
                     setState(() {
-                      selectedCategory = v!;
+                      selectedCategory = category;
                     });
                   },
-                ),
-              ),
+                  child: AnimatedContainer(
+                    duration: const Duration(
+                      milliseconds: 180,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected ? primary : Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: selected ? primary : Colors.grey.shade300,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _categoryIcon(category),
+                          color: selected ? Colors.white : Colors.black87,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          category,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: selected ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 18),

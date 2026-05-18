@@ -22,27 +22,80 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
         child: Column(
           children: [
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF1F4B63),
+                    Colors.blue.shade400,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.25),
+                    blurRadius: 18,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
               child: Column(
-                children: const [
-                  Icon(Icons.search_off_rounded, size: 56),
-                  SizedBox(height: 12),
-                  Text(
-                    'Lost something during your ride?',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                children: [
+                  Container(
+                    width: 84,
+                    height: 84,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.search_off_rounded,
+                      size: 42,
+                      color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 6),
-                  Text(
-                    'Report lost items and track their status easily.',
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Lost something during your ride?',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black54),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Report lost items and track their\nstatus easily and securely.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _statItem(
+                        "24+",
+                        "Recovered",
+                      ),
+                      _statDivider(),
+                      _statItem(
+                        "Fast",
+                        "Support",
+                      ),
+                      _statDivider(),
+                      _statItem(
+                        "24/7",
+                        "Tracking",
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -152,6 +205,40 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  static Widget _statItem(
+    String value,
+    String label,
+  ) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.85),
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _statDivider() {
+    return Container(
+      width: 1,
+      height: 34,
+      color: Colors.white24,
     );
   }
 }

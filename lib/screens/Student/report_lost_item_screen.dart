@@ -48,7 +48,48 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                 onChanged: (v) => setState(() => selectedCategory = v!),
                 decoration: _inputDecoration(),
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 14),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _categoryCard(
+                      icon: Icons.account_balance_wallet_rounded,
+                      title: "Wallet",
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _categoryCard(
+                      icon: Icons.phone_iphone_rounded,
+                      title: "Phone",
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _categoryCard(
+                      icon: Icons.work_outline_rounded,
+                      title: "Bag",
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _categoryCard(
+                      icon: Icons.inventory_2_outlined,
+                      title: "Other",
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
 
               _field(
                 label: 'Lost Item Name',
@@ -197,6 +238,60 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
             decoration: _inputDecoration(hint: hint),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _categoryCard({
+    required IconData icon,
+    required String title,
+  }) {
+    final bool isSelected = selectedCategory == title;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedCategory = title;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(
+          milliseconds: 180,
+        ),
+        padding: const EdgeInsets.symmetric(
+          vertical: 18,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1F4B63) : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF1F4B63) : Colors.grey.shade300,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 30,
+              color: isSelected ? Colors.white : Colors.black87,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: isSelected ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

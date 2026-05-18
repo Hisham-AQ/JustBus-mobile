@@ -26,31 +26,125 @@ class _RatingScreenState extends State<RatingScreen> {
     required int currentRating,
     required Function(int) onChanged,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        5,
-        (index) {
-          final star = index + 1;
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            5,
+            (index) {
+              final star = index + 1;
 
-          return IconButton(
-            onPressed: () {
-              onChanged(star);
+              return IconButton(
+                onPressed: () {
+                  onChanged(star);
+                },
+                icon: AnimatedScale(
+                  scale: star <= currentRating ? 1.15 : 1,
+                  duration: const Duration(
+                    milliseconds: 160,
+                  ),
+                  child: Icon(
+                    Icons.star_rounded,
+                    color: star <= currentRating
+                        ? Colors.amber
+                        : Colors.grey.shade300,
+                    size: 36,
+                  ),
+                ),
+              );
             },
-            icon: Icon(
-              Icons.star,
-              color:
-                  star <= currentRating ? Colors.amber : Colors.grey.shade300,
-              size: 34,
-            ),
-          );
-        },
-      ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _ratingLabel(currentRating),
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
   Future<void> submitRating() async {
     try {
+      if (driverRating == 0 || tripRating == 0 || serviceRating == 0) {
+        await showDialog(
+          context: context,
+          builder: (_) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 82,
+                      height: 82,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.star_outline_rounded,
+                        color: Colors.orange,
+                        size: 46,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      "Incomplete Rating",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Please rate all sections before submitting your feedback.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F4B63),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "OK",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+        return;
+      }
       setState(() {
         isLoading = true;
       });
@@ -64,17 +158,85 @@ class _RatingScreenState extends State<RatingScreen> {
       );
 
       if (!mounted) return;
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                      size: 54,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Rating Submitted 💫",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Thank you for sharing your experience with us.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      height: 1.4,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F4B63),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Rating submitted successfully'),
-        ),
-      );
-
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/student-home',
-        (route) => false,
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/student-home',
+                          (route) => false,
+                        );
+                      },
+                      child: const Text(
+                        "Back to Home",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +250,28 @@ class _RatingScreenState extends State<RatingScreen> {
           isLoading = false;
         });
       }
+    }
+  }
+
+  String _ratingLabel(int rating) {
+    switch (rating) {
+      case 1:
+        return "Very Bad";
+
+      case 2:
+        return "Bad";
+
+      case 3:
+        return "Good";
+
+      case 4:
+        return "Very Good";
+
+      case 5:
+        return "Excellent";
+
+      default:
+        return "Tap to rate";
     }
   }
 
@@ -110,6 +294,19 @@ class _RatingScreenState extends State<RatingScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            const Icon(
+              Icons.rate_review_rounded,
+              size: 80,
+              color: Color(0xFF1F4B63),
+            ),
+            Text(
+              "Your feedback helps us improve",
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 14),
             const SizedBox(height: 20),
             buildSection(
               title: 'Driver Rating',
@@ -196,6 +393,13 @@ class _RatingScreenState extends State<RatingScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    commentController.dispose();
+
+    super.dispose();
   }
 
   Widget buildSection({

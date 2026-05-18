@@ -37,6 +37,7 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
     });
   }
 
+
   Future<void> _dropOff(int seatId) async {
     try {
       await DriverService.dropOffPassenger(
@@ -167,7 +168,7 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         isExpanded: true,
-                        value: dropoffPlaces.contains(selectedDropoff)
+                        initialValue: dropoffPlaces.contains(selectedDropoff)
                             ? selectedDropoff
                             : 'All',
                         decoration: InputDecoration(
