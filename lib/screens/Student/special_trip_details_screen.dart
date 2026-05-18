@@ -168,25 +168,108 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                             ? null
                             : () async {
                                 setState(() => isBooking = true);
-
                                 bool? confirm = await showDialog<bool>(
                                   context: context,
+                                  barrierDismissible: false,
                                   builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text("Confirm Booking"),
-                                      content: Text("Book ${widget.title}?"),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, false),
-                                          child: const Text("Cancel"),
+                                    return Dialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(28),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(24),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              width: 74,
+                                              height: 74,
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF1F4B63)
+                                                    .withOpacity(0.12),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.directions_bus_rounded,
+                                                color: Color(0xFF1F4B63),
+                                                size: 38,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20),
+                                            const Text(
+                                              "Confirm Booking",
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              "Are you sure you want to book ${widget.title}?",
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.black54,
+                                                height: 1.4,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 26),
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: OutlinedButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            context, false),
+                                                    style: OutlinedButton
+                                                        .styleFrom(
+                                                      minimumSize:
+                                                          const Size(0, 54),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(16),
+                                                      ),
+                                                    ),
+                                                    child: const Text("Cancel"),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: ElevatedButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            context, true),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          const Color(
+                                                              0xFF1F4B63),
+                                                      minimumSize:
+                                                          const Size(0, 54),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(16),
+                                                      ),
+                                                    ),
+                                                    child: const Text(
+                                                      "Confirm",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
-                                        ElevatedButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, true),
-                                          child: const Text("Confirm"),
-                                        ),
-                                      ],
+                                      ),
                                     );
                                   },
                                 );
@@ -209,10 +292,41 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                     context: context,
                                     builder: (context) {
                                       return AlertDialog(
-                                        title:
-                                            const Text("✅ Booking Confirmed"),
-                                        content: const Text(
-                                            "Your trip has been booked successfully"),
+                                        title: const Text(
+                                          "Booking Confirmed 🎉",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const SizedBox(height: 6),
+                                            Container(
+                                              width: 74,
+                                              height: 74,
+                                              decoration: BoxDecoration(
+                                                color: Colors.green
+                                                    .withOpacity(0.12),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.check_circle_rounded,
+                                                color: Colors.green,
+                                                size: 42,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 18),
+                                            Text(
+                                              "${widget.title} booked successfully",
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                height: 1.4,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                         actions: [
                                           ElevatedButton(
                                             onPressed: () =>
@@ -242,14 +356,85 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                     ),
                                   );
                                 } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        e
-                                            .toString()
-                                            .replaceAll("Exception: ", ""),
-                                      ),
-                                    ),
+                                  await showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(24),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(24),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 74,
+                                                height: 74,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.red
+                                                      .withOpacity(0.12),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.error_outline_rounded,
+                                                  color: Colors.red,
+                                                  size: 40,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 18),
+                                              const Text(
+                                                "Booking Failed",
+                                                style: TextStyle(
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 12),
+                                              Text(
+                                                e.toString().replaceAll(
+                                                    "Exception: ", ""),
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  color: Colors.black54,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 22),
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        const Color(0xFF1F4B63),
+                                                    minimumSize:
+                                                        const Size(0, 54),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                    ),
+                                                  ),
+                                                  child: const Text(
+                                                    "OK",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   );
                                 } finally {
                                   setState(() => isBooking = false);

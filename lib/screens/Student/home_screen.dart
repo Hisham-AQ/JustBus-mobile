@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -30,6 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int? activeTrackingTripId;
   Timer? trackingTimer;
   LatLng? busLocation;
+  List<LatLng> routePoints = [];
+  LatLng? destinationLocation;
 
   double etaMinutes = 0;
   bool isBoarded = false;
@@ -50,6 +54,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   DateTime selectedDate = DateTime.now();
   int persons = 1;
+  Future<void> loadRoute({
+    required LatLng start,
+    required LatLng end,
+  }) async {
+    try {
+      final url = 'https://router.project-osrm.org/route/v1/driving/'
+          '${start.longitude},${start.latitude};'
+          '${end.longitude},${end.latitude}'
+          '?overview=full&geometries=geojson';
+
+      final response = await http.get(Uri.parse(url));
+
+      final data = jsonDecode(response.body);
+
+      final coords = data['routes'][0]['geometry']['coordinates'] as List;
+
+      routePoints = coords.map((c) {
+        return LatLng(c[1], c[0]);
+      }).toList();
+
+      setState(() {});
+    } catch (e) {
+      print("ROUTE ERROR: $e");
+    }
+  }
 
   Future<void> loadBusLocation() async {
     if (activeTrackingTripId == null) {
@@ -111,6 +140,25 @@ class _HomeScreenState extends State<HomeScreen> {
         etaMinutes = (data['eta_minutes'] ?? 0).toDouble();
         isBoarded = boarded;
       });
+
+      final destination = boarded
+          ? LatLng(
+              data['dropoff_location']['lat'],
+              data['dropoff_location']['lng'],
+            )
+          : LatLng(
+              data['pickup_location']['lat'],
+              data['pickup_location']['lng'],
+            );
+
+      setState(() {
+        destinationLocation = destination;
+      });
+
+      await loadRoute(
+        start: location,
+        end: destination,
+      );
 
       if (firstMapMove) {
         Future.delayed(
@@ -296,27 +344,66 @@ class _HomeScreenState extends State<HomeScreen> {
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.example.justbus_v1',
                 ),
+                if (routePoints.isNotEmpty)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: routePoints,
+                        strokeWidth: 6,
+                        color: Colors.blue,
+                        borderStrokeWidth: 2,
+                        borderColor: Colors.white,
+                      ),
+                    ],
+                  ),
                 MarkerLayer(
                   markers: [
-                    Marker(
-                      point: justLocation,
-                      width: 60,
-                      height: 60,
-                      child: const Icon(
-                        Icons.trip_origin,
-                        size: 34,
-                        color: Colors.green,
+                    if (!isBoarded)
+                      Marker(
+                        point: destinationLocation ?? justLocation,
+                        width: 60,
+                        height: 60,
+                        child: const Icon(
+                          Icons.location_pin,
+                          size: 42,
+                          color: Colors.orange,
+                        ),
                       ),
-                    ),
+                    if (isBoarded)
+                      Marker(
+                        point: destinationLocation ?? justLocation,
+                        width: 60,
+                        height: 60,
+                        child: const Icon(
+                          Icons.location_pin,
+                          size: 42,
+                          color: Colors.red,
+                        ),
+                      ),
                     if (busLocation != null)
                       Marker(
                         point: busLocation!,
-                        width: 70,
-                        height: 70,
-                        child: const Icon(
-                          Icons.directions_bus_filled_rounded,
-                          size: 42,
-                          color: Colors.blue,
+                        width: 52,
+                        height: 52,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.18),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: Icon(
+                              Icons.directions_bus_filled_rounded,
+                              size: 24,
+                              color: Color(0xFF1F4B63),
+                            ),
+                          ),
                         ),
                       ),
                   ],
@@ -651,15 +738,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           Positioned(
+            top: 16,
             right: 16,
-            bottom: 790,
-            child: FloatingActionButton(
-              heroTag: 'justbot',
-              backgroundColor: const Color(0xFF1F4B63),
-              onPressed: () => _openJustBot(context),
-              child: const Icon(
-                Icons.smart_toy_outlined,
-                color: Colors.white,
+            child: SafeArea(
+              child: FloatingActionButton(
+                heroTag: 'justbot',
+                backgroundColor: const Color(0xFF1F4B63),
+                onPressed: () => _openJustBot(context),
+                child: const Icon(
+                  Icons.smart_toy_outlined,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

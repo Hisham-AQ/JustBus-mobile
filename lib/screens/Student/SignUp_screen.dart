@@ -22,16 +22,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
   DateTime? birthDate;
   bool agreeTerms = false;
   bool loading = false;
+  bool hidePassword = true;
+  bool hideConfirmPassword = true;
 
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF1F4B63);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        titleTextStyle: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
+          color: Colors.black,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),
@@ -46,68 +54,212 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Create your JustBus account',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF1F4B63),
+                      Color(0xFF2B6B8A),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1F4B63).withOpacity(0.22),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 74,
+                      height: 74,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Image.asset(
+                          'assets/images/JustBus_Main_Logo.png',
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 18),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Join JustBus",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            "Create your account and start smarter commuting.",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 28),
               const SizedBox(height: 24),
-              _inputField(
-                controller: nameController,
-                label: 'Full Name',
-                icon: Icons.person_outline,
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: _inputField(
+                  controller: nameController,
+                  label: 'Full Name',
+                  icon: Icons.person_outline,
+                ),
               ),
               const SizedBox(height: 14),
-              _inputField(
-                controller: emailController,
-                label: 'Email',
-                icon: Icons.email_outlined,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email is required';
-                  final regex = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$');
-                  if (!regex.hasMatch(v.trim())) {
-                    return 'Enter a valid email';
-                  }
-                  return null;
-                },
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: _inputField(
+                  controller: emailController,
+                  label: 'Email',
+                  icon: Icons.email_outlined,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Email is required';
+                    final regex = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$');
+                    if (!regex.hasMatch(v.trim())) {
+                      return 'Enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
               ),
               const SizedBox(height: 14),
-              _inputField(
-                controller: phoneController,
-                label: 'Phone Number',
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) {
-                    return 'Phone number is required';
-                  }
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: _inputField(
+                  controller: phoneController,
+                  label: 'Phone Number',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Phone number is required';
+                    }
 
-                  final phone = v.trim();
+                    final phone = v.trim();
 
-                  if (!RegExp(r'^\d{9,15}$').hasMatch(phone)) {
-                    return 'Enter a valid phone number';
-                  }
-                  return null;
-                },
+                    if (!RegExp(r'^\d{9,15}$').hasMatch(phone)) {
+                      return 'Enter a valid phone number';
+                    }
+                    return null;
+                  },
+                ),
               ),
               const SizedBox(height: 14),
-              _inputField(
-                controller: passwordController,
-                label: 'Password',
-                icon: Icons.lock_outline,
-                obscure: true,
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: _inputField(
+                  controller: passwordController,
+                  label: 'Password',
+                  icon: Icons.lock_outline,
+                  obscure: hidePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      hidePassword
+                          ? Icons.visibility_off_rounded
+                          : Icons.visibility_rounded,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        hidePassword = !hidePassword;
+                      });
+                    },
+                  ),
+                ),
               ),
               const SizedBox(height: 14),
-              _inputField(
-                controller: confirmPasswordController,
-                label: 'Confirm Password',
-                icon: Icons.lock_outline,
-                obscure: true,
-                validator: (v) {
-                  if (v != passwordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: _inputField(
+                  controller: confirmPasswordController,
+                  label: 'Confirm Password',
+                  icon: Icons.lock_outline,
+                  obscure: hideConfirmPassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      hideConfirmPassword
+                          ? Icons.visibility_off_rounded
+                          : Icons.visibility_rounded,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        hideConfirmPassword = !hideConfirmPassword;
+                      });
+                    },
+                  ),
+                  validator: (v) {
+                    if (v != passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
               ),
               const SizedBox(height: 24),
               const Text('Gender',
@@ -146,11 +298,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.black26),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.cake_outlined),
+                      const Icon(
+                        Icons.cake_outlined,
+                        color: Color(0xFF1F4B63),
+                      ),
                       const SizedBox(width: 12),
                       Text(
                         birthDate == null
@@ -162,34 +323,82 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              CheckboxListTile(
-                value: agreeTerms,
-                onChanged: (v) => setState(() => agreeTerms = v ?? false),
-                title: const Text(
-                  'I agree to the Terms & Conditions',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    agreeTerms = !agreeTerms;
+                  });
+                },
+                child: Row(
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color:
+                            agreeTerms ? const Color(0xFF1F4B63) : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: agreeTerms
+                              ? const Color(0xFF1F4B63)
+                              : Colors.black26,
+                        ),
+                      ),
+                      child: agreeTerms
+                          ? const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'I agree to the Terms & Conditions',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                controlAffinity: ListTileControlAffinity.leading,
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: agreeTerms && !loading ? _submit : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primary.withOpacity(0.30),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
                     ),
+                  ],
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: ElevatedButton(
+                    onPressed: agreeTerms && !loading ? _submit : null,
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: loading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                   ),
-                  child: loading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Create Account',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w800),
-                        ),
                 ),
               ),
             ],
@@ -203,7 +412,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (selectedGender == null || birthDate == null) {
-      _show('Please complete all fields');
+      await _showDialog(
+        title: 'Missing Information',
+        message: 'Please complete all required fields.',
+        success: false,
+      );
       return;
     }
 
@@ -220,10 +433,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
         birthDate: birthDate!,
       );
 
-      _show('Account created successfully');
+      await _showDialog(
+        title: 'Welcome to JustBus 🎉',
+        message: 'Your account has been created successfully.',
+        success: true,
+      );
       Navigator.pop(context);
     } catch (e) {
-      _show(e.toString().replaceFirst('Exception: ', ''));
+      await _showDialog(
+        title: 'Registration Failed',
+        message: e.toString().replaceFirst('Exception: ', ''),
+        success: false,
+      );
     } finally {
       setState(() => loading = false);
     }
@@ -239,14 +460,94 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (picked != null) setState(() => birthDate = picked);
   }
 
-  void _show(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  Future<void> _showDialog({
+    required String title,
+    required String message,
+    required bool success,
+  }) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 84,
+                  height: 84,
+                  decoration: BoxDecoration(
+                    color: success
+                        ? Colors.green.withOpacity(0.12)
+                        : Colors.red.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    success
+                        ? Icons.check_circle_rounded
+                        : Icons.error_outline_rounded,
+                    color: success ? Colors.green : Colors.red,
+                    size: 48,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 26),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1F4B63),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _inputField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    Widget? suffixIcon,
     bool obscure = false,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
@@ -263,8 +564,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 18,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(
+            color: Color(0xFF1F4B63),
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(
+            color: Colors.red,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(
+            color: Colors.red,
+            width: 2,
+          ),
         ),
       ),
     );
@@ -284,7 +612,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         decoration: BoxDecoration(
           color: selected ? const Color(0xFF1F4B63) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black26),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
