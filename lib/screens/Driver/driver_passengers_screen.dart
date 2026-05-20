@@ -136,7 +136,7 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
                     Expanded(
                       child: DropdownButtonFormField<String>(
                         isExpanded: true,
-                        value: pickupPlaces.contains(selectedPickup)
+                        initialValue: pickupPlaces.contains(selectedPickup)
                             ? selectedPickup
                             : 'All',
                         decoration: InputDecoration(

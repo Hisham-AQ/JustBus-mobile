@@ -349,8 +349,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     polylines: [
                       Polyline(
                         points: routePoints,
-                        strokeWidth: 6,
-                        color: Colors.blue,
+                        strokeWidth: 5,
+                        color: const Color(0xFF1F4B63),
                         borderStrokeWidth: 2,
                         borderColor: Colors.white,
                       ),
@@ -745,9 +745,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 heroTag: 'justbot',
                 backgroundColor: const Color(0xFF1F4B63),
                 onPressed: () => _openJustBot(context),
-                child: const Icon(
-                  Icons.smart_toy_outlined,
-                  color: Colors.white,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'assets/images/bot.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),

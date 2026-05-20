@@ -242,7 +242,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               bottom: 16,
             ),
             child: DropdownButtonFormField<int>(
-              value: selectedTripId,
+              initialValue: selectedTripId,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white,

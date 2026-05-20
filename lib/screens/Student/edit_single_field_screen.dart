@@ -59,10 +59,10 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
     const primary = Color(0xFF1F4B63);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: const Color(0xFFF7F8FA),
+        scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
           onPressed: () => Navigator.pop(context),
@@ -78,24 +78,50 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
             const SizedBox(height: 20),
             Text(
               widget.subtitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
-                color: Colors.black54,
+                color: Colors.grey.shade600,
+                height: 1.5,
               ),
             ),
             const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              height: 56,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: primary, width: 1.5),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: primary.withOpacity(.12),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.04),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: TextField(
                 controller: controller,
                 keyboardType: widget.keyboardType,
-                decoration: const InputDecoration(
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: InputDecoration(
                   border: InputBorder.none,
+                  hintText: widget.fieldKey == 'phone'
+                      ? 'Enter phone number'
+                      : 'Enter your name',
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                  ),
+                  prefixIcon: Icon(
+                    widget.fieldKey == 'phone'
+                        ? Icons.phone_rounded
+                        : Icons.person_rounded,
+                    color: primary,
+                  ),
                 ),
               ),
             ),
@@ -103,23 +129,37 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
             SizedBox(
               width: double.infinity,
               height: 56,
-              child: ElevatedButton(
-                onPressed: loading ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
-                  shape: RoundedRectangleBorder(
+              child: Material(
+                color: Colors.transparent,
+                child: Ink(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF1F4B63),
+                        Color(0xFF2D6A8D),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(30),
                   ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(30),
+                    onTap: loading ? null : _save,
+                    child: Center(
+                      child: loading
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : const Text(
+                              'Save',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
                 ),
-                child: loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Save',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
               ),
             ),
           ],

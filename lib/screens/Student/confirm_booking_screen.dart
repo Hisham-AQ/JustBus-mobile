@@ -477,10 +477,33 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.directions_bus_rounded,
-                  size: 58,
-                  color: primary,
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF1F4B63),
+                        Color(0xFF2D6A8D),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1F4B63).withOpacity(.18),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(14),
+                  child: Image.asset(
+                    'assets/images/JustBus_Main_Logo.png',
+                    fit: BoxFit.contain,
+                    color: Colors.white.withOpacity(.92),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 const Text(

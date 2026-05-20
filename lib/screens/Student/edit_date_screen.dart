@@ -58,12 +58,15 @@ class _EditDateScreenState extends State<EditDateScreen> {
     const primary = Color(0xFF1F4B63);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        title: const Text('Edit Date of Birth'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text(
+          'Edit Date of Birth',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 22,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -86,28 +89,69 @@ class _EditDateScreenState extends State<EditDateScreen> {
             // ===== DATE FIELD =====
             InkWell(
               onTap: _pickDate,
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(22),
               child: Container(
-                height: 56,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 18,
+                ),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                    color: primary,
-                    width: 1.5,
+                    color: primary.withOpacity(.12),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(.04),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.cake_outlined, color: primary),
-                    const SizedBox(width: 12),
-                    Text(
-                      selectedDate == null
-                          ? 'Select date'
-                          : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: primary.withOpacity(.08),
+                        borderRadius: BorderRadius.circular(14),
                       ),
+                      child: const Icon(
+                        Icons.cake_rounded,
+                        color: primary,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Birth Date',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            selectedDate == null
+                                ? 'Select your birth date'
+                                : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.calendar_month_rounded,
+                      color: Colors.black45,
                     ),
                   ],
                 ),
