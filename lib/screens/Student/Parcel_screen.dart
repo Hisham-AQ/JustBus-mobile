@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/parcel_service.dart';
 import 'package:justbus/screens/Student/home_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:justbus/screens/Student/wallet_screen.dart';
 
 class PackageScreen extends StatefulWidget {
   const PackageScreen({super.key});
@@ -146,7 +147,7 @@ class _PackageScreenState extends State<PackageScreen> {
     final price = previewPrice ?? _estimatePriceJOD();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF7F8FA),
       bottomNavigationBar: SafeArea(
         child: Container(
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
@@ -194,19 +195,59 @@ class _PackageScreenState extends State<PackageScreen> {
                       ? null
                       : () async {
                           if (receiverNameCtrl.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Enter receiver name')),
+                            await showDialog(
+                              context: context,
+                              builder: (_) {
+                                return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                  title: const Text(
+                                    'Missing Information',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  content: const Text(
+                                    'Please enter the receiver name before submitting.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                             return;
                           }
 
                           if (pickup == dropoff) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Pickup and Drop-off must be different'),
-                              ),
+                            await showDialog(
+                              context: context,
+                              builder: (_) {
+                                return AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                  title: const Text(
+                                    'Invalid Route',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  content: const Text(
+                                    'Pickup and drop-off locations must be different.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                             return;
                           }
@@ -216,27 +257,167 @@ class _PackageScreenState extends State<PackageScreen> {
                           bool? confirm = await showDialog<bool>(
                             context: context,
                             builder: (context) {
-                              return AlertDialog(
-                                title: const Text("Confirm Request"),
-                                content: Text(
-                                  "Send parcel from $pickup to $dropoff?\n\n"
-                                  "Type: ${selectedType.name}\n"
-                                  "Weight: ${weightKg.toStringAsFixed(1)} kg\n"
-                                  "Delivery: ${deliveryOption == 0 ? "Standard" : "Express"}\n"
-                                  "Price: $price JD",
+                              return Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(28),
                                 ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    child: const Text("Cancel"),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 82,
+                                        height: 82,
+                                        decoration: BoxDecoration(
+                                          color: primary.withOpacity(.12),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.local_shipping_rounded,
+                                          color: primary,
+                                          size: 42,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 22),
+
+                                      const Text(
+                                        "Confirm Parcel",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 10),
+
+                                      Text(
+                                        "Review your parcel details before submitting.",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          height: 1.5,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 24),
+
+                                      Container(
+                                        padding: const EdgeInsets.all(18),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF7F8FA),
+                                          borderRadius:
+                                              BorderRadius.circular(22),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            _detailRow("From", pickup),
+                                            const SizedBox(height: 12),
+                                            _detailRow("To", dropoff),
+                                            const SizedBox(height: 12),
+                                            _detailRow(
+                                                "Type", selectedType.name),
+                                            const SizedBox(height: 12),
+                                            _detailRow(
+                                              "Weight",
+                                              "${weightKg.toStringAsFixed(1)} KG",
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _detailRow(
+                                              "Delivery",
+                                              deliveryOption == 0
+                                                  ? "Standard"
+                                                  : "Express",
+                                            ),
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 16),
+                                              child: Divider(height: 1),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "Total",
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  "$price JD",
+                                                  style: const TextStyle(
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: primary,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 26),
+
+                                      // BUTTONS
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: OutlinedButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
+                                              style: OutlinedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  vertical: 16,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(18),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                "Cancel",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context, true),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: primary,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  vertical: 16,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(18),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                "Confirm",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    child: const Text("Confirm"),
-                                  ),
-                                ],
+                                ),
                               );
                             },
                           );
@@ -293,7 +474,7 @@ class _PackageScreenState extends State<PackageScreen> {
                                         ),
                                         const SizedBox(height: 16),
                                         const Text(
-                                          "Parcel Sent Successfully",
+                                          "Parcel Request Submitted",
                                           style: TextStyle(
                                             fontSize: 20,
                                             fontWeight: FontWeight.w900,
@@ -379,9 +560,21 @@ class _PackageScreenState extends State<PackageScreen> {
                                                           ScaffoldMessenger.of(
                                                                   context)
                                                               .showSnackBar(
-                                                            const SnackBar(
-                                                              content: Text(
+                                                            SnackBar(
+                                                              content: const Text(
                                                                   "PIN copied"),
+                                                              backgroundColor:
+                                                                  Colors.green,
+                                                              behavior:
+                                                                  SnackBarBehavior
+                                                                      .floating,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            14),
+                                                              ),
                                                             ),
                                                           );
                                                         },
@@ -448,9 +641,132 @@ class _PackageScreenState extends State<PackageScreen> {
                               },
                             );
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Server error: $e")),
-                            );
+                            final error = e.toString();
+
+                            if (error.contains('Insufficient balance')) {
+                              await showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(28),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(24),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 82,
+                                            height: 82,
+                                            decoration: BoxDecoration(
+                                              color: Colors.orange
+                                                  .withOpacity(.12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons
+                                                  .account_balance_wallet_rounded,
+                                              color: Colors.orange,
+                                              size: 42,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 22),
+                                          const Text(
+                                            'Insufficient Balance',
+                                            style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            'Your wallet balance is not enough to complete this parcel request.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.grey.shade600,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 26),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: OutlinedButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  style:
+                                                      OutlinedButton.styleFrom(
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                    ),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 14),
+                                                  ),
+                                                  child: const Text(
+                                                    'Back',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: ElevatedButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (_) =>
+                                                            const WalletScreen(),
+                                                      ),
+                                                    );
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor: primary,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                    ),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 14),
+                                                  ),
+                                                  child: const Text(
+                                                    'Top Up',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(error)),
+                              );
+                            }
                           } finally {
                             setState(() => isSubmitting = false);
 
@@ -658,27 +974,25 @@ class _PackageScreenState extends State<PackageScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 50),
                       child: GestureDetector(
-                        child: GestureDetector(
-                          onTap: swapLocations,
-                          child: Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: primary,
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primary.withOpacity(0.25),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.swap_vert_rounded,
-                              color: Colors.white,
-                              size: 30,
-                            ),
+                        onTap: swapLocations,
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: primary,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: primary.withOpacity(0.25),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.swap_vert_rounded,
+                            color: Colors.white,
+                            size: 30,
                           ),
                         ),
                       ),
@@ -1216,6 +1530,27 @@ class _ChoiceChip extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _detailRow(String label, String value) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          color: Colors.black54,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      Text(
+        value,
+        style: const TextStyle(
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    ],
+  );
 }
 
 class _ParcelType {

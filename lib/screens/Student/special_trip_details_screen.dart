@@ -3,6 +3,7 @@ import '../../services/secure_storage.dart';
 import '../../services/special_trip_service.dart';
 import 'package:justbus/services/profile_service.dart';
 import 'package:justbus/screens/Student/special_trip_ticket_screen.dart';
+import 'package:justbus/screens/Student/wallet_screen.dart';
 
 class SpecialTripDetailsScreen extends StatefulWidget {
   final String title;
@@ -164,7 +165,7 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: isBooking
+                        onPressed: isBooking || trip!['seats_available'] == 0
                             ? null
                             : () async {
                                 setState(() => isBooking = true);
@@ -176,128 +177,206 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(28),
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(24),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              width: 74,
-                                              height: 74,
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF1F4B63)
-                                                    .withOpacity(0.12),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Container(
-                                                width: 72,
-                                                height: 72,
+                                      child: SingleChildScrollView(
+                                        
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(24),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 74,
+                                                height: 74,
                                                 decoration: BoxDecoration(
-                                                  gradient:
-                                                      const LinearGradient(
-                                                    colors: [
-                                                      Color(0xFF1F4B63),
-                                                      Color(0xFF2D6A8D),
+                                                  color: const Color(0xFF1F4B63)
+                                                      .withOpacity(0.12),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Container(
+                                                  width: 72,
+                                                  height: 72,
+                                                  decoration: BoxDecoration(
+                                                    gradient:
+                                                        const LinearGradient(
+                                                      colors: [
+                                                        Color(0xFF1F4B63),
+                                                        Color(0xFF2D6A8D),
+                                                      ],
+                                                      begin: Alignment.topLeft,
+                                                      end:
+                                                          Alignment.bottomRight,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            24),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: const Color(
+                                                                0xFF1F4B63)
+                                                            .withOpacity(.18),
+                                                        blurRadius: 20,
+                                                        offset:
+                                                            const Offset(0, 8),
+                                                      ),
                                                     ],
-                                                    begin: Alignment.topLeft,
-                                                    end: Alignment.bottomRight,
                                                   ),
+                                                  padding:
+                                                      const EdgeInsets.all(14),
+                                                  child: Image.asset(
+                                                    'assets/images/JustBus_Main_Logo.png',
+                                                    fit: BoxFit.contain,
+                                                    color: Colors.white
+                                                        .withOpacity(.92),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 20),
+                                              const Text(
+                                                "Confirm Booking",
+                                                style: TextStyle(
+                                                  fontSize: 24,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 12),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(18),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      const Color(0xFFF7F8FA),
                                                   borderRadius:
-                                                      BorderRadius.circular(24),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: const Color(
-                                                              0xFF1F4B63)
-                                                          .withOpacity(.18),
-                                                      blurRadius: 20,
-                                                      offset:
-                                                          const Offset(0, 8),
+                                                      BorderRadius.circular(22),
+                                                ),
+                                                child: Column(
+                                                  children: [
+                                                    _bookingDetail(
+                                                      Icons
+                                                          .location_on_outlined,
+                                                      "Destination",
+                                                      widget.title,
+                                                    ),
+                                                    const SizedBox(height: 14),
+                                                    _bookingDetail(
+                                                      Icons.route_rounded,
+                                                      "Pickup",
+                                                      trip!['pickup_points'],
+                                                    ),
+                                                    const SizedBox(height: 14),
+                                                    _bookingDetail(
+                                                      Icons.access_time_rounded,
+                                                      "Departure",
+                                                      trip!['departure_time'],
+                                                    ),
+                                                    const SizedBox(height: 14),
+                                                    _bookingDetail(
+                                                      Icons
+                                                          .airline_seat_recline_normal_rounded,
+                                                      "Seats Left",
+                                                      "${trip!['seats_available']}",
+                                                    ),
+                                                    const Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical: 18),
+                                                      child: Divider(height: 1),
+                                                    ),
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        const Text(
+                                                          "Total",
+                                                          style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight.w900,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          "${widget.price} JD",
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 26,
+                                                            fontWeight:
+                                                                FontWeight.w900,
+                                                            color: Color(
+                                                                0xFF1F4B63),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ],
                                                 ),
-                                                padding:
-                                                    const EdgeInsets.all(14),
-                                                child: Image.asset(
-                                                  'assets/images/JustBus_Main_Logo.png',
-                                                  fit: BoxFit.contain,
-                                                  color: Colors.white
-                                                      .withOpacity(.92),
+                                              ),
+                                              const SizedBox(height: 18),
+                                              Text(
+                                                "Are you sure you want to book ${widget.title}?",
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.black54,
+                                                  height: 1.4,
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 20),
-                                            const Text(
-                                              "Confirm Booking",
-                                              style: TextStyle(
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.w900,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Text(
-                                              "Are you sure you want to book ${widget.title}?",
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.black54,
-                                                height: 1.4,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 26),
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: OutlinedButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            context, false),
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      minimumSize:
-                                                          const Size(0, 54),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(16),
+                                              const SizedBox(height: 26),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: OutlinedButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, false),
+                                                      style: OutlinedButton
+                                                          .styleFrom(
+                                                        minimumSize:
+                                                            const Size(0, 54),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(16),
+                                                        ),
                                                       ),
+                                                      child:
+                                                          const Text("Cancel"),
                                                     ),
-                                                    child: const Text("Cancel"),
                                                   ),
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: ElevatedButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            context, true),
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          const Color(
-                                                              0xFF1F4B63),
-                                                      minimumSize:
-                                                          const Size(0, 54),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(16),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: ElevatedButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            const Color(
+                                                                0xFF1F4B63),
+                                                        minimumSize:
+                                                            const Size(0, 54),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(16),
+                                                        ),
                                                       ),
-                                                    ),
-                                                    child: const Text(
-                                                      "Confirm",
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.w800,
+                                                      child: const Text(
+                                                        "Confirm",
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     );
@@ -321,49 +400,80 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                   await showDialog(
                                     context: context,
                                     builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text(
-                                          "Booking Confirmed 🎉",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w900,
+                                      return Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(28),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(24),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 82,
+                                                height: 82,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.green
+                                                      .withOpacity(.12),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.check_circle_rounded,
+                                                  color: Colors.green,
+                                                  size: 42,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 22),
+                                              const Text(
+                                                "Booking Confirmed",
+                                                style: TextStyle(
+                                                  fontSize: 24,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                "${widget.title} booked successfully.",
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.grey.shade600,
+                                                  height: 1.5,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 26),
+                                              SizedBox(
+                                                width: double.infinity,
+                                                height: 54,
+                                                child: ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        const Color(0xFF1F4B63),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              18),
+                                                    ),
+                                                  ),
+                                                  child: const Text(
+                                                    "Continue",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const SizedBox(height: 6),
-                                            Container(
-                                              width: 74,
-                                              height: 74,
-                                              decoration: BoxDecoration(
-                                                color: Colors.green
-                                                    .withOpacity(0.12),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: const Icon(
-                                                Icons.check_circle_rounded,
-                                                color: Colors.green,
-                                                size: 42,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 18),
-                                            Text(
-                                              "${widget.title} booked successfully",
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                height: 1.4,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context),
-                                            child: const Text("OK"),
-                                          )
-                                        ],
                                       );
                                     },
                                   );
@@ -386,6 +496,140 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                     ),
                                   );
                                 } catch (e) {
+                                  final error = e.toString();
+
+                                  if (error.contains('Insufficient balance')) {
+                                    await showDialog(
+                                      context: context,
+                                      builder: (_) {
+                                        return Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(28),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(24),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  width: 82,
+                                                  height: 82,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.orange
+                                                        .withOpacity(.12),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons
+                                                        .account_balance_wallet_rounded,
+                                                    color: Colors.orange,
+                                                    size: 42,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 22),
+                                                const Text(
+                                                  'Insufficient Balance',
+                                                  style: TextStyle(
+                                                    fontSize: 22,
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  'Your wallet balance is not enough to complete this booking.',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: Colors.grey.shade600,
+                                                    height: 1.5,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 26),
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: OutlinedButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        style: OutlinedButton
+                                                            .styleFrom(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        16),
+                                                          ),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            vertical: 14,
+                                                          ),
+                                                        ),
+                                                        child: const Text(
+                                                          'Back',
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: ElevatedButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (_) =>
+                                                                  const WalletScreen(),
+                                                            ),
+                                                          );
+                                                        },
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              const Color(
+                                                                  0xFF1F4B63),
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        16),
+                                                          ),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            vertical: 14,
+                                                          ),
+                                                        ),
+                                                        child: const Text(
+                                                          'Top Up',
+                                                          style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w900,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                    return;
+                                  }
                                   await showDialog(
                                     context: context,
                                     builder: (context) {
@@ -466,6 +710,7 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                       );
                                     },
                                   );
+                                  return;
                                 } finally {
                                   setState(() => isBooking = false);
                                 }
@@ -518,6 +763,54 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
           Expanded(child: Text(value)),
         ],
       ),
+    );
+  }
+
+  Widget _bookingDetail(
+    IconData icon,
+    String title,
+    String value,
+  ) {
+    return Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F4B63).withOpacity(.08),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF1F4B63),
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

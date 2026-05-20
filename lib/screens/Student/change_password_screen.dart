@@ -17,6 +17,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool showNew = false;
   bool showConfirm = false;
   bool loading = false;
+  String? currentPasswordError;
+  String? confirmPasswordError;
 
   String get passwordStrength {
     final password = newPass.text;
@@ -52,29 +54,38 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
   }
 
+  bool get passwordsMatch {
+    return confirmPass.text.isNotEmpty && newPass.text == confirmPass.text;
+  }
+
   Future<void> _changePassword() async {
     final current = oldPass.text.trim();
     final newPassword = newPass.text.trim();
     final confirm = confirmPass.text.trim();
 
+    setState(() {
+      currentPasswordError = null;
+      confirmPasswordError = null;
+    });
+
     if (current.isEmpty || newPassword.isEmpty || confirm.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All fields are required')),
-      );
       return;
     }
 
     if (newPassword != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
-      );
+      setState(() {
+        confirmPasswordError = 'Passwords do not match';
+      });
       return;
     }
 
+    if (current == newPassword) {
+      setState(() {
+        confirmPasswordError = 'New password must be different';
+      });
+      return;
+    }
     if (newPassword.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters')),
-      );
       return;
     }
 
@@ -86,15 +97,84 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         newPassword: newPassword,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password updated successfully')),
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 82,
+                    height: 82,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.green,
+                      size: 42,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  const Text(
+                    'Password Updated',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Your password has been changed successfully.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey.shade600,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F4B63),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      child: const Text(
+                        'Done',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
-
-      Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      setState(() {
+        currentPasswordError = 'Current password is incorrect';
+      });
     } finally {
       setState(() => loading = false);
     }
@@ -118,6 +198,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       required TextEditingController controller,
       required bool visible,
       required VoidCallback toggle,
+      String? errorText,
+      bool showSuccess = false,
     }) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,18 +263,52 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    visible
-                        ? Icons.visibility_rounded
-                        : Icons.visibility_off_rounded,
-                    color: primary,
-                  ),
-                  onPressed: toggle,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showSuccess)
+                      Container(
+                        width: 24,
+                        height: 24,
+                        margin: const EdgeInsets.only(right: 4),
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    IconButton(
+                      icon: Icon(
+                        visible
+                            ? Icons.visibility_rounded
+                            : Icons.visibility_off_rounded,
+                        color: primary,
+                      ),
+                      onPressed: toggle,
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
+          if (errorText != null) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: Text(
+                errorText,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ],
       );
     }
@@ -255,15 +371,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 28),
               passwordField(
                 label: 'Current password',
                 hint: 'Enter current password',
                 controller: oldPass,
                 visible: showOld,
                 toggle: () => setState(() => showOld = !showOld),
+                errorText: currentPasswordError,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
               passwordField(
                 label: 'New password',
                 hint: 'At least 6 characters',
@@ -271,7 +387,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 visible: showNew,
                 toggle: () => setState(() => showNew = !showNew),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 28),
               Row(
                 children: [
                   Expanded(
@@ -320,6 +436,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 controller: confirmPass,
                 visible: showConfirm,
                 toggle: () => setState(() => showConfirm = !showConfirm),
+                errorText: confirmPasswordError,
+                showSuccess: passwordsMatch,
               ),
               const SizedBox(height: 40),
               SizedBox(
