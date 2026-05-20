@@ -204,7 +204,78 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
 
       if (!mounted) return;
 
-      Navigator.pop(context, true);
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 74,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    "Success",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Lost item report submitted successfully",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black54,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context, true);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F4B63),
+                        minimumSize: const Size(0, 54),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
     } catch (e) {
       print("ERROR: $e");
 

@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:justbus/screens/Student/special_trip_screen.dart';
 
 class SpecialTicketScreen extends StatelessWidget {
   final String qrToken;
@@ -12,7 +13,7 @@ class SpecialTicketScreen extends StatelessWidget {
   final String date;
   final String time;
   final String userName;
-  final String status; 
+  final String status;
 
   SpecialTicketScreen({
     super.key,
@@ -23,20 +24,21 @@ class SpecialTicketScreen extends StatelessWidget {
     required this.date,
     required this.time,
     required this.userName,
-    required this.status, 
+    required this.status,
   });
 
   static const Color bg = Color(0xFF4E6F87);
   static const Color primary = Color(0xFF1F4B63);
   static const Color ticketBg = Color(0xFFF8F7F4);
 
-  final GlobalKey _ticketKey = GlobalKey(); 
+  final GlobalKey _ticketKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: bg,
         elevation: 0,
         foregroundColor: Colors.white,
@@ -47,35 +49,69 @@ class SpecialTicketScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            RepaintBoundary(
-              key: _ticketKey,
-              child: _ticket(),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: () => _saveTicketAsImage(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              RepaintBoundary(
+                key: _ticketKey,
+                child: _ticket(),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () => _saveTicketAsImage(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Download Ticket',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
+                  child: const Text(
+                    'Download Ticket',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SpecialTripScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: Colors.white.withOpacity(.7),
+                    ),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: const Text(
+                    'Back to Trips',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -85,12 +121,11 @@ class SpecialTicketScreen extends StatelessWidget {
 
   Future<void> _saveTicketAsImage(BuildContext context) async {
     try {
-      final boundary =
-          _ticketKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final boundary = _ticketKey.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
 
       final image = await boundary.toImage(pixelRatio: 3);
-      final byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
 
       final pngBytes = byteData!.buffer.asUint8List();
 
@@ -128,7 +163,6 @@ class SpecialTicketScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 22),
 
-              // USER
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -137,9 +171,7 @@ class SpecialTicketScreen extends StatelessWidget {
                       radius: 26,
                       backgroundColor: primary,
                       child: Text(
-                        userName.isNotEmpty
-                            ? userName[0].toUpperCase()
-                            : 'U',
+                        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -266,8 +298,7 @@ class SpecialTicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _routeBlock(String label, String value,
-      {required bool alignStart}) {
+  Widget _routeBlock(String label, String value, {required bool alignStart}) {
     return Expanded(
       child: Column(
         crossAxisAlignment:

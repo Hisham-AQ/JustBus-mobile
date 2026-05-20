@@ -497,8 +497,7 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                   );
                                 } catch (e) {
                                   final error = e.toString();
-
-                                  if (error.contains('Insufficient balance')) {
+                                  if (error.contains('Not enough balance')) {
                                     await showDialog(
                                       context: context,
                                       builder: (_) {

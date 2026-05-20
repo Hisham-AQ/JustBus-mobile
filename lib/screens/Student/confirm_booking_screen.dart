@@ -8,12 +8,6 @@ import '../../services/wallet_service.dart';
 
 enum PaymentMethod { applePay, visa, wallet }
 
-TextEditingController _rewardController = TextEditingController();
-bool isRewardApplied = false;
-bool isCheckingReward = false;
-String? rewardMessage;
-double? previewPrice;
-
 class ConfirmBookingScreen extends StatefulWidget {
   final int bookingId;
   final String holdExpiresAt;
@@ -54,14 +48,19 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
 
+  TextEditingController _rewardController = TextEditingController();
+  bool isRewardApplied = false;
+  bool isCheckingReward = false;
+  String? rewardMessage;
+  double? previewPrice;
+
   PaymentMethod payment = PaymentMethod.wallet;
   bool _isSubmitting = false;
   String _userName = 'User';
   double walletBalance = 0;
   String cardLast4 = '----';
-  String cardBrand = 'Visa';
+  String cardBrand = 'No Card';
 
-  // ===== TIMER =====
   Timer? _timer;
   int _remainingSeconds = 0;
 
@@ -77,10 +76,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _rewardController.dispose();
     super.dispose();
   }
 
-  // ===== USER NAME =====
   Future<void> _loadUserName() async {
     final name = await SecureStorage.getUserName();
     if (!mounted) return;
@@ -128,8 +127,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     }
   }
 
-  // ===== INIT TIMER FROM hold_expires_at =====
-
   void _initTimerFromServer() {
     final expiry = DateTime.parse(widget.holdExpiresAt).toLocal();
 
@@ -140,7 +137,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     _startTimer();
   }
 
-  // ===== START TIMER =====
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingSeconds <= 0) {
@@ -167,7 +163,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     return '$m:$s';
   }
 
-  // ===== CONFIRM =====
   Future<void> _confirmBooking() async {
     setState(() => _isSubmitting = true);
 
@@ -182,6 +177,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
       _rewardController.clear();
 
+      _timer?.cancel();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -208,14 +204,85 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
       msg = msg.replaceAll("Exception: ", "");
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
+      await showDialog(
+        context: context,
+        builder: (_) {
+          final isBalanceError = msg.toLowerCase().contains('insufficient');
+
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 74,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      color: isBalanceError
+                          ? Colors.orange.withOpacity(.12)
+                          : Colors.red.withOpacity(.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isBalanceError
+                          ? Icons.account_balance_wallet_outlined
+                          : Icons.error_outline_rounded,
+                      color: isBalanceError ? Colors.orange : Colors.red,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    isBalanceError ? "Insufficient Balance" : "Booking Failed",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    msg,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        minimumSize: const Size(0, 54),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
   }
-  // ================= UI =================
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +305,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         padding: const EdgeInsets.all(18),
         child: Column(
           children: [
-            // ===== TIMER UI =====
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(14),
@@ -266,9 +332,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             _card(
               title: 'Trip Details',
               child: Column(
@@ -284,9 +348,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             _card(
               title: 'Passengers',
               child: Column(
@@ -296,9 +358,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             _card(
               title: 'Reward Code',
               child: Column(
@@ -347,9 +407,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             _card(
               title: 'Payment Method',
               child: Column(
@@ -375,9 +433,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -603,8 +659,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     }
   }
 
-  // ================= HELPERS =================
-
   Widget _card({required String title, required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -759,6 +813,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         rewardMessage = result['valid']
             ? "Reward applied 🎉"
             : result['message'] ?? "Invalid code";
+        FocusScope.of(context).unfocus();
       });
     } catch (e) {
       setState(() {

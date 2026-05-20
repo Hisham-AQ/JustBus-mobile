@@ -120,9 +120,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     final amount = double.tryParse(amountCtrl.text);
 
                     if (amount == null || amount <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Enter a valid amount')),
-                      );
+                      await showErrorDialog("Enter a valid amount");
                       return;
                     }
 
@@ -132,17 +130,76 @@ class _WalletScreenState extends State<WalletScreen> {
                       setState(() {
                         balance = newBalance;
                       });
-
                       Navigator.pop(context);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Wallet topped up successfully')),
+                      await showDialog(
+                        context: context,
+                        builder: (_) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 74,
+                                    height: 74,
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Colors.green,
+                                      size: 40,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 18),
+                                  const Text(
+                                    "Success",
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Text(
+                                    "Wallet topped up successfully",
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 22),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primary,
+                                        minimumSize: const Size(0, 54),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "OK",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       );
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(e.toString())),
-                      );
+                      await showErrorDialog(e.toString());
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -162,6 +219,78 @@ class _WalletScreenState extends State<WalletScreen> {
                 ),
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> showErrorDialog(String text) async {
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 74,
+                  height: 74,
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.red,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  "Error",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primary,
+                      minimumSize: const Size(0, 54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      "OK",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -362,122 +491,473 @@ class _WalletScreenState extends State<WalletScreen> {
                         showDialog(
                           context: context,
                           builder: (_) {
-                            return AlertDialog(
+                            return Dialog(
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(28),
                               ),
-                              title: const Text(
-                                "Add Card",
-                                style: TextStyle(fontWeight: FontWeight.w900),
+                              child: StatefulBuilder(
+                                builder: (context, setDialogState) {
+                                  return SingleChildScrollView(
+                                    padding: const EdgeInsets.all(24),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // ===== CARD PREVIEW =====
+
+                                        Container(
+                                          width: double.infinity,
+                                          height: 200,
+                                          padding: const EdgeInsets.all(22),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(26),
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFF1F4B63),
+                                                Color(0xFF2D6A8D),
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Spacer(),
+                                              Text(
+                                                number.text.isEmpty
+                                                    ? '**** **** **** ****'
+                                                    : number.text,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 22,
+                                                  letterSpacing: 2,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 18),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      const Text(
+                                                        'CARD HOLDER',
+                                                        style: TextStyle(
+                                                          color: Colors.white54,
+                                                          fontSize: 11,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        name.text.isEmpty
+                                                            ? 'YOUR NAME'
+                                                            : name.text
+                                                                .toUpperCase(),
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      const Text(
+                                                        'EXPIRES',
+                                                        style: TextStyle(
+                                                          color: Colors.white54,
+                                                          fontSize: 11,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        expiry.text.isEmpty
+                                                            ? 'MM/YY'
+                                                            : expiry.text,
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 26),
+
+                                        TextField(
+                                          controller: number,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                            LengthLimitingTextInputFormatter(
+                                                19),
+                                            CardNumberFormatter(),
+                                          ],
+                                          onChanged: (_) =>
+                                              setDialogState(() {}),
+                                          decoration: InputDecoration(
+                                            hintText: 'Card Number',
+                                            prefixIcon:
+                                                const Icon(Icons.credit_card),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF5F7FA),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 14),
+
+                                        TextField(
+                                          controller: name,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter.allow(
+                                                RegExp(r'[a-zA-Z ]')),
+                                          ],
+                                          onChanged: (_) =>
+                                              setDialogState(() {}),
+                                          decoration: InputDecoration(
+                                            hintText: 'Card Holder',
+                                            prefixIcon: const Icon(
+                                                Icons.person_outline),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF5F7FA),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 14),
+
+                                        TextField(
+                                          controller: expiry,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                            LengthLimitingTextInputFormatter(4),
+                                            ExpiryDateFormatter(),
+                                          ],
+                                          onChanged: (_) =>
+                                              setDialogState(() {}),
+                                          decoration: InputDecoration(
+                                            hintText: 'MM/YY',
+                                            prefixIcon: const Icon(
+                                              Icons.calendar_month_outlined,
+                                            ),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF5F7FA),
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18),
+                                              borderSide: BorderSide.none,
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 28),
+
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: TextButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                                child: const Text('Cancel'),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: SizedBox(
+                                                height: 52,
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor: primary,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                    ),
+                                                  ),
+                                                  onPressed: () async {
+                                                    final clean = number.text
+                                                        .replaceAll(' ', '')
+                                                        .trim();
+                                                    final holder =
+                                                        name.text.trim();
+                                                    final exp =
+                                                        expiry.text.trim();
+
+                                                    // CARD NUMBER VALIDATION
+
+                                                    if (clean.isEmpty) {
+                                                      await showErrorDialog(
+                                                          "Enter card number");
+                                                      return;
+                                                    }
+
+                                                    // only digits
+                                                    if (!RegExp(r'^[0-9]+$')
+                                                        .hasMatch(clean)) {
+                                                      await showErrorDialog(
+                                                          "Card number must contain digits only");
+                                                      return;
+                                                    }
+
+                                                    // Visa / MasterCard usually 16 digits
+                                                    if (clean.length != 16) {
+                                                      await showErrorDialog(
+                                                          "Card number must be 16 digits");
+                                                      return;
+                                                    }
+
+                                                    // HOLDER NAME VALIDATION
+
+                                                    if (holder.isEmpty) {
+                                                      await showErrorDialog(
+                                                          "Enter card holder name");
+                                                      return;
+                                                    }
+
+                                                    // only letters + spaces
+                                                    if (!RegExp(r'^[a-zA-Z ]+$')
+                                                        .hasMatch(holder)) {
+                                                      await showErrorDialog(
+                                                        "Card holder name must contain letters only",
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    if (holder.length < 3) {
+                                                      await showErrorDialog(
+                                                          "Invalid card holder name");
+                                                      return;
+                                                    }
+
+                                                    // EXPIRY VALIDATION
+
+                                                    if (!RegExp(
+                                                            r'^\d{2}/\d{2}$')
+                                                        .hasMatch(exp)) {
+                                                      await showErrorDialog(
+                                                          "Expiry must be MM/YY");
+                                                      return;
+                                                    }
+
+                                                    final parts =
+                                                        exp.split('/');
+
+                                                    final month =
+                                                        int.parse(parts[0]);
+                                                    final year =
+                                                        int.parse(parts[1]);
+
+                                                    if (month < 1 ||
+                                                        month > 12) {
+                                                      await showErrorDialog(
+                                                          "Invalid expiry month");
+                                                      return;
+                                                    }
+
+                                                    final now = DateTime.now();
+
+                                                    final currentYear =
+                                                        now.year % 100;
+                                                    final currentMonth =
+                                                        now.month;
+
+                                                    if (year < currentYear ||
+                                                        (year == currentYear &&
+                                                            month <
+                                                                currentMonth)) {
+                                                      await showErrorDialog(
+                                                          "Card has expired");
+                                                      return;
+                                                    }
+
+                                                    // BRAND DETECTION
+
+                                                    final brand =
+                                                        detectCardBrand(clean);
+
+                                                    if (brand == 'Unknown') {
+                                                      await showErrorDialog(
+                                                        "Only Visa and MasterCard are supported",
+                                                      );
+                                                      return;
+                                                    }
+
+                                                    try {
+                                                      await CardService.addCard(
+                                                        cardNumber: clean,
+                                                        holder: holder,
+                                                        expiry: exp,
+                                                        brand: brand,
+                                                      );
+                                                      await loadData();
+
+                                                      if (context.mounted) {
+                                                        Navigator.pop(context);
+                                                      }
+
+                                                      await showDialog(
+                                                        context: context,
+                                                        builder: (_) {
+                                                          return Dialog(
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          24),
+                                                            ),
+                                                            child: Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(24),
+                                                              child: Column(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .min,
+                                                                children: [
+                                                                  Container(
+                                                                    width: 74,
+                                                                    height: 74,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: Colors
+                                                                          .green
+                                                                          .withOpacity(
+                                                                              .12),
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                    ),
+                                                                    child:
+                                                                        const Icon(
+                                                                      Icons
+                                                                          .check_circle_rounded,
+                                                                      color: Colors
+                                                                          .green,
+                                                                      size: 40,
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          18),
+                                                                  const Text(
+                                                                    "Success",
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          22,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w900,
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          10),
+                                                                  const Text(
+                                                                    "Card added successfully",
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                  ),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          22),
+                                                                  SizedBox(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    child:
+                                                                        ElevatedButton(
+                                                                      onPressed:
+                                                                          () =>
+                                                                              Navigator.pop(context),
+                                                                      style: ElevatedButton
+                                                                          .styleFrom(
+                                                                        backgroundColor:
+                                                                            primary,
+                                                                        minimumSize: const Size(
+                                                                            0,
+                                                                            54),
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(16),
+                                                                        ),
+                                                                      ),
+                                                                      child:
+                                                                          const Text(
+                                                                        "OK",
+                                                                        style:
+                                                                            TextStyle(
+                                                                          color:
+                                                                              Colors.white,
+                                                                          fontWeight:
+                                                                              FontWeight.w800,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+                                                    } catch (e) {
+                                                      await showErrorDialog(
+                                                        e.toString().replaceAll(
+                                                            "Exception: ", ""),
+                                                      );
+                                                    }
+                                                  },
+                                                  child: const Text(
+                                                    "Save",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextField(
-                                    controller: number,
-                                    keyboardType: TextInputType.number,
-                                    maxLength: 19,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                    decoration: InputDecoration(
-                                      labelText: "Card Number",
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  TextField(
-                                    controller: name,
-                                    decoration: InputDecoration(
-                                      labelText: "Card Holder",
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  TextField(
-                                    controller: expiry,
-                                    keyboardType: TextInputType.number,
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.allow(
-                                          RegExp(r'[0-9/]')),
-                                    ],
-                                    decoration: InputDecoration(
-                                      labelText: "Expiry Date",
-                                      hintText: "MM/YY",
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("Cancel"),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    final clean =
-                                        number.text.replaceAll(' ', '');
-
-                                    if (clean.length < 13 ||
-                                        clean.length > 19) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content:
-                                                Text("Invalid card number")),
-                                      );
-                                      return;
-                                    }
-
-                                    if (name.text.isEmpty) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content:
-                                                Text("Enter card holder name")),
-                                      );
-                                      return;
-                                    }
-
-                                    if (!RegExp(r'^\d{2}/\d{2}$')
-                                        .hasMatch(expiry.text)) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content:
-                                                Text("Invalid expiry format")),
-                                      );
-                                      return;
-                                    }
-                                    final brand = detectCardBrand(clean);
-
-                                    try {
-                                      await CardService.addCard(
-                                        cardNumber: clean,
-                                        holder: name.text,
-                                        expiry: expiry.text,
-                                        brand: brand,
-                                      );
-
-                                      await loadData();
-                                      Navigator.pop(context);
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(content: Text(e.toString())),
-                                      );
-                                    }
-                                  },
-                                  child: const Text("Save"),
-                                ),
-                              ],
                             );
                           },
                         );
@@ -596,5 +1076,57 @@ String getTitle(String type) {
       return "Booking Payment";
     default:
       return "Transaction";
+  }
+}
+
+class ExpiryDateFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var text = newValue.text;
+
+    if (text.length > 2 && !text.contains('/')) {
+      text = '${text.substring(0, 2)}/${text.substring(2)}';
+    }
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(
+        offset: text.length,
+      ),
+    );
+  }
+}
+
+class CardNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var text = newValue.text.replaceAll(' ', '');
+
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < text.length; i++) {
+      buffer.write(text[i]);
+
+      final index = i + 1;
+
+      if (index % 4 == 0 && index != text.length) {
+        buffer.write(' ');
+      }
+    }
+
+    final formatted = buffer.toString();
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: formatted.length,
+      ),
+    );
   }
 }

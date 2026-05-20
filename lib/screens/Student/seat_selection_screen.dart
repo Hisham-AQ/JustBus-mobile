@@ -66,7 +66,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     _loadReservedSeats();
   }
 
-  // LOAD RESERVED
   Future<void> _loadReservedSeats() async {
     try {
       final data = await TripService.getReservedSeats(widget.tripId);
@@ -112,7 +111,6 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ];
       });
 
-  // CONFIRM SEAT (HOLD)
   Future<void> _onConfirmSeat() async {
     setState(() => _loading = true);
 
@@ -149,8 +147,93 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ),
       );
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seats are no longer available')),
+      setState(() {
+        selectedSeats.clear();
+      });
+
+      await _loadReservedSeats();
+
+      if (!mounted) return;
+
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 82,
+                    height: 82,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.flash_on_rounded,
+                      color: Colors.orange,
+                      size: 48,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    "Too Slow 😅",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Oops... another passenger was faster and grabbed your seats first 🏃💨",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black54,
+                      height: 1.5,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Your selected seats were released automatically.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        minimumSize: const Size(0, 54),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Choose New Seats",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     } finally {
       if (mounted) setState(() => _loading = false);
