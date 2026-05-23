@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'confirm_booking_screen.dart';
 import '../../services/trip_service.dart';
 import '../../services/booking_service.dart';
+import '../../services/secure_storage.dart';
 
 enum Gender { male, female, none }
 
@@ -58,12 +59,14 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   final Set<int> selectedSeats = {};
   final Map<int, Gender> reservedSeats = {};
 
+  String? _avatar;
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
     _loadReservedSeats();
+    _loadAvatar();
   }
 
   Future<void> _loadReservedSeats() async {
@@ -132,6 +135,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         MaterialPageRoute(
           builder: (_) => ConfirmBookingScreen(
               bookingId: bookingId,
+              avatar: _avatar,
               holdExpiresAt: holdExpiresAt,
               tripId: widget.tripId,
               fromCity: widget.fromCity,
@@ -182,7 +186,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   ),
                   const SizedBox(height: 18),
                   const Text(
-                    "Too Slow 😅",
+                    "Too Slow",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
@@ -460,5 +464,15 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _loadAvatar() async {
+    final avatar = await SecureStorage.getAvatar();
+
+    if (!mounted) return;
+
+    setState(() {
+      _avatar = avatar;
+    });
   }
 }

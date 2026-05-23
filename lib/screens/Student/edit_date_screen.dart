@@ -133,6 +133,7 @@ class _EditDateScreenState extends State<EditDateScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text(
           'Edit Date of Birth',
           style: TextStyle(
@@ -147,7 +148,6 @@ class _EditDateScreenState extends State<EditDateScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-
             const Text(
               'Enter your birth date',
               style: TextStyle(
@@ -156,10 +156,7 @@ class _EditDateScreenState extends State<EditDateScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-
             const SizedBox(height: 12),
-
-            // ===== DATE FIELD =====
             InkWell(
               onTap: _pickDate,
               borderRadius: BorderRadius.circular(22),
@@ -230,10 +227,7 @@ class _EditDateScreenState extends State<EditDateScreen> {
                 ),
               ),
             ),
-
             const Spacer(),
-
-            // ===== SAVE BUTTON =====
             SizedBox(
               width: double.infinity,
               height: 56,

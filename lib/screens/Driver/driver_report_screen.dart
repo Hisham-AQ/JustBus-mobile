@@ -178,7 +178,6 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
     );
   }
 
-
   IconData _categoryIcon(
     String category,
   ) {
@@ -277,7 +276,6 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
 
             const SizedBox(height: 22),
 
-            // BOOKING ID
             const Text(
               "Passenger Name (Optional)",
               style: TextStyle(
@@ -400,7 +398,6 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
 
             const SizedBox(height: 18),
 
-            // SEVERITY
             const Text(
               "Severity",
               style: TextStyle(
@@ -422,7 +419,6 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
 
             const SizedBox(height: 20),
 
-            // DESCRIPTION
             const Text(
               "Description",
               style: TextStyle(
@@ -448,7 +444,6 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
 
             const SizedBox(height: 28),
 
-            // SUBMIT
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(

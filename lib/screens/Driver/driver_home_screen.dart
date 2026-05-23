@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:justbus/services/auth_service.dart';
-import '../Student/login_screen.dart';
 import '../Driver/driver_scan_screen.dart';
 import '../../services/driver_service.dart';
 import 'driver_passengers_screen.dart';
@@ -8,6 +6,7 @@ import 'driver_report_screen.dart';
 import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import '../Student/notifications_screen.dart';
+import '../Student/profile_screen.dart';
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
@@ -61,11 +60,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         lat: pos.latitude,
         lng: pos.longitude,
       );
-
-      print(
-        "FIRST LOCATION SENT: "
-        "${pos.latitude}, ${pos.longitude}",
-      );
     } catch (e) {
       print(e);
     }
@@ -79,11 +73,6 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             tripId: tripId,
             lat: pos.latitude,
             lng: pos.longitude,
-          );
-
-          print(
-            "LOCATION SENT: "
-            "${pos.latitude}, ${pos.longitude}",
           );
         } catch (e) {
           print(e);
@@ -206,31 +195,19 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () async {
-              final confirm = await _confirmDialog(
-                context,
-                title: 'Sign Out?',
-                message: 'Are you sure you want to sign out from your account?',
-                confirmText: 'Sign Out',
-                color: Colors.red,
-              );
-
-              if (confirm != true) return;
-
-              await AuthService.logout();
-
-              if (!context.mounted) return;
-
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const LoginScreen(),
-                ),
-                (_) => false,
-              );
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: const Icon(Icons.person_outline_rounded),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ProfileScreen(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -300,22 +277,32 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     ),
                   ),
                   child: CircleAvatar(
-                    radius: 32,
+                    radius: 30,
                     backgroundColor: Colors.white,
-                    child: Text(
-                      trip!['driver_name']
-                          .toString()
-                          .substring(0, 1)
-                          .toUpperCase(),
-                      style: const TextStyle(
-                        color: primary,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 28,
-                      ),
-                    ),
+                    child: trip!['driver_avatar'] != null &&
+                            trip!['driver_avatar'].toString().isNotEmpty
+                        ? ClipOval(
+                            child: Image.asset(
+                              trip!['driver_avatar'],
+                              width: 64,
+                              height: 64,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Text(
+                            trip!['driver_name']
+                                .toString()
+                                .substring(0, 1)
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              color: primary,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 28,
+                            ),
+                          ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 28),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

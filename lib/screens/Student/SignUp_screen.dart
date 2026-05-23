@@ -25,6 +25,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool hidePassword = true;
   bool hideConfirmPassword = true;
 
+  String get passwordStrength {
+    final password = passwordController.text;
+
+    if (password.isEmpty) {
+      return '';
+    }
+
+    final hasUppercase = RegExp(r'[A-Z]').hasMatch(password);
+    final hasLowercase = RegExp(r'[a-z]').hasMatch(password);
+    final hasNumbers = RegExp(r'[0-9]').hasMatch(password);
+    final hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
+
+    int score = 0;
+
+    if (password.length >= 8) score++;
+    if (hasUppercase) score++;
+    if (hasLowercase) score++;
+    if (hasNumbers) score++;
+    if (hasSpecial) score++;
+
+    if (score <= 2) {
+      return 'Weak';
+    } else if (score <= 4) {
+      return 'Medium';
+    } else {
+      return 'Strong';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF1F4B63);
@@ -44,8 +73,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),
         ),
+        titleSpacing: 0,
         title: const Text('Sign Up'),
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -134,6 +163,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   controller: nameController,
                   label: 'Full Name',
                   icon: Icons.person_outline,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) {
+                      return 'Full name is required';
+                    }
+                    if (RegExp(r'[0-9]').hasMatch(v)) {
+                      return 'Name cannot contain numbers';
+                    }
+                    if (v.trim().length < 3) {
+                      return 'Enter a valid full name';
+                    }
+
+                    return null;
+                  },
                 ),
               ),
               const SizedBox(height: 14),
@@ -210,6 +252,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   label: 'Password',
                   icon: Icons.lock_outline,
                   obscure: hidePassword,
+                  onChanged: (_) => setState(() {}),
                   suffixIcon: IconButton(
                     icon: Icon(
                       hidePassword
@@ -222,8 +265,81 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       });
                     },
                   ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Password is required';
+                    }
+
+                    if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
+                    }
+
+                    if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                      return 'Add at least one uppercase letter';
+                    }
+
+                    if (!RegExp(r'[0-9]').hasMatch(value)) {
+                      return 'Add at least one number';
+                    }
+
+                    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+                      return 'Add at least one special character';
+                    }
+
+                    return null;
+                  },
                 ),
               ),
+              if (passwordController.text.length >= 4)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            "Password Strength: ",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            passwordStrength,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              color: passwordStrength == 'Strong'
+                                  ? Colors.green
+                                  : passwordStrength == 'Medium'
+                                      ? Colors.orange
+                                      : Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: LinearProgressIndicator(
+                          minHeight: 8,
+                          value: passwordStrength == 'Weak'
+                              ? 0.33
+                              : passwordStrength == 'Medium'
+                                  ? 0.66
+                                  : 1,
+                          backgroundColor: Colors.grey.shade300,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            passwordStrength == 'Strong'
+                                ? Colors.green
+                                : passwordStrength == 'Medium'
+                                    ? Colors.orange
+                                    : Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 14),
               Container(
                 decoration: BoxDecoration(
@@ -254,9 +370,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     },
                   ),
                   validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'Confirm password is required';
+                    }
+
                     if (v != passwordController.text) {
                       return 'Passwords do not match';
                     }
+
                     return null;
                   },
                 ),
@@ -408,6 +529,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -438,7 +569,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         message: 'Your account has been created successfully.',
         success: true,
       );
-      Navigator.pop(context);
     } catch (e) {
       await _showDialog(
         title: 'Registration Failed',
@@ -457,7 +587,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
     );
-    if (picked != null) setState(() => birthDate = picked);
+
+    if (picked == null) return;
+
+    final age = DateTime.now().year - picked.year;
+
+    if (age < 16) {
+      await _showDialog(
+        title: 'Age Restriction',
+        message: 'You must be at least 16 years old.',
+        success: false,
+      );
+      return;
+    }
+
+    setState(() => birthDate = picked);
   }
 
   Future<void> _showDialog({
@@ -518,16 +662,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pop(context);
+
+                      if (success) {
+                        Navigator.pop(context);
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1F4B63),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),
                       ),
                     ),
-                    child: const Text(
-                      'OK',
-                      style: TextStyle(
+                    child: Text(
+                      success ? 'Continue' : 'OK',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
@@ -551,11 +701,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     bool obscure = false,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
+      onChanged: onChanged,
       inputFormatters: keyboardType == TextInputType.phone
           ? [FilteringTextInputFormatter.digitsOnly]
           : null,

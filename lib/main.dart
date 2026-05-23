@@ -7,7 +7,6 @@ void main() async {
   runApp(const JustBusApp());
 }
 
-//12
 class JustBusApp extends StatelessWidget {
   const JustBusApp({super.key});
 

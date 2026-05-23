@@ -22,8 +22,8 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text('Report Lost Item'),
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -34,19 +34,10 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
             children: [
               const Text(
                 'Item Category',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: selectedCategory,
-                items: const [
-                  DropdownMenuItem(value: 'Wallet', child: Text('Wallet')),
-                  DropdownMenuItem(value: 'Phone', child: Text('Phone')),
-                  DropdownMenuItem(value: 'Bag', child: Text('Bag')),
-                  DropdownMenuItem(value: 'Other', child: Text('Other')),
-                ],
-                onChanged: (v) => setState(() => selectedCategory = v!),
-                decoration: _inputDecoration(),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                ),
               ),
 
               const SizedBox(height: 14),
@@ -98,8 +89,8 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
               ),
 
               _field(
-                label: 'Ride ID (optional)',
-                hint: 'Enter your ride number',
+                label: 'Trip ID (optional)',
+                hint: 'Enter your trip number',
                 controller: rideController,
                 required: false,
               ),
@@ -186,8 +177,74 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (lostDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select lost date')),
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 74,
+                    height: 74,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.calendar_month_rounded,
+                      color: Colors.orange,
+                      size: 40,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    "Missing Date",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Please select the date when you lost the item.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black54,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F4B63),
+                        minimumSize: const Size(0, 54),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
       return;
     }
@@ -277,8 +334,6 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
         },
       );
     } catch (e) {
-      print("ERROR: $e");
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );

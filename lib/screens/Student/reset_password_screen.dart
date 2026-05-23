@@ -30,11 +30,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),
         ),
+        titleSpacing: 0,
         title: const Text(
           'Reset Password',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -193,20 +193,160 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset successfully')),
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                      size: 54,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Password Reset Successful",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Your password has been updated successfully.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black54,
+                      height: 1.5,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F4B63),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+
+                        Navigator.popUntil(
+                          context,
+                          (route) => route.isFirst,
+                        );
+                      },
+                      child: const Text(
+                        "Back to Login",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
 
       Navigator.popUntil(context, (route) => route.isFirst);
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e.toString().replaceFirst('Exception: ', ''),
-          ),
-        ),
+      await showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 82,
+                    height: 82,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.error_outline_rounded,
+                      color: Colors.red,
+                      size: 46,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    "Reset Failed",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    e.toString().replaceFirst('Exception: ', ''),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1F4B63),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     } finally {
       if (mounted) {

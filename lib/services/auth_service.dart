@@ -7,7 +7,6 @@ class AuthService {
   //static const String baseUrl = 'http://10.0.2.2:3000';
   static const baseUrl = 'https://justbus-backend-production.up.railway.app';
 
-  // ================= LOGIN =================
   static Future<String> login({
     required String email,
     required String password,
@@ -38,7 +37,6 @@ class AuthService {
     return data['role'];
   }
 
-  // ================= REGISTER =================
   static Future<void> register({
     required String name,
     required String email,
@@ -70,17 +68,15 @@ class AuthService {
     }
   }
 
-// ================= LOGOUT =================
   static Future<void> logout() async {
     await SecureStorage.clear();
   }
 
-  // ================= STORAGE =================
+  //  STORAGE
   static Future<String?> getToken() => SecureStorage.getToken();
   static Future<String?> getRole() => SecureStorage.getRole();
   static Future<String?> getEmail() => SecureStorage.getEmail();
 
-  //================== password change ============
   static Future<void> changePassword({
     required String currentPassword,
     required String newPassword,

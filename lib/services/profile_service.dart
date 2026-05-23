@@ -7,7 +7,6 @@ class ProfileService {
   //static const String _baseUrl = 'http://10.0.2.2:3000';
   static const _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
-  // ================= GET PROFILE =================
   static Future<Map<String, dynamic>> getProfile() async {
     final token = await SecureStorage.getToken();
 
@@ -30,11 +29,11 @@ class ProfileService {
     }
   }
 
-  // ================= UPDATE PROFILE =================
   static Future<void> updateProfile({
     String? name,
     String? phone,
     DateTime? birthDate,
+    String? avatar,
   }) async {
     final token = await SecureStorage.getToken();
 
@@ -49,7 +48,7 @@ class ProfileService {
     if (birthDate != null) {
       body['birth_date'] = birthDate.toIso8601String().split('T')[0];
     }
-
+    body['avatar'] = avatar;
     final response = await http.put(
       Uri.parse('$_baseUrl/api/users/profile'),
       headers: {

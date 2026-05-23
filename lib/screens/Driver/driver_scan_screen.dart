@@ -23,7 +23,6 @@ class _DriverScanScreenState extends State<DriverScanScreen> {
   Future<void> _handleScan(String qr) async {
     qr = qr.trim();
 
-    print("SCANNED QR = $qr");
     if (isScanning || dialogOpen) return;
 
     setState(() => isScanning = true);
@@ -195,7 +194,6 @@ class _DriverScanScreenState extends State<DriverScanScreen> {
             ),
           ),
 
-          // SCAN BOX
           Center(
             child: Stack(
               alignment: Alignment.center,
@@ -230,7 +228,6 @@ class _DriverScanScreenState extends State<DriverScanScreen> {
   }
 }
 
-// 🔥 CUSTOM OVERLAY
 class QrScannerOverlayShape extends ShapeBorder {
   @override
   EdgeInsetsGeometry get dimensions => EdgeInsets.zero;

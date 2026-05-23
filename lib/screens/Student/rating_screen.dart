@@ -280,6 +280,7 @@ class _RatingScreenState extends State<RatingScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         elevation: 0,
         backgroundColor: const Color(0xFF1F4B63),
         title: const Text(
@@ -387,6 +388,24 @@ class _RatingScreenState extends State<RatingScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/student-home',
+                  (route) => false,
+                );
+              },
+              child: Text(
+                'Skip for now',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
               ),
             ),
           ],

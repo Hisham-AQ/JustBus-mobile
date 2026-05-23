@@ -5,51 +5,57 @@ import '../services/secure_storage.dart';
 class NotificationsService {
   static const _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
-  static Future<List<dynamic>> getNotifications() async {
+  static Future<Map<String, String>> _headers() async {
     final token = await SecureStorage.getToken();
-    if (token == null) throw Exception('No token');
 
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/notifications'),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
-    );
+    if (token == null) {
+      throw Exception('No token');
+    }
+
+    return {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    };
+  }
+
+  static Future<List<dynamic>> getNotifications() async {
+    final response = await http
+        .get(
+          Uri.parse('$_baseUrl/api/notifications'),
+          headers: await _headers(),
+        )
+        .timeout(const Duration(seconds: 15));
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load notifications');
+      throw Exception(response.body);
     }
   }
 
   static Future<void> markAsRead(int id) async {
-    final token = await SecureStorage.getToken();
-
-    final response = await http.patch(
-      Uri.parse('$_baseUrl/api/notifications/$id/read'),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
-    );
+    final response = await http
+        .patch(
+          Uri.parse('$_baseUrl/api/notifications/$id/read'),
+          headers: await _headers(),
+        )
+        .timeout(const Duration(seconds: 15));
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to mark as read');
+      throw Exception(response.body);
     }
   }
 
-  static Future<void> deleteNotification(int id) async {
-    final token = await SecureStorage.getToken();
-
-    final response = await http.delete(
-      Uri.parse('$_baseUrl/api/notifications/$id'),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
-    );
+  static Future<void> hideNotification(int id) async {
+    final response = await http
+        .delete(
+          Uri.parse('$_baseUrl/api/notifications/$id'),
+          headers: await _headers(),
+        )
+        .timeout(const Duration(seconds: 15));
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to delete notification');
+      throw Exception(response.body);
     }
   }
 }

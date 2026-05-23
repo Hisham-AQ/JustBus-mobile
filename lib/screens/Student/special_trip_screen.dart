@@ -25,6 +25,7 @@ class _SpecialTripScreenState extends State<SpecialTripScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text('Special Trip',
             style: TextStyle(fontWeight: FontWeight.w900)),
         backgroundColor: const Color(0xFFF7F8FA),

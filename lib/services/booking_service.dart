@@ -8,7 +8,6 @@ class BookingService {
 
   static const _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
-  // ================= HOLD =================
   static Future<Map<String, dynamic>> holdSeats({
     required int tripId,
     required String pickup,
@@ -49,7 +48,6 @@ class BookingService {
     );
   }
 
-  // ================= CONFIRM =================
   static Future<void> confirmBooking({
     required int bookingId,
     String? rewardCode,

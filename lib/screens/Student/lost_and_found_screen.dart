@@ -14,8 +14,8 @@ class _LostAndFoundScreenState extends State<LostAndFoundScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text('Lost & Found'),
-        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

@@ -27,15 +27,26 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       return '';
     }
 
-    if (password.length < 6) {
+    final hasUppercase = RegExp(r'[A-Z]').hasMatch(password);
+    final hasLowercase = RegExp(r'[a-z]').hasMatch(password);
+    final hasNumbers = RegExp(r'[0-9]').hasMatch(password);
+    final hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
+
+    int score = 0;
+
+    if (password.length >= 8) score++;
+    if (hasUppercase) score++;
+    if (hasLowercase) score++;
+    if (hasNumbers) score++;
+    if (hasSpecial) score++;
+
+    if (score <= 2) {
       return 'Weak';
-    }
-
-    if (password.length < 10) {
+    } else if (score <= 4) {
       return 'Medium';
+    } else {
+      return 'Strong';
     }
-
-    return 'Strong';
   }
 
   Color get passwordStrengthColor {
@@ -320,7 +331,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
         scrolledUnderElevation: 0,
-        centerTitle: true,
+        titleSpacing: 0,
         title: const Text(
           'Change Password',
           style: TextStyle(

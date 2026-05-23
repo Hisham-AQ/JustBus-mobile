@@ -60,6 +60,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text('Available Trips'),
         leading: const BackButton(),
       ),
@@ -171,7 +172,6 @@ class _TripCardState extends State<TripCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              /// LEFT SIDE
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,17 +203,75 @@ class _TripCardState extends State<TripCard> {
                         fontSize: 14,
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blueGrey.shade50,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.person_rounded,
+                                size: 18,
+                                color: Colors.blueGrey.shade700,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                widget.trip['driver_name'] ?? 'Unknown Driver',
+                                style: TextStyle(
+                                  color: Colors.blueGrey.shade900,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.directions_bus_rounded,
+                                size: 18,
+                                color: Colors.orange.shade700,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Bus ${widget.trip['bus_number']}',
+                                style: TextStyle(
+                                  color: Colors.orange.shade900,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-
-              const SizedBox(width: 12),
-
-              /// RIGHT SIDE
+              const SizedBox(width: 6),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  /// STATUS
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -265,7 +323,6 @@ class _TripCardState extends State<TripCard> {
           const SizedBox(height: 16),
           Row(
             children: [
-              /// DURATION CHIP
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -293,10 +350,7 @@ class _TripCardState extends State<TripCard> {
                   ],
                 ),
               ),
-
-              const SizedBox(width: 12),
-
-              /// SEATS CHIP
+              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,

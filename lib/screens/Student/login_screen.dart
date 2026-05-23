@@ -363,7 +363,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                   String role;
 
-                                  // LOGIN ONLY
                                   setState(() {
                                     loginError = null;
                                   });
@@ -375,7 +374,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ? 'driver'
                                           : 'student',
                                     );
-                                    print("ROLE AFTER LOGIN = $role");
                                   } catch (e) {
                                     setState(() {
                                       loginError =
@@ -384,7 +382,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     return;
                                   }
 
-                                  // PROFILE (
                                   try {
                                     final profile =
                                         await ProfileService.getProfile();
@@ -394,7 +391,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     debugPrint('Profile fetch failed: $e');
                                   }
 
-                                  // NAVIGATION
                                   if (role == 'driver') {
                                     Navigator.pushReplacement(
                                       context,
@@ -465,7 +461,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Sign up',
                                 style: TextStyle(
                                   fontSize: 15,
-                                 fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.bold,
                                   color: Color(0xFF1F4B63),
                                 ),
                               ),

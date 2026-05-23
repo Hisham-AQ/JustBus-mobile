@@ -374,6 +374,7 @@ class _WalletScreenState extends State<WalletScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text(
           'Wallet',
           style: TextStyle(fontWeight: FontWeight.w900),
@@ -502,8 +503,6 @@ class _WalletScreenState extends State<WalletScreen> {
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        // ===== CARD PREVIEW =====
-
                                         Container(
                                           width: double.infinity,
                                           height: 200,
@@ -598,9 +597,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                             ],
                                           ),
                                         ),
-
                                         const SizedBox(height: 26),
-
                                         TextField(
                                           controller: number,
                                           keyboardType: TextInputType.number,
@@ -626,9 +623,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                             ),
                                           ),
                                         ),
-
                                         const SizedBox(height: 14),
-
                                         TextField(
                                           controller: name,
                                           inputFormatters: [
@@ -650,9 +645,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                             ),
                                           ),
                                         ),
-
                                         const SizedBox(height: 14),
-
                                         TextField(
                                           controller: expiry,
                                           keyboardType: TextInputType.number,
@@ -678,9 +671,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                             ),
                                           ),
                                         ),
-
                                         const SizedBox(height: 28),
-
                                         Row(
                                           children: [
                                             Expanded(
@@ -714,15 +705,12 @@ class _WalletScreenState extends State<WalletScreen> {
                                                     final exp =
                                                         expiry.text.trim();
 
-                                                    // CARD NUMBER VALIDATION
-
                                                     if (clean.isEmpty) {
                                                       await showErrorDialog(
                                                           "Enter card number");
                                                       return;
                                                     }
 
-                                                    // only digits
                                                     if (!RegExp(r'^[0-9]+$')
                                                         .hasMatch(clean)) {
                                                       await showErrorDialog(
@@ -730,14 +718,11 @@ class _WalletScreenState extends State<WalletScreen> {
                                                       return;
                                                     }
 
-                                                    // Visa / MasterCard usually 16 digits
                                                     if (clean.length != 16) {
                                                       await showErrorDialog(
                                                           "Card number must be 16 digits");
                                                       return;
                                                     }
-
-                                                    // HOLDER NAME VALIDATION
 
                                                     if (holder.isEmpty) {
                                                       await showErrorDialog(
@@ -745,7 +730,6 @@ class _WalletScreenState extends State<WalletScreen> {
                                                       return;
                                                     }
 
-                                                    // only letters + spaces
                                                     if (!RegExp(r'^[a-zA-Z ]+$')
                                                         .hasMatch(holder)) {
                                                       await showErrorDialog(
@@ -759,8 +743,6 @@ class _WalletScreenState extends State<WalletScreen> {
                                                           "Invalid card holder name");
                                                       return;
                                                     }
-
-                                                    // EXPIRY VALIDATION
 
                                                     if (!RegExp(
                                                             r'^\d{2}/\d{2}$')
@@ -800,8 +782,6 @@ class _WalletScreenState extends State<WalletScreen> {
                                                           "Card has expired");
                                                       return;
                                                     }
-
-                                                    // BRAND DETECTION
 
                                                     final brand =
                                                         detectCardBrand(clean);

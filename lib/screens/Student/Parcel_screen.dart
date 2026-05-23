@@ -198,28 +198,80 @@ class _PackageScreenState extends State<PackageScreen> {
                             await showDialog(
                               context: context,
                               builder: (_) {
-                                return AlertDialog(
+                                return Dialog(
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(22),
+                                    borderRadius: BorderRadius.circular(28),
                                   ),
-                                  title: const Text(
-                                    'Missing Information',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w900,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(24),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 78,
+                                          height: 78,
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.orange.withOpacity(.12),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.warning_amber_rounded,
+                                            color: Colors.orange,
+                                            size: 42,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        const Text(
+                                          'Missing Information',
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        const Text(
+                                          'Please enter the receiver name before submitting.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.black54,
+                                            height: 1.5,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 26),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          height: 54,
+                                          child: ElevatedButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  const Color(0xFF1F4B63),
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'OK',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  content: const Text(
-                                    'Please enter the receiver name before submitting.',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
                                 );
                               },
                             );
+
                             return;
                           }
 
@@ -896,10 +948,10 @@ class _PackageScreenState extends State<PackageScreen> {
                     color: Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: const Icon(
-                    Icons.bus_alert,
-                    color: Colors.white,
-                    size: 42,
+                  child: Image.asset(
+                    'assets/images/JustBus_Main_Logo.png',
+                    fit: BoxFit.contain,
+                    color: Colors.white.withOpacity(.92),
                   ),
                 ),
               ],

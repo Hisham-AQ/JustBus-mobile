@@ -7,7 +7,6 @@ class TripService {
   //static const String _baseUrl = 'http://10.0.2.2:3000';
   static const _baseUrl = 'https://justbus-backend-production.up.railway.app';
 
-  // ================= SEARCH TRIPS =================
   static Future<List<Map<String, dynamic>>> searchTrips({
     required String from,
     required String to,
@@ -42,7 +41,6 @@ class TripService {
     }
   }
 
-  // ================= RESERVED SEATS =================
   static Future<List<Map<String, dynamic>>> getReservedSeats(int tripId) async {
     final uri = Uri.parse(
       '$_baseUrl/api/trips/$tripId/seats',
@@ -96,9 +94,6 @@ class TripService {
     );
 
     if (res.statusCode != 200) {
-      print("STATUS: ${res.statusCode}");
-      print("BODY: ${res.body}");
-
       final body = jsonDecode(res.body);
 
       throw Exception(body['message']);

@@ -117,8 +117,6 @@ class SpecialTicketScreen extends StatelessWidget {
     );
   }
 
-  // ================= SAVE IMAGE =================
-
   Future<void> _saveTicketAsImage(BuildContext context) async {
     try {
       final boundary = _ticketKey.currentContext!.findRenderObject()
@@ -148,8 +146,6 @@ class SpecialTicketScreen extends StatelessWidget {
       );
     }
   }
-
-  // ================= UI =================
 
   Widget _ticket() {
     return Stack(
@@ -229,7 +225,6 @@ class SpecialTicketScreen extends StatelessWidget {
               _perforation(),
               const SizedBox(height: 18),
 
-              // FIXED BIG INFO
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Row(

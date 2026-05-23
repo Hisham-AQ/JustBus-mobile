@@ -140,8 +140,8 @@ class _EditSingleFieldScreenState extends State<EditSingleFieldScreen> {
           icon: const Icon(Icons.arrow_back_ios_new),
           onPressed: () => Navigator.pop(context),
         ),
+        titleSpacing: 0,
         title: Text(widget.title),
-        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

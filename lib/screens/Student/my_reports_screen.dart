@@ -128,8 +128,8 @@ class _MyReportsScreenState extends State<MyReportsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text('My Reports'),
-        centerTitle: true,
       ),
       body: FutureBuilder(
         future: _future,

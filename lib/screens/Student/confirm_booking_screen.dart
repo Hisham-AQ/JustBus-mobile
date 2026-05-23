@@ -22,6 +22,7 @@ class ConfirmBookingScreen extends StatefulWidget {
   final String busNumber;
   final List<int> seats;
   final double pricePerSeat;
+  final String? avatar;
 
   const ConfirmBookingScreen({
     super.key,
@@ -38,6 +39,7 @@ class ConfirmBookingScreen extends StatefulWidget {
     required this.busNumber,
     required this.seats,
     required this.pricePerSeat,
+    required this.avatar,
   });
 
   @override
@@ -48,7 +50,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   static const Color primary = Color(0xFF1F4B63);
   static const Color lightGrey = Color(0xFFEDEDED);
 
-  TextEditingController _rewardController = TextEditingController();
+  final TextEditingController _rewardController = TextEditingController();
   bool isRewardApplied = false;
   bool isCheckingReward = false;
   String? rewardMessage;
@@ -57,10 +59,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   PaymentMethod payment = PaymentMethod.wallet;
   bool _isSubmitting = false;
   String _userName = 'User';
+  String? _avatar;
   double walletBalance = 0;
   String cardLast4 = '----';
   String cardBrand = 'No Card';
-
   Timer? _timer;
   int _remainingSeconds = 0;
 
@@ -82,10 +84,13 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
   Future<void> _loadUserName() async {
     final name = await SecureStorage.getUserName();
+    final avatar = await SecureStorage.getAvatar();
+
     if (!mounted) return;
 
     setState(() {
       _userName = name?.isNotEmpty == true ? name! : 'User';
+      _avatar = avatar;
     });
   }
 
@@ -184,6 +189,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
           builder: (_) => TicketScreen(
             seats: widget.seats,
             userName: _userName,
+            avatar: _avatar,
             bookingId: widget.bookingId,
             qrToken: '',
             from: widget.fromCity,
@@ -293,6 +299,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FB),
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text(
           'Confirm Booking',
           style: TextStyle(fontWeight: FontWeight.w900),

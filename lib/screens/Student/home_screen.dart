@@ -12,6 +12,7 @@ import 'search_results_screen.dart';
 import 'just_bot_sheet.dart';
 import '../../services/secure_storage.dart';
 import 'rating_screen.dart';
+import '../../services/panic_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final int? trackingTripId;
@@ -269,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // ================= DROPDOWN BUILDER =================
   Widget _cityDropdown() {
     if (isLoadingCities) {
       return const Center(
@@ -316,6 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return DrawerMenu(
             name: profile['name'] ?? '',
             phone: profile['phone'] ?? '',
+            avatar: profile['avatar'],
             onProfileUpdated: () {
               setState(() {
                 _profileFuture = ProfileService.getProfile();
@@ -326,13 +327,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
-          // ================= MAP =================
           Positioned.fill(
             child: Container(
               color: Colors.black.withOpacity(0.06),
             ),
           ),
-
           Positioned.fill(
             child: FlutterMap(
               options: MapOptions(
@@ -411,8 +410,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
-          // ================= MENU BUTTON =================
           Positioned(
             top: 16,
             left: 16,
@@ -433,13 +430,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.menu_rounded),
-                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  onPressed: () async {
+                    setState(() {
+                      _profileFuture = ProfileService.getProfile();
+                    });
+
+                    await Future.delayed(
+                      const Duration(milliseconds: 100),
+                    );
+
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
                 ),
               ),
             ),
           ),
-
-          // ================= BOTTOM CARD =================
           if (!trackingMode)
             Align(
               alignment: Alignment.bottomCenter,
@@ -474,9 +479,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 18),
-
                       const Text(
                         'Where are you\ngoing today?',
                         style: TextStyle(
@@ -485,8 +488,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 14),
-
-                      // ===== LOCATIONS =====
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -565,9 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 14),
-
                       Row(
                         children: [
                           Expanded(
@@ -601,9 +600,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
@@ -664,8 +661,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-          // ================= JUST BOT =================
           if (trackingMode)
             Positioned(
               left: 16,
@@ -681,14 +676,62 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      isBoarded
-                          ? "Heading to destination 🚍"
-                          : "Bus is on the way 🚍",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            tripStatus == 'scheduled'
+                                ? "Waiting for driver ⏳"
+                                : isBoarded
+                                    ? "Heading to destination 🚍"
+                                    : "Bus is on the way 🚍",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            _showPanicSheet();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(
+                                  Icons.warning_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  'PANIC',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -759,9 +802,246 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
-// ================= UI COMPONENTS =================
+  void _showPanicSheet() {
+    String selectedIssue = 'Feeling Unsafe';
+
+    final TextEditingController noteController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(28),
+        ),
+      ),
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Center(
+                    child: Text(
+                      'Emergency Alert',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
+                    value: selectedIssue,
+                    decoration: InputDecoration(
+                      labelText: 'Issue Type',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    items: const [
+                      'Harassment',
+                      'Driver Misconduct',
+                      'Unsafe Driving',
+                      'Medical Emergency',
+                      'Feeling Unsafe',
+                      'Other',
+                    ].map((e) {
+                      return DropdownMenuItem(
+                        value: e,
+                        child: Text(e),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setModalState(() {
+                          selectedIssue = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: noteController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: 'Additional details...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (_) {
+                            return AlertDialog(
+                              title: const Text(
+                                'Send Emergency Alert?',
+                              ),
+                              content: const Text(
+                                'Your live location and trip details will be sent to university security.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context, false);
+                                  },
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context, true);
+                                  },
+                                  child: const Text('Send'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
+                        if (confirm != true) {
+                          return;
+                        }
+
+                        try {
+                          await PanicService.sendPanicAlert(
+                            tripId: activeTrackingTripId!,
+                            issueType: selectedIssue,
+                            note: noteController.text.trim(),
+                          );
+
+                          if (!mounted) return;
+
+                          Navigator.pop(context);
+
+                          await showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (dialogContext) {
+                              return Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 90,
+                                        height: 90,
+                                        decoration: BoxDecoration(
+                                          color: Colors.red.withOpacity(0.12),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.warning_amber_rounded,
+                                          color: Colors.red,
+                                          size: 54,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      const Text(
+                                        "Emergency Alert Sent",
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        "justBus security has received your alert and location.",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                          height: 1.4,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 26),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        height: 52,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Navigator.pop(dialogContext);
+                                          },
+                                          child: const Text(
+                                            "OK",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w800,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.toString()),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        'Send Alert',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
 
 class DropdownPill extends StatelessWidget {
   final String value;

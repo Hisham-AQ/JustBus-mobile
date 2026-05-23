@@ -178,7 +178,6 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
                                         borderRadius: BorderRadius.circular(28),
                                       ),
                                       child: SingleChildScrollView(
-                                        
                                         child: Padding(
                                           padding: const EdgeInsets.all(24),
                                           child: Column(
@@ -732,8 +731,6 @@ class _SpecialTripDetailsScreenState extends State<SpecialTripDetailsScreen> {
       ),
     );
   }
-
-  // ===== خارج build =====
 
   Widget _infoBox(String title, String value) {
     return Container(

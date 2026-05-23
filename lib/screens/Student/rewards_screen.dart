@@ -43,6 +43,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        titleSpacing: 0,
         title: const Text(
           'Rewards',
           style: TextStyle(fontWeight: FontWeight.w900),

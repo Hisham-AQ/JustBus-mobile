@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/ai_service.dart';
+import '../../services/profile_service.dart';
 import 'dart:async';
 
 class JustBotSheet extends StatefulWidget {
@@ -16,6 +17,7 @@ class _JustBotSheetState extends State<JustBotSheet> {
   bool loading = false;
   int typingDots = 1;
   Timer? typingTimer;
+  String? selectedAvatar;
 
   Future<void> sendMessage() async {
     final text = controller.text.trim();
@@ -148,20 +150,27 @@ class _JustBotSheetState extends State<JustBotSheet> {
             ),
           ),
 
-          // USER AVATAR
           if (isUser)
             Container(
               width: 36,
               height: 36,
               margin: const EdgeInsets.only(left: 8),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade400,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.person_rounded,
-                color: Colors.white,
-                size: 20,
+              child: CircleAvatar(
+                backgroundColor: Colors.orange.shade100,
+                child: selectedAvatar != null
+                    ? ClipOval(
+                        child: Image.asset(
+                          selectedAvatar!,
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person_rounded,
+                        color: Color(0xFF1F4B63),
+                        size: 20,
+                      ),
               ),
             ),
         ],
@@ -189,6 +198,8 @@ class _JustBotSheetState extends State<JustBotSheet> {
   @override
   void initState() {
     super.initState();
+
+    _loadAvatar();
 
     messages.add({
       "role": "bot",
@@ -365,5 +376,17 @@ class _JustBotSheetState extends State<JustBotSheet> {
         ),
       ),
     );
+  }
+
+  Future<void> _loadAvatar() async {
+    try {
+      final profile = await ProfileService.getProfile();
+
+      if (mounted) {
+        setState(() {
+          selectedAvatar = profile['avatar'];
+        });
+      }
+    } catch (_) {}
   }
 }

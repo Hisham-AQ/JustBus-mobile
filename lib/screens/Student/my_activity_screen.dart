@@ -15,6 +15,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
   late TabController _tabController;
 
   bool loading = true;
+  String? avatar;
 
   List<Map<String, dynamic>> trips = [];
   List parcels = [];
@@ -30,12 +31,14 @@ class _MyActivityScreenState extends State<MyActivityScreen>
   Future<void> loadData() async {
     try {
       final data = await ActivityService.getMyActivity();
+      final savedAvatar = await SecureStorage.getAvatar();
 
       setState(() {
         trips = List<Map<String, dynamic>>.from(data['trips'] ?? []);
         parcels = List<Map<String, dynamic>>.from(data['parcels'] ?? []);
         specialTrips =
             List<Map<String, dynamic>>.from(data['specialTrips'] ?? []);
+        avatar = savedAvatar;
         loading = false;
       });
     } catch (e) {
@@ -71,7 +74,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        centerTitle: false,
         titleSpacing: 0,
         title: const Padding(
           padding: EdgeInsets.only(left: 8),
@@ -154,8 +156,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     );
   }
 
-  // ================= TRIPS =================
-
   Widget buildTrips() {
     if (trips.isEmpty) {
       return Center(
@@ -189,7 +189,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     );
   }
 
-  // ================= PARCELS =================
   Widget buildParcels() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -210,7 +209,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     );
   }
 
-  // ================= SPECIAL =================
   Widget buildSpecialTrips() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -233,7 +231,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     );
   }
 
-  // ================= CARD =================
   Widget tripTicketCard(
     Map<String, dynamic> t,
   ) {
@@ -370,7 +367,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
             ),
           ),
 
-          /// BODY
           Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -439,6 +435,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                                           .map((e) => int.parse(e))
                                           .toList(),
                                       userName: userName ?? 'Passenger',
+                                      avatar: avatar,
                                       qrToken: t['qr_token'] ?? '',
                                       bookingId: t['booking_id'] ?? 0,
                                       from: t['from_city'] ?? '',

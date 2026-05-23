@@ -20,6 +20,7 @@ class TicketScreen extends StatelessWidget {
   final String time;
   final int? busNumber;
   final int tripId;
+  final String? avatar;
 
   TicketScreen({
     super.key,
@@ -35,6 +36,7 @@ class TicketScreen extends StatelessWidget {
     required this.time,
     required this.busNumber,
     required this.tripId,
+    required this.avatar,
   });
 
   final GlobalKey _ticketKey = GlobalKey();
@@ -43,8 +45,10 @@ class TicketScreen extends StatelessWidget {
   static const Color primary = Color(0xFF1F4B63);
   static const Color ticketBg = Color(0xFFF8F7F4);
 
+
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
@@ -180,22 +184,30 @@ class TicketScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 22),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
                   children: [
                     CircleAvatar(
                       radius: 26,
-                      backgroundColor: primary,
-                      child: Text(
-                        userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                      backgroundColor: Colors.transparent,
+                      child: avatar != null && avatar!.isNotEmpty
+                          ? Image.asset(
+                              avatar!,
+                              width: 52,
+                              height: 52,
+                              fit: BoxFit.cover,
+                            )
+                          : Text(
+                              userName.isNotEmpty
+                                  ? userName[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
+                                color: Color(0xFF1F4B63),
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -210,11 +222,9 @@ class TicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
               _perforation(),
               const SizedBox(height: 20),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -227,9 +237,7 @@ class TicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 22),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -240,11 +248,9 @@ class TicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 22),
               _perforation(),
               const SizedBox(height: 18),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Row(
@@ -260,10 +266,7 @@ class TicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 22),
-
-              //  QR
               Container(
                   width: 220,
                   height: 220,
@@ -285,7 +288,6 @@ class TicketScreen extends StatelessWidget {
                       color: Colors.black,
                     ),
                   )),
-
               const SizedBox(height: 26),
             ],
           ),

@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
 
 class RatingService {
-
   static const String _baseUrl =
       'https://justbus-backend-production.up.railway.app';
 
@@ -14,7 +13,6 @@ class RatingService {
     required int serviceRating,
     required String comment,
   }) async {
-
     final token = await SecureStorage.getToken();
 
     final res = await http.post(
