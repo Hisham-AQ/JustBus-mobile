@@ -1054,6 +1054,8 @@ String getTitle(String type) {
       return "Top Up";
     case "payment":
       return "Booking Payment";
+    case "cancelled":
+      return "refund ";
     default:
       return "Transaction";
   }

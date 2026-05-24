@@ -89,6 +89,99 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = await TripService.getLiveLocation(
         tripId: activeTrackingTripId!,
       );
+      if (data['status'] == 'cancelled') {
+        trackingTimer?.cancel();
+
+        await SecureStorage.clearTrackingTrip();
+        await SecureStorage.clearPickupLocation();
+
+        if (!mounted) return;
+
+        setState(() {
+          trackingMode = false;
+          activeTrackingTripId = null;
+          busLocation = null;
+          etaMinutes = 0;
+          isBoarded = false;
+          routePoints = [];
+          destinationLocation = null;
+        });
+
+        await showDialog(
+          context: context,
+          builder: (_) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 82,
+                      height: 82,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.cancel_rounded,
+                        color: Colors.orange,
+                        size: 46,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      "Trip Cancelled",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Your booking was cancelled by the admin.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black54,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1F4B63),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          "OK",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+        return;
+      }
+
       if (data['status'] == 'completed') {
         final finishedTripId = activeTrackingTripId;
 

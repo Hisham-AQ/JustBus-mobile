@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:justbus/services/auth_service.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -18,6 +20,82 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   bool isLoading = false;
   bool obscurePassword = true;
+  bool obscureConfirmPassword = true;
+  int resendSeconds = 120;
+  Timer? resendTimer;
+  bool canResend = false;
+
+  String get passwordStrength {
+    final password = passwordController.text;
+
+    if (password.isEmpty) {
+      return '';
+    }
+
+    final hasUppercase = RegExp(r'[A-Z]').hasMatch(password);
+    final hasLowercase = RegExp(r'[a-z]').hasMatch(password);
+    final hasNumbers = RegExp(r'[0-9]').hasMatch(password);
+    final hasSpecial = RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
+
+    int score = 0;
+
+    if (password.length >= 8) score++;
+    if (hasUppercase) score++;
+    if (hasLowercase) score++;
+    if (hasNumbers) score++;
+    if (hasSpecial) score++;
+
+    if (score <= 2) {
+      return 'Weak';
+    } else if (score <= 4) {
+      return 'Medium';
+    } else {
+      return 'Strong';
+    }
+  }
+
+  void startResendTimer() {
+    resendTimer?.cancel();
+
+    setState(() {
+      resendSeconds = 120;
+      canResend = false;
+    });
+
+    resendTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (timer) {
+        if (resendSeconds == 0) {
+          timer.cancel();
+
+          setState(() {
+            canResend = true;
+          });
+        } else {
+          setState(() {
+            resendSeconds--;
+          });
+        }
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    startResendTimer();
+  }
+
+  @override
+  void dispose() {
+    resendTimer?.cancel();
+
+    codeController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,12 +138,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
-              /// Verification Code
               TextFormField(
                 controller: codeController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(6),
+                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Code is required';
@@ -84,18 +164,50 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: canResend
+                      ? () async {
+                          startResendTimer();
 
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Verification code resent successfully',
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
+                  child: Text(
+                    canResend ? 'Resend Code' : 'Resend in ${resendSeconds}s',
+                  ),
+                ),
+              ),
               TextFormField(
                 controller: passwordController,
                 obscureText: obscurePassword,
+                onChanged: (_) => setState(() {}),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'New password is required';
                   }
                   if (value.length < 8) {
                     return 'Password must be at least 8 characters';
+                  }
+
+                  if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                    return 'Add at least one uppercase letter';
+                  }
+
+                  if (!RegExp(r'[0-9]').hasMatch(value)) {
+                    return 'Add at least one number';
+                  }
+
+                  if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+                    return 'Add at least one special character';
                   }
                   return null;
                 },
@@ -115,12 +227,58 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
               ),
-
+              if (passwordController.text.length >= 4)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            "Password Strength: ",
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            passwordStrength,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              color: passwordStrength == 'Strong'
+                                  ? Colors.green
+                                  : passwordStrength == 'Medium'
+                                      ? Colors.orange
+                                      : Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: LinearProgressIndicator(
+                          minHeight: 8,
+                          value: passwordStrength == 'Weak'
+                              ? 0.33
+                              : passwordStrength == 'Medium'
+                                  ? 0.66
+                                  : 1,
+                          backgroundColor: Colors.grey.shade300,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            passwordStrength == 'Strong'
+                                ? Colors.green
+                                : passwordStrength == 'Medium'
+                                    ? Colors.orange
+                                    : Colors.red,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: confirmPasswordController,
-                obscureText: obscurePassword,
+                obscureText: obscureConfirmPassword,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Confirm password is required';
@@ -133,14 +291,24 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
                   prefixIcon: const Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        obscureConfirmPassword = !obscureConfirmPassword;
+                      });
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
               ),
-
               const SizedBox(height: 28),
-
               SizedBox(
                 width: double.infinity,
                 height: 54,

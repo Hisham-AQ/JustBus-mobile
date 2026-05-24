@@ -64,6 +64,8 @@ class _MyActivityScreenState extends State<MyActivityScreen>
         return Colors.grey;
       case "expired":
         return const Color.fromARGB(255, 218, 3, 3);
+      case "cancelled":
+        return const Color.fromARGB(255, 218, 3, 3);
       default:
         return Colors.black;
     }
