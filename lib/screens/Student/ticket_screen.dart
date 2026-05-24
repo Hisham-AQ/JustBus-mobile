@@ -45,10 +45,8 @@ class TicketScreen extends StatelessWidget {
   static const Color primary = Color(0xFF1F4B63);
   static const Color ticketBg = Color(0xFFF8F7F4);
 
-
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
@@ -101,10 +99,6 @@ class TicketScreen extends StatelessWidget {
                   onPressed: () async {
                     await SecureStorage.saveTrackingTrip(
                       tripId,
-                    );
-                    print(
-                      "PICKUP LOCATION: "
-                      "$pickupLocation",
                     );
 
                     await SecureStorage.savePickupLocation(

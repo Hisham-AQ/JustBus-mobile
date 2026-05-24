@@ -331,9 +331,7 @@ class _PackageScreenState extends State<PackageScreen> {
                                           size: 42,
                                         ),
                                       ),
-
                                       const SizedBox(height: 22),
-
                                       const Text(
                                         "Confirm Parcel",
                                         style: TextStyle(
@@ -341,9 +339,7 @@ class _PackageScreenState extends State<PackageScreen> {
                                           fontWeight: FontWeight.w900,
                                         ),
                                       ),
-
                                       const SizedBox(height: 10),
-
                                       Text(
                                         "Review your parcel details before submitting.",
                                         textAlign: TextAlign.center,
@@ -353,9 +349,7 @@ class _PackageScreenState extends State<PackageScreen> {
                                           fontSize: 15,
                                         ),
                                       ),
-
                                       const SizedBox(height: 24),
-
                                       Container(
                                         padding: const EdgeInsets.all(18),
                                         decoration: BoxDecoration(
@@ -413,10 +407,7 @@ class _PackageScreenState extends State<PackageScreen> {
                                           ],
                                         ),
                                       ),
-
                                       const SizedBox(height: 26),
-
-                                      // BUTTONS
                                       Row(
                                         children: [
                                           Expanded(

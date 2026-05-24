@@ -158,7 +158,6 @@ class SpecialTicketScreen extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 22),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -188,12 +187,9 @@ class SpecialTicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
               _perforation(),
               const SizedBox(height: 20),
-
-              // FROM TO
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -206,10 +202,7 @@ class SpecialTicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 22),
-
-              // DATE TIME
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
@@ -220,11 +213,9 @@ class SpecialTicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 22),
               _perforation(),
               const SizedBox(height: 18),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
                 child: Row(
@@ -235,10 +226,7 @@ class SpecialTicketScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 22),
-
-              // QR
               Container(
                 width: 190,
                 height: 190,
@@ -252,7 +240,6 @@ class SpecialTicketScreen extends StatelessWidget {
                   version: QrVersions.auto,
                 ),
               ),
-
               const SizedBox(height: 26),
             ],
           ),

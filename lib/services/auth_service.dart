@@ -24,7 +24,6 @@ class AuthService {
 
     if (response.statusCode != 200) {
       final data = jsonDecode(response.body);
-      print(data);
       throw Exception(data['message'] ?? 'Login failed');
     }
 
@@ -60,8 +59,6 @@ class AuthService {
       }),
     );
 
-    print("RESPONSE: ${response.body}");
-    print("STATUS: ${response.statusCode}");
     if (response.statusCode != 201) {
       final data = jsonDecode(response.body);
       throw Exception(data['message'] ?? 'Registration failed');

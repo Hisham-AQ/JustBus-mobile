@@ -146,7 +146,6 @@ class _DriverScanScreenState extends State<DriverScanScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // CAMERA
           MobileScanner(
             controller: controller,
             onDetect: (capture) {
@@ -157,15 +156,11 @@ class _DriverScanScreenState extends State<DriverScanScreen> {
               }
             },
           ),
-
-          // OVERLAY
           Container(
             decoration: ShapeDecoration(
               shape: QrScannerOverlayShape(),
             ),
           ),
-
-          // TOP BAR
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(18),
@@ -193,7 +188,6 @@ class _DriverScanScreenState extends State<DriverScanScreen> {
               ),
             ),
           ),
-
           Center(
             child: Stack(
               alignment: Alignment.center,

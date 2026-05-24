@@ -99,7 +99,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
                       child: avatarUrl != null && avatarUrl.isNotEmpty
                           ? ClipOval(
                               child: Image.asset(
-                                avatarUrl!,
+                                avatarUrl,
                                 key: ValueKey(avatarUrl),
                                 width: 52,
                                 height: 52,
@@ -144,17 +144,13 @@ class _DrawerMenuState extends State<DrawerMenu> {
                 ),
               ),
             ),
-
             const SizedBox(height: 10),
-
-            //  MAIN SECTION
             _section([
               _tile(context, Icons.inventory_2_outlined, 'Parcel',
                   () => _go(context, const PackageScreen())),
               _tile(context, Icons.star_border, 'Special Trip',
                   () => _go(context, const SpecialTripScreen())),
             ]),
-
             _section([
               _tile(context, Icons.account_balance_wallet_outlined, 'Wallet',
                   () => _go(context, const WalletScreen())),
@@ -163,7 +159,6 @@ class _DrawerMenuState extends State<DrawerMenu> {
               _tile(context, Icons.history, 'My Activity',
                   () => _go(context, const MyActivityScreen())),
             ]),
-
             _section([
               _tile(context, Icons.search_off, 'Lost & Found',
                   () => _go(context, const LostAndFoundScreen())),
@@ -224,7 +219,6 @@ class _DrawerMenuState extends State<DrawerMenu> {
                 },
               ),
             ]),
-
             _section([
               _tile(context, Icons.info_outline, 'About',
                   () => _go(context, const AboutScreen())),

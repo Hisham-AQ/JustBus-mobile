@@ -39,9 +39,7 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                   fontSize: 18,
                 ),
               ),
-
               const SizedBox(height: 14),
-
               Row(
                 children: [
                   Expanded(
@@ -59,9 +57,7 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 12),
-
               Row(
                 children: [
                   Expanded(
@@ -79,22 +75,18 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               _field(
                 label: 'Lost Item Name',
                 hint: 'e.g. Black Leather Wallet',
                 controller: itemController,
               ),
-
               _field(
                 label: 'Trip ID (optional)',
                 hint: 'Enter your trip number',
                 controller: rideController,
                 required: false,
               ),
-
               const Text(
                 'Lost Date',
                 style: TextStyle(fontWeight: FontWeight.w700),
@@ -112,15 +104,12 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
               _field(
                 label: 'Description',
                 hint: 'Color, brand, additional details',
                 controller: descriptionController,
                 maxLines: 4,
               ),
-
-              // Upload Image
               SizedBox(
                 width: double.infinity,
                 height: 46,
@@ -132,9 +121,7 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                   label: const Text('Upload Item Image'),
                 ),
               ),
-
               const SizedBox(height: 24),
-
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -146,9 +133,7 @@ class _ReportLostItemScreenState extends State<ReportLostItemScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
               const Text(
                 'Our support team will contact you if the item is found.',
                 textAlign: TextAlign.center,

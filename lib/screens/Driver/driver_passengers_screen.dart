@@ -82,14 +82,12 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
       body: FutureBuilder<List<dynamic>>(
         future: passengersFuture,
         builder: (context, snapshot) {
-          // LOADING
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          // ERROR
           if (snapshot.hasError) {
             return const Center(
               child: Text("Failed to load passengers"),
@@ -427,7 +425,6 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
 
                                       const SizedBox(width: 14),
 
-                                      // INFO
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -549,7 +546,6 @@ class _DriverPassengersScreenState extends State<DriverPassengersScreen> {
 
                                       const SizedBox(width: 10),
 
-                                      // BUTTON
                                       if (boarded && !dropped)
                                         ElevatedButton(
                                           onPressed: () {

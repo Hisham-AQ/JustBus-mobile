@@ -253,7 +253,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
       ),
       child: Column(
         children: [
-          /// TOP HEADER
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: 18,
@@ -366,7 +365,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -529,7 +527,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
       ),
       child: Column(
         children: [
-          /// TOP
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -565,8 +562,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
               ],
             ),
           ),
-
-          /// BODY
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

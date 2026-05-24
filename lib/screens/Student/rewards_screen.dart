@@ -267,10 +267,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                       size: 50,
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
-                  // TITLE
                   const Text(
                     "Your Reward Code 🎉",
                     style: TextStyle(
@@ -278,10 +275,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
-                  // CODE BOX
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -314,10 +308,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // BUTTONS
                   Row(
                     children: [
                       Expanded(

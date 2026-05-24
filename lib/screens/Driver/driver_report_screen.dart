@@ -233,7 +233,6 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
@@ -273,27 +272,21 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 22),
-
             const Text(
               "Passenger Name (Optional)",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
               ),
             ),
-
             const SizedBox(height: 8),
-
             const Text(
               "Seat Number *",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
               ),
             ),
-
             const SizedBox(height: 8),
-
             TextField(
               controller: nameController,
               decoration: InputDecoration(
@@ -306,9 +299,7 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 8),
-
             TextField(
               controller: seatController,
               keyboardType: TextInputType.number,
@@ -322,19 +313,14 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 18),
-
-            // CATEGORY
             const Text(
               "Category",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
               ),
             ),
-
             const SizedBox(height: 8),
-
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -395,18 +381,14 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
                 );
               },
             ),
-
             const SizedBox(height: 18),
-
             const Text(
               "Severity",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
               ),
             ),
-
             const SizedBox(height: 10),
-
             Row(
               children: [
                 _severityChip("low"),
@@ -416,18 +398,14 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
                 _severityChip("high"),
               ],
             ),
-
             const SizedBox(height: 20),
-
             const Text(
               "Description",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
               ),
             ),
-
             const SizedBox(height: 8),
-
             TextField(
               controller: descriptionController,
               maxLines: 6,
@@ -441,9 +419,7 @@ class _DriverReportScreenState extends State<DriverReportScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 28),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(

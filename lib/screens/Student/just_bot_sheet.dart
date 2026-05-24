@@ -92,7 +92,6 @@ class _JustBotSheetState extends State<JustBotSheet> {
             isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // BOT AVATAR
           if (!isUser)
             Container(
               width: 36,
@@ -110,7 +109,6 @@ class _JustBotSheetState extends State<JustBotSheet> {
                 ),
               ),
             ),
-          // MESSAGE
           Flexible(
             child: Container(
               padding: const EdgeInsets.all(14),
@@ -149,7 +147,6 @@ class _JustBotSheetState extends State<JustBotSheet> {
               ),
             ),
           ),
-
           if (isUser)
             Container(
               width: 36,
@@ -235,7 +232,6 @@ class _JustBotSheetState extends State<JustBotSheet> {
         ),
         child: Column(
           children: [
-            // Header
             SafeArea(
               top: true,
               bottom: false,
@@ -288,17 +284,13 @@ class _JustBotSheetState extends State<JustBotSheet> {
                 ),
               ),
             ),
-
             const SizedBox(height: 12),
-
-            // Messages
             Expanded(
               child: ListView(
                 controller: scrollController,
                 children: messages.map((msg) => buildMessage(msg)).toList(),
               ),
             ),
-
             if (loading)
               Align(
                 alignment: Alignment.centerLeft,
@@ -320,8 +312,6 @@ class _JustBotSheetState extends State<JustBotSheet> {
                   ),
                 ),
               ),
-
-            // Input
             Row(
               children: [
                 Expanded(

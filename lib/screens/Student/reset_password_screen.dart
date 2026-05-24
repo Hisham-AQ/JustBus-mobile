@@ -87,7 +87,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
               const SizedBox(height: 16),
 
-              /// New Password
               TextFormField(
                 controller: passwordController,
                 obscureText: obscurePassword,
@@ -119,7 +118,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
               const SizedBox(height: 16),
 
-              /// Confirm Password
               TextFormField(
                 controller: confirmPasswordController,
                 obscureText: obscurePassword,
@@ -143,7 +141,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
               const SizedBox(height: 28),
 
-              /// Submit Button
               SizedBox(
                 width: double.infinity,
                 height: 54,
