@@ -101,12 +101,6 @@ JustBus is a full-stack smart transportation platform developed to modernize and
 
 ---
 
-## 👨‍💻 Developers
-- **Hisham AQ**
-- **Samer Almashny**
-
----
-
 ## 📌 Project Status
 ✅ Fully implemented core transportation platform  
 🚧 Additional enhancements and optimizations are ongoing
