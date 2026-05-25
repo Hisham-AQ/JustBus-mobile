@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'secure_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthService {
   //static const String baseUrl = 'https://justbus-backend.onrender.com';
@@ -32,7 +33,22 @@ class AuthService {
     await SecureStorage.saveToken(data['token']);
     await SecureStorage.saveRole(data['role']);
     await SecureStorage.saveEmail(email);
+    final fcmToken = await FirebaseMessaging.instance.getToken();
 
+    if (fcmToken != null) {
+      await http.post(
+        Uri.parse(
+          '$baseUrl/api/users/save-fcm-token',
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${data['token']}',
+        },
+        body: jsonEncode({
+          'token': fcmToken,
+        }),
+      );
+    }
     return data['role'];
   }
 

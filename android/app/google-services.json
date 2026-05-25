@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "361183183718",
-    "project_id": "just-bus-f2b31",
-    "storage_bucket": "just-bus-f2b31.firebasestorage.app"
+    "project_number": "56961598499",
+    "project_id": "justbus-519da",
+    "storage_bucket": "justbus-519da.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:361183183718:android:2df105cbc1b2b0a8c93ea7",
+        "mobilesdk_app_id": "1:56961598499:android:ae40ddf4fded9bb5a99d96",
         "android_client_info": {
           "package_name": "com.example.justbus_v1"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBBzOoJOXp9zCySPnXGeAJbLDRNrAM_-MY"
+          "current_key": "AIzaSyAC6VKSbihTfg99c3vbY7ZVS8-oHX927Ms"
         }
       ],
       "services": {

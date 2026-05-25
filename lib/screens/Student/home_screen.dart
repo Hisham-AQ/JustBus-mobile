@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = await TripService.getLiveLocation(
         tripId: activeTrackingTripId!,
       );
-      if (data['status'] == 'cancelled') {
+      if (data['booking_status'] == 'cancelled') {
         trackingTimer?.cancel();
 
         await SecureStorage.clearTrackingTrip();
@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
-      if (data['status'] == 'completed') {
+      if (data['trip_status'] == 'completed') {
         final finishedTripId = activeTrackingTripId;
 
         await SecureStorage.clearTrackingTrip();
@@ -210,10 +210,20 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
       setState(() {
-        tripStatus = data['status'] ?? '';
+        tripStatus = data['trip_status'] ?? '';
       });
 
       if (data['current_lat'] == null || data['current_lng'] == null) {
+        setState(() {
+          trackingMode = true;
+
+          tripStatus = data['trip_status'] ?? 'scheduled';
+
+          busLocation = null;
+
+          etaMinutes = 0;
+        });
+
         return;
       }
 
@@ -229,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
       print("IS BOARDED => $boarded");
 
       setState(() {
-        tripStatus = data['status'] ?? '';
+        tripStatus = data['trip_status'] ?? '';
         busLocation = location;
         etaMinutes = (data['eta_minutes'] ?? 0).toDouble();
         isBoarded = boarded;
@@ -319,7 +329,8 @@ class _HomeScreenState extends State<HomeScreen> {
       tripId: tripId,
     );
 
-    if (data['status'] != 'ongoing' && data['status'] != 'scheduled') {
+    if (data['trip_status'] != 'ongoing' &&
+        data['trip_status'] != 'scheduled') {
       await SecureStorage.clearTrackingTrip();
       await SecureStorage.clearPickupLocation();
 
@@ -935,7 +946,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 20),
                   DropdownButtonFormField<String>(
-                    value: selectedIssue,
+                    initialValue: selectedIssue,
                     decoration: InputDecoration(
                       labelText: 'Issue Type',
                       border: OutlineInputBorder(

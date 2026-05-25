@@ -63,7 +63,13 @@ class _PackageScreenState extends State<PackageScreen> {
     } catch (e) {
       setState(() {
         isRewardApplied = false;
-        rewardMessage = e.toString();
+        final error = e.toString().toLowerCase();
+
+        if (error.contains('invalid') || error.contains('already used')) {
+          rewardMessage = 'Invalid or already used code';
+        } else {
+          rewardMessage = 'Failed to apply reward code';
+        }
       });
     } finally {
       setState(() {
@@ -1388,13 +1394,40 @@ class _PackageScreenState extends State<PackageScreen> {
                 ),
                 if (rewardMessage != null) ...[
                   const SizedBox(height: 8),
-                  Text(
-                    rewardMessage!,
-                    style: TextStyle(
-                      color: isRewardApplied ? Colors.green : Colors.red,
-                      fontWeight: FontWeight.w700,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
                     ),
-                  ),
+                    decoration: BoxDecoration(
+                      color: isRewardApplied
+                          ? Colors.green.withOpacity(.08)
+                          : Colors.red.withOpacity(.08),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isRewardApplied
+                              ? Icons.check_circle
+                              : Icons.error_rounded,
+                          color: isRewardApplied ? Colors.green : Colors.red,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            rewardMessage!,
+                            style: TextStyle(
+                              color:
+                                  isRewardApplied ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ],
             ),

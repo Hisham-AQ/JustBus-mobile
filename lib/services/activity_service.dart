@@ -22,4 +22,31 @@ class ActivityService {
       throw Exception(response.body);
     }
   }
+
+  static Future<void> requestBookingCancellation({
+    required int bookingId,
+    required String reason,
+  }) async {
+    final token = await SecureStorage.getToken();
+
+    final response = await http.post(
+      Uri.parse(
+        "$_baseUrl/api/activity/request-cancellation",
+      ),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode({
+        "booking_id": bookingId,
+        "reason": reason,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        jsonDecode(response.body)['message'] ?? 'Failed to send request',
+      );
+    }
+  }
 }

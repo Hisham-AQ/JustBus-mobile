@@ -236,8 +236,9 @@ class _MyActivityScreenState extends State<MyActivityScreen>
   Widget tripTicketCard(
     Map<String, dynamic> t,
   ) {
-    final status = t['status'] ?? 'Unknown';
+    final hasPendingCancellation = t['has_pending_cancellation'] == 1;
 
+    final status = t['status'] ?? 'Unknown';
     final color = getStatusColor(status);
 
     return Container(
@@ -380,7 +381,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                     const SizedBox(width: 10),
                     _infoChip(
                       Icons.directions_bus,
-                      'Bus ${t['bus_id'] ?? '--'}',
+                      'Bus ${t['bus_number'] ?? '--'}',
                     ),
                   ],
                 ),
@@ -413,54 +414,443 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                     ),
                     const SizedBox(width: 10),
                     const Spacer(),
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: status.toLowerCase() == "completed"
-                          ? Colors.grey
-                          : const Color(0xFF1F4B63),
-                      child: IconButton(
-                        onPressed: status.toLowerCase() == "completed"
-                            ? null
-                            : () async {
-                                final userName =
-                                    await SecureStorage.getUserName();
+                    Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor:
+                              status.toLowerCase() != "confirmed" ||
+                                      hasPendingCancellation
+                                  ? Colors.grey
+                                  : Colors.red,
+                          child: IconButton(
+                            onPressed:
+                                status.toLowerCase() != "confirmed" ||
+                                        hasPendingCancellation
+                                    ? null
+                                    : () async {
+                                        final reasonCtrl =
+                                            TextEditingController();
 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => TicketScreen(
-                                      seats: (t['seats'] ?? '')
-                                          .toString()
-                                          .split(',')
-                                          .map((e) => int.parse(e))
-                                          .toList(),
-                                      userName: userName ?? 'Passenger',
-                                      avatar: avatar,
-                                      qrToken: t['qr_token'] ?? '',
-                                      bookingId: t['booking_id'] ?? 0,
-                                      from: t['from_city'] ?? '',
-                                      to: t['to_city'] ?? '',
-                                      pickupLocation:
-                                          t['pickup_location'] ?? '',
-                                      dropoffLocation:
-                                          t['dropoff_location'] ?? '',
-                                      date: t['trip_date']
-                                          .toString()
-                                          .split('T')
-                                          .first,
-                                      time:
-                                          '${t['departure_time']} - ${t['arrival_time']}',
-                                      busNumber: t['bus_id'],
-                                      tripId: t['trip_id'] ?? 0,
-                                    ),
-                                  ),
-                                );
-                              },
-                        icon: const Icon(
-                          Icons.qr_code_2,
-                          color: Colors.white,
+                                        await showDialog(
+                                          context: context,
+                                          builder: (_) {
+                                            return Dialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(26),
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(24),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Container(
+                                                      width: 82,
+                                                      height: 82,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red
+                                                            .withOpacity(.1),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Icon(
+                                                        hasPendingCancellation
+                                                            ? Icons
+                                                                .hourglass_top_rounded
+                                                            : Icons
+                                                                .cancel_rounded,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 18,
+                                                    ),
+                                                    const Text(
+                                                      "Cancel Booking Request",
+                                                      style: TextStyle(
+                                                        fontSize: 22,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 10,
+                                                    ),
+                                                    const Text(
+                                                      "Please tell us why you want to cancel this booking.",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        color: Colors.black54,
+                                                        height: 1.5,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 22,
+                                                    ),
+                                                    TextField(
+                                                      controller: reasonCtrl,
+                                                      maxLines: 4,
+                                                      decoration:
+                                                          InputDecoration(
+                                                        hintText:
+                                                            "Enter cancellation reason...",
+                                                        filled: true,
+                                                        fillColor: const Color(
+                                                          0xFFF5F7FA,
+                                                        ),
+                                                        border:
+                                                            OutlineInputBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                            18,
+                                                          ),
+                                                          borderSide:
+                                                              BorderSide.none,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 24,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Expanded(
+                                                          child: OutlinedButton(
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                context,
+                                                              );
+                                                            },
+                                                            child: const Text(
+                                                              "Close",
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 12,
+                                                        ),
+                                                        Expanded(
+                                                          child: ElevatedButton(
+                                                            onPressed:
+                                                                () async {
+                                                              if (reasonCtrl
+                                                                  .text
+                                                                  .trim()
+                                                                  .isEmpty) {
+                                                                showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder: (_) =>
+                                                                      Dialog(
+                                                                    shape:
+                                                                        RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              24),
+                                                                    ),
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .all(
+                                                                          24),
+                                                                      child:
+                                                                          Column(
+                                                                        mainAxisSize:
+                                                                            MainAxisSize.min,
+                                                                        children: [
+                                                                          Container(
+                                                                            width:
+                                                                                82,
+                                                                            height:
+                                                                                82,
+                                                                            decoration:
+                                                                                BoxDecoration(
+                                                                              color: Colors.red.withOpacity(.1),
+                                                                              shape: BoxShape.circle,
+                                                                            ),
+                                                                            child:
+                                                                                const Icon(
+                                                                              Icons.warning_rounded,
+                                                                              color: Colors.red,
+                                                                              size: 46,
+                                                                            ),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                              height: 18),
+                                                                          const Text(
+                                                                            "Missing Reason",
+                                                                            style:
+                                                                                TextStyle(
+                                                                              fontSize: 22,
+                                                                              fontWeight: FontWeight.w900,
+                                                                            ),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                              height: 10),
+                                                                          const Text(
+                                                                            "Please enter cancellation reason before sending request.",
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style:
+                                                                                TextStyle(
+                                                                              color: Colors.black54,
+                                                                              height: 1.5,
+                                                                            ),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                              height: 24),
+                                                                          SizedBox(
+                                                                            width:
+                                                                                double.infinity,
+                                                                            child:
+                                                                                ElevatedButton(
+                                                                              onPressed: () {
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                              style: ElevatedButton.styleFrom(
+                                                                                backgroundColor: const Color(0xFF1F4B63),
+                                                                                padding: const EdgeInsets.symmetric(
+                                                                                  vertical: 14,
+                                                                                ),
+                                                                                shape: RoundedRectangleBorder(
+                                                                                  borderRadius: BorderRadius.circular(16),
+                                                                                ),
+                                                                              ),
+                                                                              child: const Text(
+                                                                                "OK",
+                                                                                style: TextStyle(
+                                                                                  fontWeight: FontWeight.w800,
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                );
+
+                                                                return;
+                                                              }
+
+                                                              try {
+                                                                await ActivityService
+                                                                    .requestBookingCancellation(
+                                                                  bookingId: t[
+                                                                      'booking_id'],
+                                                                  reason:
+                                                                      reasonCtrl
+                                                                          .text
+                                                                          .trim(),
+                                                                );
+
+                                                                if (!context
+                                                                    .mounted) {
+                                                                  return;
+                                                                }
+
+                                                                Navigator.pop(
+                                                                  context,
+                                                                );
+
+                                                                showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder: (_) =>
+                                                                      Dialog(
+                                                                    shape:
+                                                                        RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .circular(
+                                                                        24,
+                                                                      ),
+                                                                    ),
+                                                                    child:
+                                                                        Padding(
+                                                                      padding:
+                                                                          const EdgeInsets
+                                                                              .all(
+                                                                        24,
+                                                                      ),
+                                                                      child:
+                                                                          Column(
+                                                                        mainAxisSize:
+                                                                            MainAxisSize.min,
+                                                                        children: [
+                                                                          Container(
+                                                                            width:
+                                                                                82,
+                                                                            height:
+                                                                                82,
+                                                                            decoration:
+                                                                                BoxDecoration(
+                                                                              color: Colors.green.withOpacity(
+                                                                                .1,
+                                                                              ),
+                                                                              shape: BoxShape.circle,
+                                                                            ),
+                                                                            child:
+                                                                                const Icon(
+                                                                              Icons.check_circle_rounded,
+                                                                              color: Colors.green,
+                                                                              size: 46,
+                                                                            ),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                            height:
+                                                                                18,
+                                                                          ),
+                                                                          const Text(
+                                                                            "Request Submitted",
+                                                                            style:
+                                                                                TextStyle(
+                                                                              fontSize: 22,
+                                                                              fontWeight: FontWeight.w900,
+                                                                            ),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                            height:
+                                                                                10,
+                                                                          ),
+                                                                          const Text(
+                                                                            "Your cancellation request has been sent to admin successfully.",
+                                                                            textAlign:
+                                                                                TextAlign.center,
+                                                                            style:
+                                                                                TextStyle(
+                                                                              color: Colors.black54,
+                                                                              height: 1.5,
+                                                                            ),
+                                                                          ),
+                                                                          const SizedBox(
+                                                                            height:
+                                                                                24,
+                                                                          ),
+                                                                          SizedBox(
+                                                                            width:
+                                                                                double.infinity,
+                                                                            child:
+                                                                                ElevatedButton(
+                                                                              onPressed: () {
+                                                                                Navigator.pop(
+                                                                                  context,
+                                                                                );
+                                                                              },
+                                                                              style: ElevatedButton.styleFrom(
+                                                                                backgroundColor: const Color(
+                                                                                  0xFF1F4B63,
+                                                                                ),
+                                                                              ),
+                                                                              child: const Text(
+                                                                                "Done",
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              } catch (e) {
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(
+                                                                  SnackBar(
+                                                                    content:
+                                                                        Text(
+                                                                      e.toString(),
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }
+                                                            },
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              backgroundColor:
+                                                                  Colors.red,
+                                                            ),
+                                                            child: const Text(
+                                                              "Send",
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      },
+                            icon: Icon(
+                              hasPendingCancellation
+                                  ? Icons.hourglass_top_rounded
+                                  : Icons.cancel_rounded,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor:
+                              status.toLowerCase() == "completed" ||
+                                      status.toLowerCase() == "cancelled"
+                                  ? Colors.grey
+                                  : const Color(0xFF1F4B63),
+                          child: IconButton(
+                            onPressed: status.toLowerCase() == "completed" ||
+                                    status.toLowerCase() == "cancelled"
+                                ? null
+                                : () async {
+                                    final userName =
+                                        await SecureStorage.getUserName();
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => TicketScreen(
+                                          seats: (t['seats'] ?? '')
+                                              .toString()
+                                              .split(',')
+                                              .map((e) => int.parse(e))
+                                              .toList(),
+                                          userName: userName ?? 'Passenger',
+                                          avatar: avatar,
+                                          qrToken: t['qr_token'] ?? '',
+                                          bookingId: t['booking_id'] ?? 0,
+                                          from: t['from_city'] ?? '',
+                                          to: t['to_city'] ?? '',
+                                          pickupLocation:
+                                              t['pickup_location'] ?? '',
+                                          dropoffLocation:
+                                              t['dropoff_location'] ?? '',
+                                          date: t['trip_date']
+                                              .toString()
+                                              .split('T')
+                                              .first,
+                                          time:
+                                              '${t['departure_time']} - ${t['arrival_time']}',
+                                          busNumber: t['bus_id'],
+                                          tripId: t['trip_id'] ?? 0,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            icon: const Icon(
+                              Icons.qr_code_2,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
