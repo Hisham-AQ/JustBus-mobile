@@ -319,8 +319,7 @@ class _TripCardState extends State<TripCard> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Row(
             children: [
               Container(

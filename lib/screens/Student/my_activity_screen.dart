@@ -838,7 +838,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                                               .first,
                                           time:
                                               '${t['departure_time']} - ${t['arrival_time']}',
-                                          busNumber: t['bus_id'],
+                                          busNumber: t['bus_number']?.toString(),
                                           tripId: t['trip_id'] ?? 0,
                                         ),
                                       ),

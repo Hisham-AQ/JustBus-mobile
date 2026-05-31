@@ -148,12 +148,83 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         timer.cancel();
 
         if (!mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 82,
+                      height: 82,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.timer_off_rounded,
+                        color: Colors.orange,
+                        size: 42,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    const Text(
+                      'Session Expired',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Your seat reservation time has expired. Please search for the seat again to continue booking.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey.shade600,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⏰ Hold expired')),
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primary,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
-
-        Navigator.pop(context);
       } else {
         setState(() {
           _remainingSeconds--;
@@ -198,7 +269,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
             dropoffLocation: widget.dropoff['name'],
             date: widget.tripDate,
             time: '${widget.departureTime} → ${widget.arrivalTime}',
-            busNumber: int.tryParse(widget.busNumber) ?? 0,
+            busNumber: widget.busNumber,
             tripId: widget.tripId,
           ),
         ),
@@ -385,6 +456,17 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                               borderSide: BorderSide.none,
                             ),
                           ),
+                          onChanged: (_) {
+                            if (isRewardApplied) {
+                              setState(() {
+                                isRewardApplied = false;
+
+                                previewPrice = null;
+
+                                rewardMessage = null;
+                              });
+                            }
+                          },
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -791,7 +873,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   Future<void> _applyReward() async {
     final code = _rewardController.text.trim();
 
-    if (code.isEmpty) return;
+    if (code.isEmpty || isCheckingReward) return;
 
     setState(() {
       isCheckingReward = true;
@@ -826,7 +908,13 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
       setState(() {
         isRewardApplied = false;
         previewPrice = null;
-        rewardMessage = e.toString();
+        final error = e.toString().toLowerCase();
+
+        if (error.contains('invalid') || error.contains('already used')) {
+          rewardMessage = 'Invalid or already used code';
+        } else {
+          rewardMessage = 'Failed to apply reward code';
+        }
       });
     } finally {
       setState(() {

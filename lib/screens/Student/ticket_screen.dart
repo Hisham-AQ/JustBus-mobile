@@ -18,7 +18,7 @@ class TicketScreen extends StatelessWidget {
   final String dropoffLocation;
   final String date;
   final String time;
-  final int? busNumber;
+  final String? busNumber;
   final int tripId;
   final String? avatar;
 
@@ -252,11 +252,10 @@ class TicketScreen extends StatelessWidget {
                   children: [
                     _bigInfo('SEAT', seats.join(', ')),
                     _bigInfo(
-                      'BUS',
-                      busNumber == null || busNumber == 0
-                          ? '-'
-                          : busNumber.toString(),
-                    ),
+                        'BUS',
+                        busNumber == null || busNumber!.isEmpty
+                            ? '-'
+                            : busNumber!),
                   ],
                 ),
               ),

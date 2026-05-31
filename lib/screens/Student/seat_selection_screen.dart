@@ -194,7 +194,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    "Oops... another passenger was faster and grabbed your seats first 🏃💨",
+                    "Oops... another passenger was faster and grabbed your seat first 🏃💨",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.black54,

@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:universal_html/html.dart' as html;
 
 class SecureStorage {
   static const _storage = FlutterSecureStorage();
@@ -10,10 +12,30 @@ class SecureStorage {
   static const _keyTrackingTrip = 'tracking_trip';
   static const _keyPickupLocation = 'pickup_location';
 
-  static Future<void> saveToken(String token) =>
-      _storage.write(key: _keyToken, value: token);
+  static Future<void> saveToken(
+    String token,
+  ) async {
+    if (kIsWeb) {
+      html.window.localStorage[_keyToken] = token;
 
-  static Future<String?> getToken() => _storage.read(key: _keyToken);
+      return;
+    }
+
+    await _storage.write(
+      key: _keyToken,
+      value: token,
+    );
+  }
+
+  static Future<String?> getToken() async {
+    if (kIsWeb) {
+      return html.window.localStorage[_keyToken];
+    }
+
+    return await _storage.read(
+      key: _keyToken,
+    );
+  }
 
   static Future<void> saveRole(String role) =>
       _storage.write(key: _keyRole, value: role);
