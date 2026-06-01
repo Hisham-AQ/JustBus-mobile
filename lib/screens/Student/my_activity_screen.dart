@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/activity_service.dart';
 import 'ticket_screen.dart';
 import '../../services/secure_storage.dart';
+import 'tracking_screen.dart';
 
 class MyActivityScreen extends StatefulWidget {
   const MyActivityScreen({super.key});
@@ -369,55 +370,166 @@ class _MyActivityScreenState extends State<MyActivityScreen>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _infoChip(
-                      Icons.event_seat,
-                      'Seats ${t['seats'] ?? '--'}',
-                    ),
-                    const SizedBox(width: 10),
-                    _infoChip(
-                      Icons.directions_bus,
-                      'Bus ${t['bus_number'] ?? '--'}',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.payments_rounded,
-                      color: Colors.green.shade700,
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${t['total_price']} JD',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _infoChip(
+                                Icons.event_seat,
+                                'Seats ${t['seats'] ?? '--'}',
+                              ),
+                              const SizedBox(width: 10),
+                              _infoChip(
+                                Icons.directions_bus,
+                                'Bus ${t['bus_number'] ?? '--'}',
+                              ),
+                            ],
                           ),
-                        ),
-                        Text(
-                          '#JB-${t['booking_id']}',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w700,
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.payments_rounded,
+                                color: Colors.green.shade700,
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${t['total_price']} JD',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 22,
+                                    ),
+                                  ),
+                                  Text(
+                                    '#JB-${t['booking_id']}',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 10),
-                    const Spacer(),
+                    const SizedBox(width: 12),
                     Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         CircleAvatar(
-                          radius: 24,
+                          radius: 22,
+                          backgroundColor:
+                              status.toLowerCase() == "completed" ||
+                                      status.toLowerCase() == "cancelled"
+                                  ? Colors.grey
+                                  : Colors.green,
+                          child: IconButton(
+                            onPressed: status.toLowerCase() == "completed" ||
+                                    status.toLowerCase() == "cancelled"
+                                ? null
+                                : () async {
+                                    await SecureStorage.saveTrackingTrip(
+                                      t['trip_id'],
+                                    );
+
+                                    await SecureStorage.savePickupLocation(
+                                      t['pickup_location'] ?? '',
+                                    );
+
+                                    await SecureStorage.saveDropoffLocation(
+                                      t['dropoff_location'] ?? '',
+                                    );
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => TrackingScreen(
+                                          tripId: t['trip_id'],
+                                          pickupLocation:
+                                              t['pickup_location'] ?? '',
+                                          dropoffLocation:
+                                              t['dropoff_location'] ?? '',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            icon: const Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundColor:
+                              status.toLowerCase() == "completed" ||
+                                      status.toLowerCase() == "cancelled"
+                                  ? Colors.grey
+                                  : const Color(0xFF1F4B63),
+                          child: IconButton(
+                            onPressed: status.toLowerCase() == "completed" ||
+                                    status.toLowerCase() == "cancelled"
+                                ? null
+                                : () async {
+                                    final userName =
+                                        await SecureStorage.getUserName();
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => TicketScreen(
+                                          seats: (t['seats'] ?? '')
+                                              .toString()
+                                              .split(',')
+                                              .map((e) => int.parse(e))
+                                              .toList(),
+                                          userName: userName ?? 'Passenger',
+                                          avatar: avatar,
+                                          qrToken: t['qr_token'] ?? '',
+                                          bookingId: t['booking_id'] ?? 0,
+                                          from: t['from_city'] ?? '',
+                                          to: t['to_city'] ?? '',
+                                          pickupLocation:
+                                              t['pickup_location'] ?? '',
+                                          dropoffLocation:
+                                              t['dropoff_location'] ?? '',
+                                          date: t['trip_date']
+                                              .toString()
+                                              .split('T')
+                                              .first,
+                                          time:
+                                              '${t['departure_time']} - ${t['arrival_time']}',
+                                          busNumber:
+                                              t['bus_number']?.toString(),
+                                          tripId: t['trip_id'] ?? 0,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            icon: const Icon(
+                              Icons.qr_code_2,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        CircleAvatar(
+                          radius: 22,
                           backgroundColor:
                               status.toLowerCase() != "confirmed" ||
                                       hasPendingCancellation
@@ -793,59 +905,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                               hasPendingCancellation
                                   ? Icons.hourglass_top_rounded
                                   : Icons.cancel_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor:
-                              status.toLowerCase() == "completed" ||
-                                      status.toLowerCase() == "cancelled"
-                                  ? Colors.grey
-                                  : const Color(0xFF1F4B63),
-                          child: IconButton(
-                            onPressed: status.toLowerCase() == "completed" ||
-                                    status.toLowerCase() == "cancelled"
-                                ? null
-                                : () async {
-                                    final userName =
-                                        await SecureStorage.getUserName();
-
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => TicketScreen(
-                                          seats: (t['seats'] ?? '')
-                                              .toString()
-                                              .split(',')
-                                              .map((e) => int.parse(e))
-                                              .toList(),
-                                          userName: userName ?? 'Passenger',
-                                          avatar: avatar,
-                                          qrToken: t['qr_token'] ?? '',
-                                          bookingId: t['booking_id'] ?? 0,
-                                          from: t['from_city'] ?? '',
-                                          to: t['to_city'] ?? '',
-                                          pickupLocation:
-                                              t['pickup_location'] ?? '',
-                                          dropoffLocation:
-                                              t['dropoff_location'] ?? '',
-                                          date: t['trip_date']
-                                              .toString()
-                                              .split('T')
-                                              .first,
-                                          time:
-                                              '${t['departure_time']} - ${t['arrival_time']}',
-                                          busNumber: t['bus_number']?.toString(),
-                                          tripId: t['trip_id'] ?? 0,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                            icon: const Icon(
-                              Icons.qr_code_2,
                               color: Colors.white,
                             ),
                           ),

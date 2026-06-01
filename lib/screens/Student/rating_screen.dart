@@ -186,7 +186,7 @@ class _RatingScreenState extends State<RatingScreen> {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    "Rating Submitted 💫",
+                    "Rating Submitted",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,

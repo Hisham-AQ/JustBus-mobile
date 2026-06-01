@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'home_screen.dart';
-import '../../services/secure_storage.dart';
 
 class TicketScreen extends StatelessWidget {
   final List<int> seats;
@@ -93,37 +92,29 @@ class TicketScreen extends StatelessWidget {
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.location_on),
-                  label: const Text("Track Bus"),
-                  onPressed: () async {
-                    await SecureStorage.saveTrackingTrip(
-                      tripId,
-                    );
-
-                    await SecureStorage.savePickupLocation(
-                      pickupLocation,
-                    );
-                    await SecureStorage.saveDropoffLocation(
-                      dropoffLocation,
-                    );
-
-                    Navigator.push(
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => HomeScreen(
-                          trackingTripId: tripId,
-                          pickupLocation: pickupLocation,
-                        ),
+                        builder: (_) => const HomeScreen(),
                       ),
+                      (route) => false,
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1F4B63),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),
