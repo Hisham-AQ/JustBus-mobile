@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/ai_service.dart';
 import '../../services/profile_service.dart';
+import 'search_results_screen.dart';
 import 'dart:async';
 
 class JustBotSheet extends StatefulWidget {
@@ -18,9 +19,12 @@ class _JustBotSheetState extends State<JustBotSheet> {
   int typingDots = 1;
   Timer? typingTimer;
   String? selectedAvatar;
+  bool showSuggestions = true;
+  List<Map<String, dynamic>> tripResults = [];
 
   Future<void> sendMessage() async {
     final text = controller.text.trim();
+    showSuggestions = false;
     if (text.isEmpty) return;
 
     setState(() {
@@ -50,17 +54,25 @@ class _JustBotSheetState extends State<JustBotSheet> {
       final data = await AIService.sendMessage(text);
 
       setState(() {
-        messages.add({"role": "bot", "text": data['reply'] ?? ''});
+        final reply = (data['reply'] ?? '').toString();
+
+        if (reply.isNotEmpty) {
+          messages.add({
+            "role": "bot",
+            "text": reply,
+          });
+        }
       });
       scrollToBottom();
 
-      final trips = List.from(data['trips'] ?? []);
+      final trips = List<Map<String, dynamic>>.from(
+        data['trips'] ?? [],
+      );
 
-      if (trips.isNotEmpty) {
-        setState(() {
-          messages.add({"role": "bot", "text": "كيف أقدر أساعدك كمان 👇"});
-        });
-      }
+      setState(() {
+        tripResults.clear();
+        tripResults = trips;
+      });
     } catch (e) {
       setState(() {
         messages.add({"role": "bot", "text": "Error: $e"});
@@ -80,6 +92,15 @@ class _JustBotSheetState extends State<JustBotSheet> {
     scrollController.dispose();
     typingTimer?.cancel();
     super.dispose();
+  }
+
+  void sendQuickMessage(String text) {
+    controller.text = text;
+    sendMessage();
+
+    setState(() {
+      showSuggestions = false;
+    });
   }
 
   Widget buildMessage(Map<String, String> msg) {
@@ -198,10 +219,6 @@ class _JustBotSheetState extends State<JustBotSheet> {
 
     _loadAvatar();
 
-    messages.add({
-      "role": "bot",
-      "text": "مرحبا 👋\nأنا JustBot.\nكيف أقدر أساعدك اليوم؟"
-    });
     Future.delayed(
       const Duration(milliseconds: 100),
       () {
@@ -211,6 +228,227 @@ class _JustBotSheetState extends State<JustBotSheet> {
           curve: Curves.easeOut,
         );
       },
+    );
+  }
+
+  Widget quickCard({
+    required IconData icon,
+    required String title,
+    required String question,
+    required Color color,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () => sendQuickMessage(question),
+      child: Container(
+        width: 165,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: Colors.grey.shade200,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget tripCard(Map<String, dynamic> trip) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  trip['from_city'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                color: Color(0xFF1F4B63),
+              ),
+              Expanded(
+                child: Text(
+                  trip['to_city'],
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Icon(
+                Icons.access_time_rounded,
+                size: 18,
+                color: Colors.orange.shade700,
+              ),
+              const SizedBox(width: 6),
+              Text("${trip['departure_time']}"),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_month_rounded,
+                size: 18,
+                color: Colors.purple.shade700,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                trip['trip_date'].toString().split('T').first,
+              )
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(
+                Icons.event_seat_rounded,
+                size: 18,
+                color: Colors.green.shade700,
+              ),
+              const SizedBox(width: 6),
+              Text("${trip['available_seats']} Seats"),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(
+                Icons.payments_rounded,
+                size: 18,
+                color: Colors.teal.shade700,
+              ),
+              const SizedBox(width: 6),
+              Text("${trip['price']} JD"),
+            ],
+          ),
+          Text(
+            "👨‍✈️ Driver: ${trip['driver_name'] ?? 'N/A'}",
+          ),
+          Text(
+            "🚌 Bus: ${trip['bus_number'] ?? 'N/A'}",
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: trip['status'] == 'ongoing'
+                  ? Colors.orange.shade50
+                  : Colors.green.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              trip['status'] ?? '',
+              style: TextStyle(
+                color: trip['status'] == 'ongoing'
+                    ? Colors.orange.shade700
+                    : Colors.green.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: const Icon(
+                Icons.event_seat_rounded,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Book Now',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1F4B63),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: trip['status'] == 'scheduled'
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => SearchResultsScreen(
+                            from: trip['from_city'],
+                            to: trip['to_city'],
+                            date: trip['trip_date'],
+                            persons: 1,
+                          ),
+                        ),
+                      );
+                    }
+                  : null,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -259,12 +497,61 @@ class _JustBotSheetState extends State<JustBotSheet> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'JustBot',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'JustBot',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Online now',
+                                style: TextStyle(
+                                  color: Colors.green.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          messages.clear();
+                          tripResults.clear();
+                          showSuggestions = true;
+                        });
+                      },
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.refresh_rounded,
                         ),
                       ),
                     ),
@@ -277,7 +564,9 @@ class _JustBotSheetState extends State<JustBotSheet> {
                           color: Colors.grey.shade200,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.close_rounded),
+                        child: const Icon(
+                          Icons.close_rounded,
+                        ),
                       ),
                     ),
                   ],
@@ -285,12 +574,125 @@ class _JustBotSheetState extends State<JustBotSheet> {
               ),
             ),
             const SizedBox(height: 12),
+            if (messages.isEmpty)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(
+                  bottom: 20,
+                  top: 10,
+                ),
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(.04),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F4B63),
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
+                        child: Image.asset(
+                          'assets/images/bot.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Welcome to JustBot 👋",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "I can help you with trips, bookings, tickets, tracking, rewards, parcels and more.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Expanded(
               child: ListView(
                 controller: scrollController,
-                children: messages.map((msg) => buildMessage(msg)).toList(),
+                children: [
+                  ...messages.map(
+                    (msg) => buildMessage(msg),
+                  ),
+                  if (tripResults.isNotEmpty)
+                    ...tripResults.map(
+                      (trip) => tripCard(trip),
+                    ),
+                ],
               ),
             ),
+            if (showSuggestions)
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: 12,
+                  top: 6,
+                ),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    quickCard(
+                      icon: Icons.directions_bus_rounded,
+                      title: "Available Trips",
+                      question: "Show available trips",
+                      color: Colors.blue,
+                    ),
+                    quickCard(
+                      icon: Icons.confirmation_num_rounded,
+                      title: "How to Book?",
+                      question: "How can I book a seat?",
+                      color: Colors.green,
+                    ),
+                    quickCard(
+                      icon: Icons.location_on_rounded,
+                      title: "Track Bus",
+                      question: "How does bus tracking work?",
+                      color: Colors.red,
+                    ),
+                    quickCard(
+                      icon: Icons.card_giftcard_rounded,
+                      title: "Rewards",
+                      question: "Explain rewards system",
+                      color: Colors.purple,
+                    ),
+                    quickCard(
+                      icon: Icons.inventory_2_rounded,
+                      title: "Parcel Service",
+                      question: "How can I send a parcel?",
+                      color: Colors.orange,
+                    ),
+                    quickCard(
+                      icon: Icons.warning_amber_rounded,
+                      title: "Panic Alert",
+                      question: "How does panic alert work?",
+                      color: Colors.red.shade800,
+                    ),
+                  ],
+                ),
+              ),
             if (loading)
               Align(
                 alignment: Alignment.centerLeft,
