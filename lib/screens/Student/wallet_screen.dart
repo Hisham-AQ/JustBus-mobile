@@ -970,7 +970,9 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                   const SizedBox(height: 12),
                   ...transactions.map((tx) {
-                    final isTopUp = tx['type'] == 'topup';
+                    final type = tx['type'];
+
+                    final isPositive = type == 'topup' || type == 'refund';
 
                     final date = DateTime.parse(tx['created_at']);
 
@@ -992,12 +994,12 @@ class _WalletScreenState extends State<WalletScreen> {
                         children: [
                           CircleAvatar(
                             backgroundColor:
-                                isTopUp ? Colors.green[100] : Colors.red[100],
+                                isPositive  ? Colors.green[100] : Colors.red[100],
                             child: Icon(
-                              isTopUp
+                              isPositive 
                                   ? Icons.arrow_downward
                                   : Icons.arrow_upward,
-                              color: isTopUp ? Colors.green : Colors.red,
+                              color: isPositive  ? Colors.green : Colors.red,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1019,10 +1021,10 @@ class _WalletScreenState extends State<WalletScreen> {
                             ),
                           ),
                           Text(
-                            "${isTopUp ? '+' : '-'}${double.parse(tx['amount'].toString()).toStringAsFixed(2)} JD",
+                            "${isPositive  ? '+' : '-'}${double.parse(tx['amount'].toString()).toStringAsFixed(2)} JD",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: isTopUp ? Colors.green : Colors.red,
+                              color: isPositive ? Colors.green : Colors.red,
                             ),
                           ),
                         ],
@@ -1052,14 +1054,18 @@ String getTitle(String type) {
   switch (type) {
     case "topup":
       return "Top Up";
+
     case "payment":
       return "Booking Payment";
-    case "cancelled":
-      return "refund ";
+
+    case "refund":
+      return "Refund";
+
     default:
       return "Transaction";
   }
 }
+
 
 class ExpiryDateFormatter extends TextInputFormatter {
   @override

@@ -79,7 +79,9 @@ void main() async {
   }
 
   if (!kIsWeb) {
-    final token = await FirebaseMessaging.instance.getToken();
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+
+    print('FCM TOKEN = $fcmToken');
   }
 
   runApp(const JustBusApp());
