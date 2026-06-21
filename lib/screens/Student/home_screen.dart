@@ -350,10 +350,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             text:
                                 '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
                             onTap: () async {
+                              final now = DateTime.now();
+
                               final picked = await showDatePicker(
                                 context: context,
-                                initialDate: selectedDate,
-                                firstDate: DateTime(2020),
+                                initialDate: selectedDate.isBefore(now)
+                                    ? now
+                                    : selectedDate,
+                                firstDate: DateTime(
+                                  now.year,
+                                  now.month,
+                                  now.day,
+                                ),
                                 lastDate: DateTime(2035),
                               );
                               if (picked != null) {
